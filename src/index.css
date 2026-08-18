@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: "Inter", sans-serif;
+    background-color: #0a0a0a;
+    color: #ffffff;
+    margin: 0;
+  }
+  /* Force white text on all elements by default */
+  h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+  }
+  p, span, label, td, th, li {
+    color: inherit;
+  }
+  /* Table headers always white */
+  th {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  /* Inputs white text */
+  input, textarea, select {
+    color: #ffffff;
+  }
+  input::placeholder, textarea::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+  }
+  /* Select options readable */
+  option {
+    background-color: #131313;
+    color: #ffffff;
+  }
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-navy-700 border border-navy-500 rounded-xl;
+  }
+  .badge-green {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium bg-green-900/40 text-green-400 px-2.5 py-1 rounded-full;
+  }
+  .badge-yellow {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium bg-yellow-900/40 text-yellow-400 px-2.5 py-1 rounded-full;
+  }
+  .badge-red {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium bg-red-900/40 text-red-400 px-2.5 py-1 rounded-full;
+  }
+}
+
+.cls-wordmark {
+  background: linear-gradient(90deg, #22c55e 0%, #c026d3 55%, #ec4899 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
