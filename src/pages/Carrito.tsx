@@ -1,126 +1,87 @@
+import { ArrowRight, Leaf, Minus, Plus, ShieldCheck, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Trash2, Minus, Plus, ShoppingCart, Info } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { precioARS } from "../data/catalogo";
 
 export default function Carrito() {
   const { items, quitar, cambiarCantidad, total, totalItems } = useCart();
 
-  if (items.length === 0) {
+  if (!items.length) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <ShoppingCart className="w-14 h-14 text-white/15 mx-auto mb-5" />
-        <h1 className="text-2xl font-black text-white">Tu carrito está vacío</h1>
-        <p className="text-sm text-white/50 mt-2">Todavía no agregaste nada. Vamos a eso.</p>
-        <Link
-          to="/semillas"
-          className="mt-7 inline-block bg-cls-primary hover:bg-cls-primary-dark text-white font-bold text-sm px-6 py-3.5 rounded-xl transition"
-        >
-          Ver el catálogo
-        </Link>
+      <div className="site-container py-12 md:py-20">
+        <section className="section-shell mx-auto flex max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-cls-sage text-cls-primary"><ShoppingCart className="h-7 w-7" /></span>
+          <h1 className="display-title mt-5 text-4xl">Tu carrito está listo para empezar</h1>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-cls-ink/65">Explorá el catálogo, compará genéticas y sumá las que mejor se adapten a tu cultivo.</p>
+          <Link to="/semillas" className="btn-primary mt-7">Ver el catálogo <ArrowRight className="h-4 w-4" /></Link>
+        </section>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-black text-white mb-8">
-        Tu carrito <span className="text-white/40 text-xl font-bold">({totalItems})</span>
-      </h1>
+    <div className="site-container py-8 md:py-12">
+      <header className="mb-7">
+        <p className="eyebrow">Tu selección</p>
+        <h1 className="display-title mt-2 text-4xl md:text-5xl">Carrito</h1>
+        <p className="mt-2 text-sm text-cls-ink/65">{totalItems} {totalItems === 1 ? "unidad" : "unidades"}. Revisá cantidades antes de continuar.</p>
+      </header>
 
-      <div className="grid lg:grid-cols-[1fr_340px] gap-8">
-        {/* Ítems */}
-        <div className="space-y-3">
+      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <section aria-label="Productos en el carrito" className="space-y-3">
           {items.map(({ producto, cantidad }) => (
-            <div
-              key={producto.id}
-              className="bg-navy-800 border border-navy-500 rounded-2xl p-4 flex flex-wrap items-center gap-4"
-            >
-              <div className="w-16 h-16 bg-navy-700 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                🌱
+            <article key={producto.id} className="section-shell grid grid-cols-[76px_minmax(0,1fr)] gap-4 p-3 sm:grid-cols-[100px_minmax(0,1fr)_auto] sm:items-center sm:p-4">
+              <Link to={`/producto/${producto.slug}`} className="product-art flex aspect-square items-center justify-center overflow-hidden rounded-xl">
+                {producto.imagen ? <img src={producto.imagen} alt={`Presentación de ${producto.nombre}`} className="h-full w-full object-cover" /> : <Leaf className="h-10 w-10 text-cls-primary/70" strokeWidth={1.4} />}
+              </Link>
+              <div className="min-w-0">
+                <p className="truncate text-[10px] font-bold uppercase tracking-[0.1em] text-cls-ink/50">{producto.banco}</p>
+                <Link to={`/producto/${producto.slug}`} className="mt-1 block font-bold text-cls-primary-dark hover:text-cls-orange">{producto.nombre}</Link>
+                <p className="mt-1 text-xs text-cls-ink/55">{producto.presentacion} · {precioARS(producto.precio)} c/u</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3 sm:hidden">
+                  <Quantity value={cantidad} max={producto.stock} onChange={(value) => cambiarCantidad(producto.id, value)} />
+                  <button onClick={() => quitar(producto.id)} className="flex h-11 w-11 items-center justify-center rounded-full text-[#9C332B] hover:bg-[#F7D4CF]" aria-label={`Quitar ${producto.nombre}`}><Trash2 className="h-4 w-4" /></button>
+                </div>
               </div>
-              <div className="flex-1 min-w-[160px]">
-                <p className="text-[10px] text-white/40 uppercase tracking-wider">{producto.banco}</p>
-                <Link
-                  to={`/producto/${producto.slug}`}
-                  className="text-sm font-bold text-white hover:text-cls-primary transition"
-                >
-                  {producto.nombre}
-                </Link>
-                <p className="text-xs text-white/40 mt-0.5">{producto.presentacion}</p>
+              <div className="col-span-2 flex items-center justify-between border-t border-cls-line pt-3 sm:col-span-1 sm:border-0 sm:pt-0">
+                <div className="hidden sm:flex sm:items-center sm:gap-2">
+                  <Quantity value={cantidad} max={producto.stock} onChange={(value) => cambiarCantidad(producto.id, value)} />
+                  <button onClick={() => quitar(producto.id)} className="flex h-11 w-11 items-center justify-center rounded-full text-[#9C332B] hover:bg-[#F7D4CF]" aria-label={`Quitar ${producto.nombre}`}><Trash2 className="h-4 w-4" /></button>
+                </div>
+                <p className="ml-5 min-w-24 text-right text-lg font-black text-cls-primary-dark">{precioARS(producto.precio * cantidad)}</p>
               </div>
-
-              <div className="flex items-center border border-navy-500 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => cambiarCantidad(producto.id, cantidad - 1)}
-                  className="p-2.5 text-white/60 hover:text-white hover:bg-navy-700 transition"
-                  aria-label="Restar"
-                >
-                  <Minus className="w-3.5 h-3.5" />
-                </button>
-                <span className="w-9 text-center text-sm font-bold text-white">{cantidad}</span>
-                <button
-                  onClick={() => cambiarCantidad(producto.id, cantidad + 1)}
-                  className="p-2.5 text-white/60 hover:text-white hover:bg-navy-700 transition"
-                  aria-label="Sumar"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <p className="text-base font-black text-white w-24 text-right">
-                {precioARS(producto.precio * cantidad)}
-              </p>
-
-              <button
-                onClick={() => quitar(producto.id)}
-                className="p-2 text-white/30 hover:text-red-400 transition"
-                aria-label="Quitar"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+            </article>
           ))}
-        </div>
+        </section>
 
-        {/* Resumen */}
-        <aside className="lg:sticky lg:top-32 lg:self-start space-y-4">
-          <div className="bg-navy-800 border border-navy-500 rounded-2xl p-6">
-            <h2 className="text-sm font-black uppercase tracking-widest text-white/40 mb-5">Resumen</h2>
-            <div className="flex items-center justify-between text-sm mb-3">
-              <span className="text-white/60">Subtotal</span>
-              <span className="text-white font-bold">{precioARS(total)}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm mb-5">
-              <span className="text-white/60">Envío</span>
-              <span className="text-white/40 text-xs">Se calcula por CP</span>
-            </div>
-            <div className="flex items-center justify-between pt-4 border-t border-navy-500">
-              <span className="text-sm font-bold text-white">Total</span>
-              <span className="text-2xl font-black text-white">{precioARS(total)}</span>
-            </div>
-
-            <button className="w-full mt-6 bg-cls-primary hover:bg-cls-primary-dark text-white font-bold text-sm px-6 py-3.5 rounded-xl transition">
-              Continuar la compra
-            </button>
-            <p className="text-[11px] text-white/30 text-center mt-3">
-              Te contactamos para coordinar el pago y el envío.
-            </p>
+        <aside className="self-start lg:sticky lg:top-[175px]">
+          <div className="section-shell p-5 md:p-6">
+            <h2 className="text-2xl font-black">Resumen</h2>
+            <dl className="mt-5 space-y-3 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-cls-ink/65">Subtotal</dt><dd className="font-bold text-cls-primary-dark">{precioARS(total)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-cls-ink/65">Envío</dt><dd className="text-right text-xs font-semibold text-cls-ink/55">Se calcula con tu código postal</dd></div>
+            </dl>
+            <div className="mt-5 flex items-end justify-between border-t border-cls-line pt-5"><span className="font-bold">Total parcial</span><strong className="text-2xl text-cls-primary-dark">{precioARS(total)}</strong></div>
+            <Link to="/checkout" className="btn-primary mt-6 w-full">Continuar la compra <ArrowRight className="h-4 w-4" /></Link>
+            <p className="mt-3 text-center text-[10px] leading-relaxed text-cls-ink/50">El total final se confirma después de calcular el envío y validar disponibilidad.</p>
           </div>
 
-          {/* Nota honesta sobre medios de pago — hoy son solo dos (cuestionario 17/08) */}
-          <div className="bg-navy-800 border border-navy-500 rounded-2xl p-5">
-            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cls-green mb-2">
-              <Info className="w-3.5 h-3.5" /> Cómo se paga
-            </p>
-            <p className="text-xs text-white/55 leading-relaxed">
-              Por ahora trabajamos con <strong className="text-white">efectivo y transferencia</strong>.
-              Al confirmar el pedido te escribe alguien del equipo para coordinar el pago y calcular
-              el envío según tu código postal.
-            </p>
+          <div className="mt-3 grid gap-2">
+            <div className="flex gap-3 rounded-2xl border border-cls-line bg-cls-sage/70 p-4"><ShieldCheck className="h-5 w-5 shrink-0 text-cls-primary" /><div><p className="text-xs font-bold text-cls-primary-dark">Compra protegida</p><p className="mt-1 text-[11px] leading-relaxed text-cls-ink/65">Precio y stock se volverán a validar en servidor antes de crear la orden.</p></div></div>
+            <div className="flex gap-3 rounded-2xl border border-cls-line bg-cls-paper p-4"><Truck className="h-5 w-5 shrink-0 text-cls-primary" /><div><p className="text-xs font-bold text-cls-primary-dark">Envío discreto</p><p className="mt-1 text-[11px] leading-relaxed text-cls-ink/65">Despacho por Andreani y seguimiento desde la confirmación.</p></div></div>
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function Quantity({ value, max, onChange }: { value: number; max: number; onChange: (value: number) => void }) {
+  return (
+    <div className="flex min-h-11 items-center overflow-hidden rounded-full border border-cls-line bg-cls-paper">
+      <button onClick={() => onChange(value - 1)} disabled={value <= 1} className="flex h-11 w-11 items-center justify-center text-cls-primary hover:bg-cls-cream disabled:opacity-35" aria-label="Restar una unidad"><Minus className="h-3.5 w-3.5" /></button>
+      <span className="w-8 text-center text-xs font-black text-cls-primary-dark" aria-live="polite">{value}</span>
+      <button onClick={() => onChange(value + 1)} disabled={value >= max} className="flex h-11 w-11 items-center justify-center text-cls-primary hover:bg-cls-cream disabled:opacity-35" aria-label="Sumar una unidad"><Plus className="h-3.5 w-3.5" /></button>
     </div>
   );
 }

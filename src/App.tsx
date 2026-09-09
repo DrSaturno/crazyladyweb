@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
 import ScrollToTop from "./components/ScrollToTop";
 import PublicLayout from "./components/PublicLayout";
 
@@ -11,27 +12,39 @@ import Notas from "./pages/Notas";
 import NotaDetalle from "./pages/NotaDetalle";
 import Reprocann from "./pages/Reprocann";
 import Carrito from "./pages/Carrito";
+import Favoritos from "./pages/Favoritos";
+import Cuenta from "./pages/Cuenta";
+import Checkout from "./pages/Checkout";
+import Politica from "./pages/Politica";
 
 // El panel del bot y el ABM de productos viven en otro repo
 // (github.com/DrSaturno/crazzyladyseeds) — ver docs/web.md § Dos repos.
 
 export default function App() {
   return (
-    <CartProvider>
-      <ScrollToTop />
-      <Routes>
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/semillas" element={<Semillas />} />
-          <Route path="/esquejes" element={<Esquejes />} />
-          <Route path="/producto/:slug" element={<ProductoDetalle />} />
-          <Route path="/notas" element={<Notas />} />
-          <Route path="/notas/:slug" element={<NotaDetalle />} />
-          <Route path="/reprocann" element={<Reprocann />} />
-          <Route path="/carrito" element={<Carrito />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </CartProvider>
+    <WishlistProvider>
+      <CartProvider>
+        <ScrollToTop />
+        <Routes>
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/semillas" element={<Semillas />} />
+            <Route path="/esquejes" element={<Esquejes />} />
+            <Route path="/producto/:slug" element={<ProductoDetalle />} />
+            <Route path="/notas" element={<Notas />} />
+            <Route path="/notas/:slug" element={<NotaDetalle />} />
+            <Route path="/reprocann" element={<Reprocann />} />
+            <Route path="/carrito" element={<Carrito />} />
+            <Route path="/favoritos" element={<Favoritos />} />
+            <Route path="/cuenta" element={<Cuenta />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/terminos" element={<Politica kind="terminos" />} />
+            <Route path="/privacidad" element={<Politica kind="privacidad" />} />
+            <Route path="/envios" element={<Politica kind="envios" />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </CartProvider>
+    </WishlistProvider>
   );
 }

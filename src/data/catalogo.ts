@@ -29,6 +29,8 @@ export interface Producto {
   precio: number;
   stock: number;
   presentacion: string;
+  /** Imagen aprobada/entregada por el cliente. Sin valor se usa arte neutro de catálogo. */
+  imagen?: string;
   /**
    * Si aparece o no en la vidriera pública. Hoy arranca en `true` para todo lo
    * que tiene stock — el criterio final es la decisión D-04 del SPEC, que Eliana
@@ -182,6 +184,13 @@ const FILAS: Fila[] = [
   ["Deep Mandarine CBD", "Delicious Seeds", "importada", "cbd", "hibrida", 12000, 0, "x3"],
 ];
 
+const IMAGENES_POR_NOMBRE: Record<string, string> = {
+  "0G 324": "/products/og-324.jpg",
+  "Choco OG x3": "/products/choco-og.png",
+  "Onora x5": "/products/onora.png",
+  "Santanesia x5": "/products/santanesia.png",
+};
+
 export const SEMILLAS: Producto[] = FILAS.map(([nombre, banco, origen, tipo, genetica, precio, stock, presentacion], i) => ({
   id: `sem-${i + 1}`,
   slug: slugify(`${nombre}-${banco}`),
@@ -194,7 +203,9 @@ export const SEMILLAS: Producto[] = FILAS.map(([nombre, banco, origen, tipo, gen
   precio,
   stock,
   presentacion,
+  imagen: IMAGENES_POR_NOMBRE[nombre],
   visible_web: stock > 0,
+  destacado: stock >= 50,
 }));
 
 export const ESQUEJES: Producto[] = [

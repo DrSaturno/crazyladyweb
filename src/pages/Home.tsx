@@ -1,295 +1,284 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ShieldCheck, Truck, Sprout, MessageCircle, ArrowRight, Scissors, FileText } from "lucide-react";
-import ProductCard from "../components/ProductCard";
-import BancosRow from "../components/BancosRow";
 import {
-  SEMILLAS,
-  ESQUEJES,
-  disponibles,
-  esInase,
-  TIPO_LABEL,
-  type TipoSemilla,
-} from "../data/catalogo";
+  ArrowRight,
+  BookOpen,
+  CircleHelp,
+  CreditCard,
+  FileCheck2,
+  Globe2,
+  HeartHandshake,
+  Leaf,
+  Mail,
+  MessageCircle,
+  Scissors,
+  ShieldCheck,
+  Sparkles,
+  Sprout,
+  Stethoscope,
+  Sun,
+  Truck,
+  UsersRound,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import BancosRow from "../components/BancosRow";
+import ProductCard from "../components/ProductCard";
+import { ESQUEJES, SEMILLAS, disponibles, esInase } from "../data/catalogo";
 import { NOTAS } from "../data/notas";
 
-const SELLOS = [
-  { icon: ShieldCheck, titulo: "Registro INASE", texto: "Licencias INASE y ARICCAME vigentes" },
-  { icon: Sprout, titulo: "Garantía de germinación", texto: "Si no germina, lo resolvemos" },
-  { icon: Truck, titulo: "Envíos a todo el país", texto: "Por Andreani, despacho en 48hs" },
-  { icon: MessageCircle, titulo: "Asesoramiento real", texto: "Te ayudamos a elegir y a cultivar" },
+const BENEFICIOS = [
+  { icon: Truck, title: "Envíos discretos", text: "a todo el país" },
+  { icon: ShieldCheck, title: "Genéticas certificadas", text: "por INASE" },
+  { icon: MessageCircle, title: "Asesoramiento", text: "real y personalizado" },
+  { icon: CreditCard, title: "Múltiples medios", text: "de pago" },
+  { icon: UsersRound, title: "Comunidad", text: "que te acompaña" },
+  { icon: Leaf, title: "Cultivo responsable", text: "y consciente" },
 ];
 
-type FiltroHome = "todas" | TipoSemilla;
+const ACCESOS = [
+  { title: "INASE", text: "Genéticas certificadas y con respaldo oficial.", cta: "Ver genéticas", to: "/semillas?origen=nacional", icon: ShieldCheck, color: "bg-[#CDE0C5]" },
+  { title: "Esquejes", text: "Clones listos para arrancar con ventaja.", cta: "Ver esquejes", to: "/esquejes", icon: Sprout, color: "bg-[#F4D4B5]" },
+  { title: "Seeds", text: "Bancos nacionales e importados en un solo lugar.", cta: "Ver semillas", to: "/semillas", icon: Leaf, color: "bg-[#F6DEB0]" },
+  { title: "REPROCANN", text: "Información clara para iniciar tu trámite.", cta: "Te asesoramos", to: "/reprocann", icon: FileCheck2, color: "bg-[#CDE0C5]" },
+];
+
+const FAQS = [
+  { q: "¿Hacen envíos a todo el país?", a: "Sí. Despachamos por Andreani y el costo se calcula según tu código postal. El embalaje es discreto y protege la trazabilidad del pedido." },
+  { q: "¿Las semillas son originales?", a: "Trabajamos con bancos de origen declarado y mostramos el banco obtentor en cada ficha. Las genéticas registradas llevan su identificación INASE." },
+  { q: "¿Qué es el REPROCANN?", a: "Es el registro nacional para personas autorizadas al cultivo con fines medicinales. Crazy Lady Seeds brinda información y deriva el trámite a profesionales especializados." },
+  { q: "¿Cómo elijo la genética ideal para mí?", a: "Empezá por espacio, experiencia, tiempo de cultivo y objetivo. Podés usar los filtros o hablar con Emma para comparar opciones disponibles." },
+];
+
+const ARTICLE_ICONS = [Sprout, Sun, Leaf, BookOpen];
 
 export default function Home() {
-  const [filtro, setFiltro] = useState<FiltroHome>("todas");
-
+  const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
+  const [email, setEmail] = useState("");
+  const [suscripto, setSuscripto] = useState(false);
   const conStock = disponibles();
-  const grilla = (filtro === "todas" ? conStock : conStock.filter((p) => p.tipo === filtro)).slice(0, 8);
-  const inaseDestacadas = SEMILLAS.filter((p) => esInase(p.banco) && p.stock > 0).slice(0, 4);
-  const notasBlog = NOTAS.filter((n) => n.tipo === "guia").slice(0, 3);
-  const notasProblema = NOTAS.filter((n) => n.tipo === "problema").slice(0, 2);
+  const masVendidas = conStock.slice(0, 5);
+  const seleccion = conStock.slice(5, 10);
+  const inaseCount = SEMILLAS.filter((product) => product.stock > 0 && esInase(product.banco)).length;
+  const notas = NOTAS.filter((nota) => nota.tipo === "guia").slice(0, 4);
 
   return (
-    <>
-      {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-navy-500">
-        <div className="absolute inset-0 bg-cls-gradient opacity-[0.07]" />
-        <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-cls-green/15 text-cls-green border border-cls-green/30">
-              <ShieldCheck className="w-3 h-3" /> Genéticas registradas · Registro N° 12665
-            </span>
-            <h1 className="mt-5 text-4xl md:text-6xl font-black text-white leading-[1.05]">
-              Sembrando <span className="cls-wordmark">felicidad</span>
-            </h1>
-            <p className="mt-5 text-base md:text-lg text-white/60 leading-relaxed">
-              Semillas y esquejes de genéticas registradas, de bancos nacionales e importados.
-              Te acompañamos desde la elección hasta la cosecha.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/semillas"
-                className="inline-flex items-center gap-2 bg-cls-primary hover:bg-cls-primary-dark text-white font-bold text-sm px-6 py-3.5 rounded-xl transition"
-              >
-                Ver el catálogo <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                to="/notas"
-                className="inline-flex items-center gap-2 border border-navy-500 hover:border-white/40 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition"
-              >
-                ¿Primera vez cultivando?
-              </Link>
+    <div className="pb-8">
+      <section className="site-container pt-3" aria-labelledby="hero-title">
+        <div className="hero-rays paper-grain relative min-h-[430px] overflow-hidden rounded-[30px] border-[5px] border-cls-paper shadow-lift md:min-h-[390px]">
+          <div className="absolute inset-0 bg-cls-primary/10" />
+          <Sparkles className="absolute left-[42%] top-7 h-9 w-9 text-cls-honey" aria-hidden="true" />
+          <Sparkles className="absolute bottom-12 left-[47%] h-6 w-6 text-cls-paper" aria-hidden="true" />
+          <div className="relative z-10 grid min-h-[430px] items-center gap-4 px-6 py-10 md:min-h-[390px] md:grid-cols-[1.05fr_0.95fr] md:px-10 lg:px-14">
+            <div className="relative z-20 max-w-[660px] text-cls-paper drop-shadow-[0_2px_6px_rgba(12,56,44,0.32)]">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-cls-honey">Semillas y esquejes registrados</p>
+              <h1 id="hero-title" className="font-serif text-[52px] font-black leading-[0.82] tracking-[-0.06em] text-[#FBE8C8] sm:text-7xl lg:text-[92px]">
+                Sembrando<br />felicidad
+              </h1>
+              <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-cls-paper/90 md:text-base">
+                Genéticas nacionales e importadas con origen claro. Te acompañamos desde la elección hasta la cosecha.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <Link to="/semillas" className="btn-primary">Ver el catálogo <ArrowRight className="h-4 w-4" /></Link>
+                <Link to="/notas/primer-cultivo-por-donde-arrancar" className="btn-outline border-cls-paper bg-cls-paper/95">¿Primera vez cultivando?</Link>
+              </div>
+            </div>
+
+            <div className="pointer-events-none absolute -bottom-24 right-[-92px] z-0 h-[390px] w-[390px] rounded-full bg-cls-sage/80 opacity-45 sm:right-[-30px] md:-bottom-24 md:right-[-30px] md:h-[500px] md:w-[500px] md:opacity-100 lg:right-5">
+              <img src="/mascot-cls-05.png" alt="Ilustración de la guardiana de Crazy Lady Seeds" className="absolute left-1/2 top-1/2 w-[112%] max-w-none -translate-x-1/2 -translate-y-[54%] drop-shadow-[0_12px_0_rgba(12,56,44,0.12)]" />
+              <div className="absolute right-10 top-16 hidden rotate-6 rounded-[42%] bg-cls-paper px-6 py-4 text-center font-serif text-xl font-black leading-[0.9] text-cls-primary-dark shadow-md md:block">
+                Same seeds,<br />brighter days
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── SELLOS DE CONFIANZA ──────────────────────────────────────── */}
-      <section className="border-b border-navy-500 bg-navy-800">
-        <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {SELLOS.map((s) => (
-            <div key={s.titulo} className="flex items-start gap-3">
-              <s.icon className="w-5 h-5 text-cls-green flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-white leading-tight">{s.titulo}</p>
-                <p className="text-[11px] text-white/45 mt-0.5 leading-snug">{s.texto}</p>
-              </div>
+      <section aria-label="Beneficios de comprar en Crazy Lady Seeds" className="site-container mt-3">
+        <div className="grid grid-cols-2 gap-y-4 rounded-2xl border border-cls-line bg-cls-paper px-4 py-4 shadow-[0_3px_12px_rgba(23,53,44,0.04)] sm:grid-cols-3 lg:grid-cols-6">
+          {BENEFICIOS.map(({ icon: Icon, title, text }) => (
+            <div key={title} className="flex min-w-0 items-center gap-2.5 border-cls-line px-2 lg:border-r lg:last:border-r-0">
+              <Icon className="h-7 w-7 shrink-0 text-cls-primary" strokeWidth={1.7} aria-hidden="true" />
+              <p className="text-[11px] leading-tight text-cls-ink/75"><strong className="block text-cls-primary-dark">{title}</strong>{text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── BANCOS — segunda sección, pedido de Nico ─────────────────── */}
       <BancosRow />
 
-      {/* ── DISPONIBLES AHORA ────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-12 border-t border-navy-500">
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-xl md:text-2xl font-black text-white">Disponibles ahora</h2>
-            <p className="text-sm text-white/50 mt-1">Con stock real, listas para despachar.</p>
+      <section className="site-container mt-3 grid grid-cols-2 gap-2 md:grid-cols-4" aria-label="Categorías destacadas">
+        {ACCESOS.map(({ title, text, cta, to, icon: Icon, color }) => (
+          <Link key={title} to={to} className={`${color} group relative min-h-[150px] overflow-hidden rounded-2xl border border-cls-line p-4 transition hover:-translate-y-0.5 hover:shadow-lift md:min-h-[178px] md:p-5`}>
+            <Icon className="absolute -bottom-5 -right-2 h-28 w-28 rotate-[-8deg] text-cls-primary/30 transition duration-300 group-hover:rotate-0 group-hover:scale-105" strokeWidth={1.4} aria-hidden="true" />
+            <h2 className="relative text-3xl font-black leading-none text-cls-primary-dark">{title}</h2>
+            <p className="relative mt-2 max-w-[14rem] text-xs leading-snug text-cls-ink/75 md:text-sm">{text}</p>
+            <span className="btn-secondary relative mt-4 min-h-9 px-4 py-1.5 text-xs">{cta} <ArrowRight className="h-3.5 w-3.5" /></span>
+          </Link>
+        ))}
+      </section>
+
+      <section className="site-container mt-3 grid gap-3 xl:grid-cols-2" aria-label="Productos destacados">
+        <ProductShelf title="Más vendidas" subtitle="Lo que más elige la comunidad." icon={Sparkles} products={masVendidas} href="/semillas?stock=1" />
+        <ProductShelf title="Elegidas esta semana" subtitle="10% OFF pagando por transferencia." icon={Sun} products={seleccion} href="/semillas?stock=1" accent />
+      </section>
+
+      <section id="principiantes" className="site-container mt-3 grid gap-3 lg:grid-cols-2">
+        <div className="section-shell p-3 md:p-4">
+          <div className="mb-3 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="section-heading flex items-center gap-2"><BookOpen className="h-6 w-6" aria-hidden="true" /> Para principiantes</h2>
+              <p className="mt-1 text-xs text-cls-ink/65">Todo lo que necesitás para empezar con confianza.</p>
+            </div>
+            <Link to="/notas" className="text-xs font-bold text-cls-primary hover:text-cls-orange">Ver todas →</Link>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {(["todas", "feminizada", "automatica", "cbd"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFiltro(f)}
-                className={`text-xs font-bold px-3.5 py-2 rounded-full border transition ${
-                  filtro === f
-                    ? "border-cls-primary bg-cls-primary/15 text-cls-primary"
-                    : "border-navy-500 text-white/50 hover:text-white"
-                }`}
-              >
-                {f === "todas" ? "Todas" : TIPO_LABEL[f]}
-              </button>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            {notas.map((nota, index) => {
+              const Icon = ARTICLE_ICONS[index % ARTICLE_ICONS.length];
+              return (
+                <Link key={nota.slug} to={`/notas/${nota.slug}`} className="group overflow-hidden rounded-xl border border-cls-line bg-cls-paper">
+                  <div className={`flex aspect-[4/3] items-center justify-center ${index % 2 ? "bg-[#EEC49D]" : "bg-cls-sage"}`}>
+                    <Icon className="h-12 w-12 text-cls-primary transition group-hover:scale-110" strokeWidth={1.3} aria-hidden="true" />
+                  </div>
+                  <div className="p-2.5">
+                    <h3 className="line-clamp-3 font-sans text-xs font-bold leading-snug text-cls-primary-dark">{nota.titulo}</h3>
+                    <ArrowRight className="ml-auto mt-2 h-4 w-4 text-cls-primary" aria-hidden="true" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <div id="comunidad" className="grid gap-3 sm:grid-cols-2">
+          <Link to="/notas" className="relative min-h-[178px] overflow-hidden rounded-2xl border border-cls-line bg-[#F2C08E] p-5 sm:col-span-2">
+            <HeartHandshake className="absolute -bottom-7 right-4 h-36 w-36 text-cls-primary/25" strokeWidth={1.25} aria-hidden="true" />
+            <p className="eyebrow">Fundación</p>
+            <h2 className="mt-1 max-w-sm text-3xl font-black leading-none">Comunidad de cultivadoras</h2>
+            <p className="mt-2 max-w-md text-sm text-cls-ink/70">Más plantas, más libertad. Construyendo un futuro verde e inclusivo.</p>
+            <span className="btn-secondary mt-4 min-h-9 px-4 py-1.5 text-xs">Conocé la comunidad <ArrowRight className="h-3.5 w-3.5" /></span>
+          </Link>
+          <div className="min-h-[160px] rounded-2xl border border-cls-line bg-cls-primary p-5 text-cls-paper">
+            <Globe2 className="h-8 w-8 text-cls-honey" aria-hidden="true" />
+            <h3 className="mt-3 text-2xl font-black leading-none text-cls-paper">Comunidad</h3>
+            <p className="mt-2 text-xs leading-relaxed text-cls-paper/75">Compartí experiencias y resolvé dudas en compañía.</p>
+          </div>
+          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="min-h-[160px] rounded-2xl border border-cls-line bg-cls-sage p-5 text-left transition hover:-translate-y-0.5 hover:shadow-lift">
+            <Stethoscope className="h-8 w-8 text-cls-primary" aria-hidden="true" />
+            <h3 className="mt-3 text-2xl font-black leading-none">Plant Doctor</h3>
+            <p className="mt-2 text-xs leading-relaxed text-cls-ink/70">Contale a Emma qué le pasa a tu planta.</p>
+          </button>
+        </div>
+      </section>
+
+      <section className="site-container mt-3 grid gap-3 lg:grid-cols-2">
+        <div className="section-shell p-3 md:p-4">
+          <div className="mb-3 flex items-end justify-between">
+            <div>
+              <h2 className="section-heading">El diario de Crazy Lady</h2>
+              <p className="mt-1 text-xs text-cls-ink/65">Historias, guías y novedades del cultivo.</p>
+            </div>
+            <Link to="/notas" className="text-xs font-bold text-cls-primary hover:text-cls-orange">Ver todas →</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            {notas.map((nota, index) => {
+              const Icon = ARTICLE_ICONS[(index + 1) % ARTICLE_ICONS.length];
+              return (
+                <Link key={nota.slug} to={`/notas/${nota.slug}`} className="group overflow-hidden rounded-xl border border-cls-line bg-cls-paper">
+                  <div className="flex aspect-[16/10] items-center justify-center bg-cls-primary/10">
+                    <Icon className="h-10 w-10 text-cls-primary transition group-hover:scale-110" strokeWidth={1.4} />
+                  </div>
+                  <div className="p-2.5">
+                    <h3 className="line-clamp-3 font-sans text-xs font-bold leading-snug">{nota.titulo}</h3>
+                    <p className="mt-2 text-[10px] text-cls-ink/55">{nota.minutos} min de lectura</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="section-shell p-5 md:p-6">
+          <div className="flex items-start gap-4">
+            <UsersRound className="h-9 w-9 shrink-0 text-cls-primary" aria-hidden="true" />
+            <div>
+              <p className="eyebrow">Lo que construimos</p>
+              <h2 className="section-heading mt-1">Una compra acompañada</h2>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {["Origen y trazabilidad visibles", "Asesoramiento antes y después", "Información clara para decidir"].map((text) => (
+              <div key={text} className="rounded-xl border border-cls-line bg-cls-cream p-4 text-sm font-bold leading-snug text-cls-primary-dark">
+                <Sparkles className="mb-3 h-5 w-5 text-cls-orange" aria-hidden="true" />{text}
+              </div>
             ))}
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {grilla.map((p) => (
-            <ProductCard key={p.id} producto={p} />
-          ))}
-        </div>
-        <div className="mt-6 text-center">
-          <Link to="/semillas" className="text-sm font-bold text-cls-primary hover:text-white transition">
-            Ver las {conStock.length} disponibles →
-          </Link>
+          <p className="mt-4 text-xs text-cls-ink/60">Las reseñas se publicarán únicamente cuando existan testimonios reales y autorizados.</p>
         </div>
       </section>
 
-      {/* ── GENÉTICAS INASE ──────────────────────────────────────────── */}
-      {inaseDestacadas.length > 0 && (
-        <section className="border-y border-navy-500 bg-navy-800">
-          <div className="max-w-7xl mx-auto px-4 py-12">
-            <div className="flex items-end justify-between mb-6">
-              <div>
-                <h2 className="text-xl md:text-2xl font-black text-white flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-cls-green" /> Genéticas registradas INASE
-                </h2>
-                <p className="text-sm text-white/50 mt-1">
-                  Obtentor identificable, características declaradas y trazabilidad.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {inaseDestacadas.map((p) => (
-                <ProductCard key={p.id} producto={p} />
-              ))}
-            </div>
+      <section className="site-container mt-3 grid gap-3 lg:grid-cols-2">
+        <div id="faq" className="section-shell p-4 md:p-5">
+          <div className="mb-4 flex items-center gap-3">
+            <CircleHelp className="h-7 w-7 text-cls-primary" aria-hidden="true" />
+            <div><h2 className="section-heading">Preguntas frecuentes</h2><p className="mt-1 text-xs text-cls-ink/60">Resolvemos tus dudas.</p></div>
           </div>
-        </section>
-      )}
-
-      {/* ── RECOMENDACIONES — «problema → causa → producto» ──────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="mb-6">
-          <h2 className="text-xl md:text-2xl font-black text-white">¿Se te complicó el cultivo?</h2>
-          <p className="text-sm text-white/50 mt-1">
-            Los problemas más comunes, qué los causa y qué hacer. Sin vueltas.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {notasProblema.map((n) => (
-            <Link
-              key={n.slug}
-              to={`/notas/${n.slug}`}
-              className="group bg-navy-800 border border-navy-500 rounded-2xl p-6 hover:border-cls-green/50 transition-colors"
-            >
-              <div className="flex items-start gap-4">
-                <span className="text-3xl flex-shrink-0">{n.emoji}</span>
-                <div className="min-w-0">
-                  <h3 className="text-base font-bold text-white group-hover:text-cls-green transition-colors">
-                    {n.titulo}
-                  </h3>
-                  <p className="text-sm text-white/50 mt-1.5 leading-relaxed">{n.bajada}</p>
-                  <p className="text-xs font-bold text-cls-green mt-3 inline-flex items-center gap-1">
-                    Ver qué hacer <ArrowRight className="w-3 h-3" />
-                  </p>
+          <div className="divide-y divide-cls-line border-y border-cls-line">
+            {FAQS.map((item, index) => {
+              const open = faqAbierta === index;
+              return (
+                <div key={item.q}>
+                  <button onClick={() => setFaqAbierta(open ? null : index)} className="flex min-h-11 w-full items-center justify-between gap-4 py-2.5 text-left text-sm font-bold text-cls-primary-dark" aria-expanded={open}>
+                    {item.q}<span className="text-xl font-normal" aria-hidden="true">{open ? "−" : "+"}</span>
+                  </button>
+                  {open && <p className="pb-4 pr-8 text-sm leading-relaxed text-cls-ink/70">{item.a}</p>}
                 </div>
-              </div>
-            </Link>
-          ))}
+              );
+            })}
+          </div>
         </div>
-      </section>
 
-      {/* ── ESQUEJES ─────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-12 border-t border-navy-500">
-        <div className="bg-navy-800 border border-navy-500 rounded-3xl overflow-hidden">
-          <div className="grid md:grid-cols-2">
-            <div className="p-8 md:p-10 flex flex-col justify-center">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-cls-primary/15 text-cls-primary border border-cls-primary/30 w-fit">
-                <Scissors className="w-3 h-3" /> Esquejes
-              </span>
-              <h2 className="mt-4 text-2xl md:text-3xl font-black text-white leading-tight">
-                Arrancá con una planta, no con una semilla
-              </h2>
-              <p className="mt-3 text-sm text-white/60 leading-relaxed">
-                Variedades registradas y de selección propia de la casa. El esqueje es un clon de una
-                madre seleccionada: ya sabés exactamente qué vas a obtener, y te salteás la germinación.
-              </p>
-              <Link
-                to="/esquejes"
-                className="mt-6 inline-flex items-center gap-2 bg-cls-primary hover:bg-cls-primary-dark text-white font-bold text-sm px-5 py-3 rounded-xl transition w-fit"
-              >
-                Ver esquejes disponibles <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="p-8 md:p-10 bg-navy-700/50 grid grid-cols-2 gap-4 content-center">
-              {ESQUEJES.slice(0, 2).map((e) => (
-                <ProductCard key={e.id} producto={e} />
-              ))}
-            </div>
+        <div id="newsletter" className="retro-wave section-shell relative overflow-hidden p-6 md:p-8">
+          <div className="relative z-10 max-w-lg">
+            <Mail className="h-8 w-8 text-cls-primary" aria-hidden="true" />
+            <h2 className="mt-3 text-3xl font-black leading-none">Sumate a nuestra comunidad y recibí novedades.</h2>
+            <p className="mt-2 text-sm text-cls-ink/70">Stock nuevo, guías y beneficios, sin llenar tu bandeja.</p>
+            {suscripto ? (
+              <p role="status" className="mt-5 rounded-xl bg-cls-primary px-4 py-3 text-sm font-bold text-cls-paper">El formulario está validado. La suscripción se activará al conectar el backend.</p>
+            ) : (
+              <form className="mt-5" onSubmit={(event) => { event.preventDefault(); if (email.trim()) setSuscripto(true); }}>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="flex-1"><label htmlFor="newsletter-email" className="sr-only">Correo electrónico</label><input id="newsletter-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Tu email…" className="h-11 w-full rounded-full border border-cls-primary bg-cls-paper px-4 text-sm outline-none focus:ring-2 focus:ring-cls-honey" /></div>
+                  <button className="btn-primary" type="submit">Suscribirme</button>
+                </div>
+                <label className="mt-3 flex items-start gap-2 text-[11px] text-cls-ink/65"><input required type="checkbox" className="mt-0.5 h-4 w-4 accent-cls-primary" /> Acepto recibir comunicaciones de Crazy Lady Seeds. Puedo cancelar cuando quiera.</label>
+              </form>
+            )}
           </div>
         </div>
       </section>
 
-      {/* ── BANNER REPROCANN → página interna ───────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-6">
-        <Link
-          to="/reprocann"
-          className="group block relative overflow-hidden rounded-3xl border border-navy-500 bg-navy-800 hover:border-cls-green/50 transition-colors"
-        >
-          <div className="absolute inset-0 bg-cls-gradient opacity-[0.08] group-hover:opacity-[0.14] transition-opacity" />
-          <div className="relative p-8 md:p-10 flex flex-col md:flex-row md:items-center gap-6">
-            <FileText className="w-12 h-12 text-cls-green flex-shrink-0" />
-            <div className="flex-1">
-              <h2 className="text-xl md:text-2xl font-black text-white">Tramitá tu REPROCANN</h2>
-              <p className="text-sm text-white/60 mt-2 max-w-2xl leading-relaxed">
-                El Registro del Programa de Cannabis te habilita al autocultivo con fines medicinales.
-                Trabajamos con un equipo especializado que se encarga del trámite de punta a punta.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 bg-cls-green hover:bg-cls-green-dark text-black font-bold text-sm px-5 py-3 rounded-xl transition flex-shrink-0">
-              Cómo tramitarlo <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
-        </Link>
+      <section className="site-container mt-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cls-line bg-cls-sage px-5 py-4 text-sm">
+          <p className="font-bold text-cls-primary-dark"><Scissors className="mr-2 inline h-5 w-5" aria-hidden="true" /> También trabajamos con esquejes seleccionados.</p>
+          <p className="text-cls-ink/70">{ESQUEJES.filter((item) => item.stock > 0).length} variedad disponible · {inaseCount} genéticas INASE con stock</p>
+        </div>
       </section>
+    </div>
+  );
+}
 
-      {/* ── EL DIARIO ÍNTIMO DE CRAZY LADY (blog) ───────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <h2 className="text-xl md:text-2xl font-black text-white">El diario íntimo de Crazy Lady</h2>
-            <p className="text-sm text-white/50 mt-1">Notas de cultivo, sin humo y sin vueltas.</p>
-          </div>
-          <Link to="/notas" className="text-xs font-bold text-cls-primary hover:text-white transition whitespace-nowrap">
-            Ver todas →
-          </Link>
+function ProductShelf({ title, subtitle, icon: Icon, products, href, accent = false }: { title: string; subtitle: string; icon: typeof Sparkles; products: typeof SEMILLAS; href: string; accent?: boolean }) {
+  return (
+    <div className="section-shell p-3 md:p-4">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="section-heading flex items-center gap-2"><Icon className={`h-6 w-6 ${accent ? "text-cls-orange" : "text-cls-honey"}`} fill="currentColor" aria-hidden="true" />{title}</h2>
+          <p className="mt-1 text-xs text-cls-ink/65">{subtitle}</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {notasBlog.map((n) => (
-            <Link
-              key={n.slug}
-              to={`/notas/${n.slug}`}
-              className="group bg-navy-800 border border-navy-500 rounded-2xl overflow-hidden hover:border-cls-primary/50 transition-colors flex flex-col"
-            >
-              <div className="aspect-[16/9] bg-navy-700 flex items-center justify-center text-5xl">
-                {n.emoji}
-              </div>
-              <div className="p-5 flex flex-col flex-1">
-                <p className="text-[10px] text-white/40 uppercase tracking-wider">
-                  {n.fecha} · {n.minutos} min
-                </p>
-                <h3 className="text-sm font-bold text-white mt-2 leading-snug group-hover:text-cls-primary transition-colors">
-                  {n.titulo}
-                </h3>
-                <p className="text-xs text-white/50 mt-2 leading-relaxed line-clamp-3">{n.bajada}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ── SUSCRIPCIÓN ──────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="bg-navy-800 border border-navy-500 rounded-3xl p-8 md:p-10 text-center">
-          <h2 className="text-xl md:text-2xl font-black text-white">Enterate antes que el resto</h2>
-          <p className="text-sm text-white/50 mt-2 max-w-xl mx-auto">
-            Stock nuevo, genéticas exclusivas y notas de cultivo. Sin spam.
-          </p>
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-          >
-            <input
-              type="email"
-              required
-              placeholder="tu@email.com"
-              className="flex-1 bg-navy-900 border border-navy-500 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-cls-primary"
-            />
-            <button
-              type="submit"
-              className="bg-cls-primary hover:bg-cls-primary-dark text-white font-bold text-sm px-6 py-3 rounded-xl transition"
-            >
-              Suscribirme
-            </button>
-          </form>
-        </div>
-      </section>
-    </>
+        <Link to={href} className="shrink-0 text-xs font-bold text-cls-primary hover:text-cls-orange">Ver todas →</Link>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+        {products.map((product) => <ProductCard key={product.id} producto={product} compact />)}
+      </div>
+    </div>
   );
 }

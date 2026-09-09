@@ -1,133 +1,55 @@
-import { Link, useParams, Navigate } from "react-router-dom";
-import { ChevronLeft, AlertCircle, ArrowRight } from "lucide-react";
-import { getNota, NOTAS } from "../data/notas";
-import { getProducto, precioARS } from "../data/catalogo";
+import { AlertCircle, ArrowRight, BookOpen, ChevronLeft, Leaf, MessageCircle } from "lucide-react";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { getProducto, precioARS } from "../data/catalogo";
+import { getNota, NOTAS } from "../data/notas";
 
-/** Renderiza los **negrita** del cuerpo sin traer una librería de markdown entera. */
-function Parrafo({ texto }: { texto: string }) {
-  const partes = texto.split(/(\*\*[^*]+\*\*)/g);
+function Paragraph({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return (
-    <p className="text-[15px] text-white/70 leading-[1.8]">
-      {partes.map((p, i) =>
-        p.startsWith("**") && p.endsWith("**") ? (
-          <strong key={i} className="text-white font-bold">
-            {p.slice(2, -2)}
-          </strong>
-        ) : (
-          <span key={i}>{p}</span>
-        )
-      )}
+    <p className="text-[15px] leading-[1.85] text-cls-ink/75 md:text-base">
+      {parts.map((part, index) => part.startsWith("**") && part.endsWith("**") ? <strong key={index} className="font-bold text-cls-primary-dark">{part.slice(2, -2)}</strong> : <span key={index}>{part}</span>)}
     </p>
   );
 }
 
 export default function NotaDetalle() {
   const { slug } = useParams();
-  const nota = slug ? getNota(slug) : undefined;
+  const note = slug ? getNota(slug) : undefined;
   const { agregar } = useCart();
+  if (!note) return <Navigate to="/notas" replace />;
 
-  if (!nota) return <Navigate to="/notas" replace />;
-
-  const recomendado = nota.productoRecomendado ? getProducto(nota.productoRecomendado) : undefined;
-  const otras = NOTAS.filter((n) => n.slug !== nota.slug).slice(0, 3);
+  const recommended = note.productoRecomendado ? getProducto(note.productoRecomendado) : undefined;
+  const others = NOTAS.filter((item) => item.slug !== note.slug).slice(0, 3);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <Link
-        to="/notas"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-white/50 hover:text-white transition mb-6"
-      >
-        <ChevronLeft className="w-4 h-4" /> El diario de Crazy Lady
-      </Link>
+    <div className="site-container py-8 md:py-12">
+      <Link to="/notas" className="inline-flex min-h-10 items-center gap-1.5 text-xs font-bold text-cls-primary hover:text-cls-orange"><ChevronLeft className="h-4 w-4" /> El diario de Crazy Lady</Link>
 
-      <article>
-        <header className="mb-8">
-          <div className="text-6xl mb-5">{nota.emoji}</div>
-          <p className="text-[11px] text-white/40 uppercase tracking-wider">
-            {nota.fecha} · {nota.minutos} min de lectura
-          </p>
-          <h1 className="text-3xl md:text-4xl font-black text-white mt-3 leading-tight">{nota.titulo}</h1>
-          <p className="text-lg text-white/60 mt-4 leading-relaxed">{nota.bajada}</p>
+      <article className="mx-auto mt-3 max-w-4xl">
+        <header className="overflow-hidden rounded-[28px] border border-cls-line bg-cls-sage p-6 md:p-10">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cls-primary text-cls-paper"><BookOpen className="h-6 w-6" /></span>
+          <p className="eyebrow mt-6">{note.fecha} · {note.minutos} min de lectura</p>
+          <h1 className="display-title mt-3 text-4xl leading-[0.98] md:text-6xl">{note.titulo}</h1>
+          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-cls-ink/70">{note.bajada}</p>
         </header>
 
-        {/* Bloque de causa — solo en notas «problema → causa → producto» */}
-        {nota.causa && (
-          <div className="bg-navy-800 border-l-4 border-cls-green rounded-r-2xl p-5 mb-8">
-            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cls-green mb-2">
-              <AlertCircle className="w-3.5 h-3.5" /> Causa más probable
-            </p>
-            <p className="text-sm text-white/80 leading-relaxed">{nota.causa}</p>
-          </div>
+        {note.causa && <aside className="mt-5 rounded-2xl border-l-4 border-cls-orange bg-cls-paper p-5 shadow-paper"><p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-cls-orange"><AlertCircle className="h-4 w-4" /> Causa más probable</p><p className="mt-2 text-sm leading-relaxed text-cls-ink/75">{note.causa}</p></aside>}
+
+        <div className="mx-auto mt-8 max-w-3xl space-y-6">{note.cuerpo.map((paragraph, index) => <Paragraph key={index} text={paragraph} />)}</div>
+
+        {recommended && (
+          <section className="mt-10 grid gap-5 overflow-hidden rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:grid-cols-[120px_minmax(0,1fr)_auto] sm:items-center sm:p-5">
+            <div className="product-art flex aspect-square items-center justify-center overflow-hidden rounded-xl">{recommended.imagen ? <img src={recommended.imagen} alt={`Presentación de ${recommended.nombre}`} className="h-full w-full object-cover" /> : <Leaf className="h-12 w-12 text-cls-primary" strokeWidth={1.4} />}</div>
+            <div><p className="eyebrow">Producto relacionado</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-cls-ink/50">{recommended.banco}</p><Link to={`/producto/${recommended.slug}`} className="mt-1 block text-lg font-bold text-cls-primary-dark hover:text-cls-orange">{recommended.nombre}</Link><p className="mt-1 text-xl font-black text-cls-primary-dark">{precioARS(recommended.precio)}</p></div>
+            <button onClick={() => agregar(recommended)} disabled={!recommended.stock} className="btn-primary sm:min-w-40">{recommended.stock ? "Sumar al carrito" : "Sin stock"}</button>
+          </section>
         )}
 
-        <div className="space-y-5">
-          {nota.cuerpo.map((p, i) => (
-            <Parrafo key={i} texto={p} />
-          ))}
-        </div>
-
-        {/* Producto recomendado, con agregar al carrito desde la nota (propuesta §2.1) */}
-        {recomendado && (
-          <div className="mt-10 bg-navy-800 border border-navy-500 rounded-2xl p-6">
-            <p className="text-[10px] font-black uppercase tracking-widest text-cls-primary mb-4">
-              Lo que te recomendamos
-            </p>
-            <div className="flex flex-wrap items-center gap-5">
-              <div className="w-20 h-20 bg-navy-700 rounded-xl flex items-center justify-center text-3xl flex-shrink-0">
-                🌱
-              </div>
-              <div className="flex-1 min-w-[180px]">
-                <p className="text-[10px] text-white/40 uppercase tracking-wider">{recomendado.banco}</p>
-                <Link
-                  to={`/producto/${recomendado.slug}`}
-                  className="text-base font-bold text-white hover:text-cls-primary transition"
-                >
-                  {recomendado.nombre}
-                </Link>
-                <p className="text-lg font-black text-white mt-1">{precioARS(recomendado.precio)}</p>
-              </div>
-              <button
-                onClick={() => agregar(recomendado)}
-                disabled={recomendado.stock === 0}
-                className="bg-cls-primary hover:bg-cls-primary-dark disabled:opacity-30 text-white font-bold text-sm px-5 py-3 rounded-xl transition"
-              >
-                {recomendado.stock === 0 ? "Sin stock" : "Agregar al carrito"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Cierre — el bot como siguiente paso */}
-        <div className="mt-10 bg-navy-800 border border-navy-500 rounded-2xl p-6">
-          <p className="text-sm text-white/70 leading-relaxed">
-            <span className="font-bold text-white">¿Te quedó alguna duda?</span> Abrí el chat acá abajo
-            y contame tu caso — te ayudo a elegir la genética según tu espacio y tu experiencia.
-          </p>
-        </div>
+        <section className="mt-5 flex flex-col justify-between gap-4 rounded-2xl bg-cls-primary p-6 text-cls-paper sm:flex-row sm:items-center"><div><h2 className="font-sans text-base font-bold text-cls-paper">¿Te quedó alguna duda?</h2><p className="mt-1 text-sm text-cls-paper/70">Contale a Emma tu espacio y experiencia para orientar la búsqueda.</p></div><button onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="btn-primary shrink-0"><MessageCircle className="h-4 w-4" /> Hablar con Emma</button></section>
       </article>
 
-      {/* Otras notas */}
-      <section className="mt-14">
-        <h2 className="text-lg font-black text-white mb-5">Seguí leyendo</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {otras.map((n) => (
-            <Link
-              key={n.slug}
-              to={`/notas/${n.slug}`}
-              className="group bg-navy-800 border border-navy-500 rounded-2xl p-5 hover:border-cls-primary/50 transition-colors"
-            >
-              <div className="text-3xl mb-3">{n.emoji}</div>
-              <h3 className="text-sm font-bold text-white leading-snug group-hover:text-cls-primary transition-colors">
-                {n.titulo}
-              </h3>
-              <p className="text-xs font-bold text-cls-primary mt-3 inline-flex items-center gap-1">
-                Leer <ArrowRight className="w-3 h-3" />
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <section className="mt-12 border-t border-cls-line pt-8" aria-labelledby="continue-title"><div className="mb-5 flex items-end justify-between"><div><p className="eyebrow">El diario</p><h2 id="continue-title" className="section-heading mt-1">Seguí leyendo</h2></div><Link to="/notas" className="text-xs font-bold text-cls-primary hover:text-cls-orange">Ver todas →</Link></div><div className="grid gap-3 md:grid-cols-3">{others.map((item) => <Link key={item.slug} to={`/notas/${item.slug}`} className="group section-shell p-5"><BookOpen className="h-6 w-6 text-cls-primary" /><h3 className="mt-4 font-sans text-sm font-bold leading-snug text-cls-primary-dark group-hover:text-cls-orange">{item.titulo}</h3><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-cls-primary">Leer <ArrowRight className="h-3.5 w-3.5" /></span></Link>)}</div></section>
     </div>
   );
 }

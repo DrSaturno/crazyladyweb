@@ -1,84 +1,49 @@
-import { Scissors, ShieldCheck, Thermometer, Droplets } from "lucide-react";
+import { Droplets, Scissors, ShieldCheck, Thermometer } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { ESQUEJES } from "../data/catalogo";
 
 const CUIDADOS = [
-  {
-    icon: Droplets,
-    titulo: "Llega con raíz",
-    texto: "El esqueje viaja ya enraizado. Al recibirlo, trasplantalo a su maceta definitiva sin romper el cepellón.",
-  },
-  {
-    icon: Thermometer,
-    titulo: "Aclimatación",
-    texto: "Los primeros días bajale la intensidad de luz y mantené humedad alta. Viene de un ambiente controlado.",
-  },
-  {
-    icon: ShieldCheck,
-    titulo: "Sabés qué vas a obtener",
-    texto: "Es un clon de una madre seleccionada: mismas características, sin la variabilidad de una semilla.",
-  },
+  { icon: Droplets, title: "Llega con raíz", text: "El esqueje viaja enraizado. Al recibirlo, trasplantalo sin romper el cepellón." },
+  { icon: Thermometer, title: "Aclimatación gradual", text: "Los primeros días bajá la intensidad de luz y mantené una humedad estable." },
+  { icon: ShieldCheck, title: "Sabés qué vas a obtener", text: "Es un clon de una madre seleccionada, con características conocidas y trazables." },
 ];
 
 export default function Esquejes() {
-  const disponibles = ESQUEJES.filter((e) => e.stock > 0);
+  const disponibles = ESQUEJES.filter((item) => item.stock > 0 && item.visible_web !== false);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      <header className="mb-10">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-cls-primary/15 text-cls-primary border border-cls-primary/30">
-          <Scissors className="w-3 h-3" /> Esquejes
-        </span>
-        <h1 className="mt-4 text-3xl md:text-4xl font-black text-white">Esquejes de genéticas seleccionadas</h1>
-        <p className="text-sm text-white/60 mt-3 max-w-2xl leading-relaxed">
-          Variedades registradas y de selección propia de la casa. Un esqueje es un clon de una planta
-          madre elegida por sus características, así que ya sabés exactamente qué vas a obtener — y te
-          salteás la etapa de germinación.
-        </p>
+    <div className="site-container py-8 md:py-12">
+      <header className="relative overflow-hidden rounded-[28px] border border-cls-line bg-[#F2C291] p-6 md:p-10">
+        <Scissors className="absolute -bottom-8 right-4 h-44 w-44 rotate-[-8deg] text-cls-primary/18" strokeWidth={1.2} aria-hidden="true" />
+        <div className="relative max-w-3xl">
+          <p className="eyebrow flex items-center gap-2"><Scissors className="h-4 w-4" /> Esquejes</p>
+          <h1 className="display-title mt-3 text-4xl md:text-6xl">Genéticas seleccionadas, listas para arrancar.</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-cls-ink/75 md:text-base">Un esqueje es un clon de una planta madre elegida por sus características. Te salteás la germinación y empezás con una base conocida, siempre con acompañamiento para la adaptación.</p>
+        </div>
       </header>
 
-      {/* Cuidados */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-        {CUIDADOS.map((c) => (
-          <div key={c.titulo} className="bg-navy-800 border border-navy-500 rounded-2xl p-5">
-            <c.icon className="w-5 h-5 text-cls-green mb-3" />
-            <p className="text-sm font-bold text-white">{c.titulo}</p>
-            <p className="text-xs text-white/50 mt-1.5 leading-relaxed">{c.texto}</p>
-          </div>
+      <section className="mt-4 grid gap-3 md:grid-cols-3" aria-label="Cuidados iniciales">
+        {CUIDADOS.map(({ icon: Icon, title, text }, index) => (
+          <article key={title} className={`rounded-2xl border border-cls-line p-5 ${index === 1 ? "bg-cls-paper" : "bg-cls-sage/70"}`}>
+            <Icon className="h-6 w-6 text-cls-primary" aria-hidden="true" />
+            <h2 className="mt-3 font-sans text-sm font-bold text-cls-primary-dark">{title}</h2>
+            <p className="mt-2 text-xs leading-relaxed text-cls-ink/65">{text}</p>
+          </article>
         ))}
       </section>
 
-      {/* Catálogo */}
-      <section>
-        <h2 className="text-xl font-black text-white mb-5">
-          {disponibles.length > 0 ? "Disponibles ahora" : "Sin esquejes disponibles"}
-        </h2>
-
-        {disponibles.length > 0 ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {ESQUEJES.map((e) => (
-              <ProductCard key={e.id} producto={e} />
-            ))}
-          </div>
+      <section className="mt-10" aria-labelledby="esquejes-title">
+        <div className="mb-5"><p className="eyebrow">Stock actual</p><h2 id="esquejes-title" className="section-heading mt-1">{disponibles.length ? "Disponibles ahora" : "Sin esquejes disponibles"}</h2></div>
+        {disponibles.length ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{disponibles.map((item) => <ProductCard key={item.id} producto={item} />)}</div>
         ) : (
-          <div className="text-center py-16 border border-dashed border-navy-500 rounded-2xl">
-            <p className="text-4xl mb-3">🌿</p>
-            <p className="text-white font-bold">Por ahora no hay esquejes en stock</p>
-            <p className="text-sm text-white/50 mt-1 max-w-md mx-auto">
-              Los esquejes salen por tandas según la madre disponible. Escribinos y te avisamos apenas
-              entren.
-            </p>
-          </div>
+          <div className="section-shell flex min-h-64 flex-col items-center justify-center px-6 text-center"><Scissors className="h-10 w-10 text-cls-primary/40" /><h3 className="mt-4 text-2xl font-black">Los esquejes salen por tandas</h3><p className="mt-2 max-w-md text-sm text-cls-ink/65">Consultanos qué madres están en producción y cuándo ingresa la próxima tanda.</p></div>
         )}
       </section>
 
-      {/* Nota de disponibilidad */}
-      <section className="mt-10 bg-navy-800 border border-navy-500 rounded-2xl p-6">
-        <p className="text-sm text-white/60 leading-relaxed">
-          <span className="font-bold text-white">¿Buscás una genética puntual como esqueje?</span>{" "}
-          Trabajamos por tandas según la madre que tengamos en producción. Escribinos por Instagram o
-          WhatsApp y te contamos qué viene en camino.
-        </p>
+      <section className="mt-10 flex flex-col justify-between gap-4 rounded-2xl bg-cls-primary p-6 text-cls-paper md:flex-row md:items-center">
+        <div><h2 className="font-sans text-base font-bold text-cls-paper">¿Buscás una genética puntual como esqueje?</h2><p className="mt-1 max-w-3xl text-sm text-cls-paper/70">Trabajamos por tandas según la madre disponible. Escribinos y te contamos qué viene en camino.</p></div>
+        <a href="https://wa.me/5491176086771" target="_blank" rel="noreferrer" className="btn-primary shrink-0">Consultar disponibilidad</a>
       </section>
     </div>
   );

@@ -63,10 +63,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existe = prev.find((i) => i.producto.id === producto.id);
       if (existe) {
         return prev.map((i) =>
-          i.producto.id === producto.id ? { ...i, cantidad: i.cantidad + cantidad } : i
+          i.producto.id === producto.id
+            ? { ...i, cantidad: Math.min(i.cantidad + cantidad, producto.stock) }
+            : i
         );
       }
-      return [...prev, { producto, cantidad }];
+      return [...prev, { producto, cantidad: Math.min(cantidad, producto.stock) }];
     });
   }
 
@@ -76,7 +78,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   function cambiarCantidad(id: string, cantidad: number) {
     if (cantidad <= 0) return quitar(id);
-    setItems((prev) => prev.map((i) => (i.producto.id === id ? { ...i, cantidad } : i)));
+    setItems((prev) => prev.map((i) => (
+      i.producto.id === id ? { ...i, cantidad: Math.min(cantidad, i.producto.stock) } : i
+    )));
   }
 
   function vaciar() {

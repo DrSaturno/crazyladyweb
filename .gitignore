@@ -44,3 +44,13 @@ Thumbs.db
 
 # Claude / Agent tools
 .claude/
+
+# Material de trabajo y fuentes privadas no necesarios para compilar la tienda
+output/
+info_drive/
+MOCKUPS_PARA_CLIENTE/
+scratch_env/
+CrazyladySeeds/
+crazzyladyseeds/
+debug.log
+FireShot Capture*.png
