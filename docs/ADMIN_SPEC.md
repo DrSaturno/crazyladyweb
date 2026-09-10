@@ -1,7 +1,7 @@
 # SPEC-ADMIN-01 — Centro de operaciones Crazy Lady Seeds
 
-**Estado:** interfaz modular y operación local implementadas  
-**Fecha:** 9 de septiembre de 2026  
+**Estado:** centro operativo modular v2 implementado en modo local; conectores productivos pendientes de credenciales
+**Fecha:** 10 de septiembre de 2026
 **Alcance del bot:** integración visual del repositorio `DrSaturno/crazzyladyseeds`; sin ampliación de lógica ni canales reales.
 
 ## 1. Objetivo
@@ -17,10 +17,18 @@ Centralizar la operación del ecommerce en un tablero de marca que permita admin
 | Categorías | alta, edición, orden, estado y borrado protegido | catálogo compartido |
 | Ventas | pedido, cliente, total, estado comercial y de pago | checkout |
 | Inventario | ajuste con motivo e historial de movimientos | productos/pedidos |
+| Preparación y envíos | cola de picking, transportista, seguimiento, despacho y entrega | pedidos |
+| Devoluciones | solicitud, aprobación, recepción, resolución y reintegro enlazado | pedidos/pagos |
 | Clientes / CRM | alta, etapa, etiquetas, notas, pedidos y gasto | checkout/manual |
+| Carritos abandonados | captura, contacto, descarte y recuperación | checkout/n8n |
 | Bot | simulación existente para WhatsApp, Instagram, Telegram y Web | `clsKnowledge.ts` |
 | Contenidos | FAQ, banner y página; borrador/publicado | contenido compartido |
+| Descuentos | códigos, condiciones, vigencia, límites y activación | promociones |
+| Marketing | campañas por canal, audiencia, presupuesto y ciclo de publicación | CRM/n8n |
 | Métricas | ingresos, ticket, conversión, recurrencia y ranking | ventas reales |
+| Finanzas | conciliación de cobros, pendientes, reintegros y exportación | pedidos/pagos |
+| Automatizaciones | siete eventos configurables, prueba de webhook e historial de ejecuciones | n8n |
+| Equipo y permisos | roles, estado y alcance modular preparados para Auth | administración |
 | Auditoría | actor, entidad, acción, detalle, fecha y CSV | mutaciones administrativas |
 | Configuración | datos comerciales, descuento, envío y flags de compra | configuración compartida |
 | Módulos | activación/desactivación persistente; esenciales bloqueados | registro de módulos |
@@ -33,13 +41,43 @@ Centralizar la operación del ecommerce en un tablero de marca que permita admin
 - Resumen, configuración y administrador de módulos son esenciales y no se pueden quitar.
 - Los módulos cargan con `React.lazy`, por lo que sumar uno nuevo no obliga a engordar el arranque público.
 
-## 4. Fuente de datos y transición
+## 4. Flujos operativos de aceptación
+
+### Pedido a entrega
+
+1. El checkout crea el pedido, descuenta stock y registra cliente, inventario y auditoría.
+2. El equipo acredita o rechaza el pago desde la ficha del pedido.
+3. Un pago acreditado puede pasar a preparación; el pedido conserva una línea de tiempo inmutable.
+4. El despacho exige transportista y código de seguimiento.
+5. El despacho emite `fulfillment.shipped`; la entrega cierra el flujo.
+
+### Postventa
+
+1. Una devolución se abre contra un pedido existente con motivo, resolución e importe.
+2. Avanza por solicitada, aprobada, recibida y resuelta, o se rechaza.
+3. Resolver con reintegro actualiza el pago del pedido a `reintegrado` y deja trazabilidad.
+
+### Crecimiento y retención
+
+1. Los descuentos nacen como borrador y validan código, tipo, vigencia, mínimo y límite; el checkout los revalida, aplica y registra su uso en el pedido.
+2. Las campañas avanzan por borrador, programada, activa, pausada y completada.
+3. Los carritos abandonados se registran una sola vez y avanzan por abierto, contactado, recuperado o descartado.
+
+### n8n
+
+1. Cada automatización tiene un evento y un webhook HTTPS independiente.
+2. Solo las automatizaciones habilitadas reciben eventos reales del tablero.
+3. La prueba manual envía un payload `cls.automation.v1` sin secretos y registra éxito, error HTTP o configuración faltante.
+4. Los secretos, firmas y reintentos productivos deben vivir en una Edge Function o backend; nunca en el bundle del navegador.
+5. Eventos cubiertos: `order.created`, `payment.confirmed`, `fulfillment.shipped`, `inventory.low`, `cart.abandoned`, `conversation.handoff` y `return.requested`.
+
+## 5. Fuente de datos y transición
 
 En validación, `CommerceDataContext` ofrece una fuente única versionada en `localStorage`; los cambios del panel impactan inmediatamente en tienda, stock, carrito y checkout. Al conectar Supabase, el contrato se conserva y el almacenamiento local pasa a ser caché/fallback, no una base de producción.
 
 La migración `commerce_core` modela productos, categorías, clientes, órdenes, ítems, pagos, inventario, conversaciones, mensajes, contenido, configuración, módulos, analítica y auditoría.
 
-## 5. Seguridad y trazabilidad productiva
+## 6. Seguridad y trazabilidad productiva
 
 - RLS habilitada en todas las tablas públicas.
 - Lectura anónima limitada a catálogo/contenido publicado.
@@ -50,19 +88,19 @@ La migración `commerce_core` modela productos, categorías, clientes, órdenes,
 - Auditoría por trigger para altas, cambios y bajas operativas.
 - Órdenes y pagos públicos se crean mediante función de servidor con revalidación de precio, stock e idempotencia.
 
-## 6. Responsive y accesibilidad
+## 7. Responsive y accesibilidad
 
 - Sidebar fijo en escritorio y drawer táctil en móvil.
 - Tablas se transforman en fichas etiquetadas por debajo de 640 px.
 - No existe scroll horizontal de página desde 320 px.
 - Controles esenciales de 44 px, foco visible, labels persistentes y estados vacíos explícitos.
 
-## 7. Pendientes para producción
+## 8. Pendientes para producción
 
 - Proyecto Supabase específico y credenciales de entorno.
 - Alta del primer propietario y MFA.
 - Edge Function de checkout y webhook de pago una vez definido el proveedor autorizado.
 - Tarifario y credenciales de logística.
 - Webhooks y credenciales de WhatsApp, Instagram y Telegram cuando se retome el bot.
+- URL pública de webhooks n8n, política de firma, reintentos e idempotencia.
 - Reglas comerciales, legales y de publicación finales aprobadas por Crazy Lady Seeds.
-

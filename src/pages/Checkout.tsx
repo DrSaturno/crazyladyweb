@@ -33,12 +33,19 @@ const INITIAL: FormState = {
 
 export default function Checkout() {
   const { items, total, vaciar } = useCart();
-  const { createOrder, settings } = useCommerceData();
+  const { createOrder, quoteDiscount, settings } = useCommerceData();
   const navigate = useNavigate();
   const [form, setForm] = useState<FormState>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const descuento = form.payment === "transferencia" ? Math.round(total * settings.descuentoTransferencia / 100) : 0;
+  const [discountInput, setDiscountInput] = useState("");
+  const [appliedCode, setAppliedCode] = useState("");
+  const [discountMessage, setDiscountMessage] = useState("");
+  const promotion = appliedCode ? quoteDiscount(appliedCode, total) : null;
+  const promotionDiscount = promotion?.valid ? promotion.amount : 0;
+  const transferDiscount = form.payment === "transferencia" ? Math.round((total - promotionDiscount) * settings.descuentoTransferencia / 100) : 0;
+  const shipping = promotion?.valid && promotion.freeShipping ? 0 : settings.envioBase;
+  const totalDiscount = promotionDiscount + transferDiscount;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -55,6 +62,7 @@ export default function Checkout() {
         customer: { nombre: form.nombre, email: form.email, telefono: form.telefono, direccion: form.direccion, localidad: form.localidad, provincia: form.provincia, codigoPostal: form.codigoPostal },
         paymentMethod: form.payment,
         notas: form.notas,
+        discountCode: appliedCode || undefined,
       });
       vaciar();
       navigate(`/gracias/${order.id}`, { replace: true, state: { publicNumber: order.publicNumber } });
@@ -62,6 +70,12 @@ export default function Checkout() {
       setError(cause instanceof Error ? cause.message : "No pudimos crear el pedido. Revisá los datos e intentá otra vez.");
       setSubmitting(false);
     }
+  }
+
+  function applyDiscount() {
+    const quote = quoteDiscount(discountInput, total);
+    setDiscountMessage(quote.message);
+    setAppliedCode(quote.valid ? quote.code : "");
   }
 
   if (!items.length) {
@@ -117,6 +131,15 @@ export default function Checkout() {
               </label>
             </div>
           </CheckoutSection>
+
+          <CheckoutSection number="4" title="Código de descuento">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input aria-label="Código de descuento" className="min-h-11 min-w-0 flex-1 rounded-xl border border-cls-line bg-cls-paper px-3 uppercase outline-none focus:border-cls-primary focus:ring-2 focus:ring-cls-honey/50" value={discountInput} onChange={(event) => { setDiscountInput(event.target.value); setDiscountMessage(""); }} placeholder="Ej. BIENVENIDA10" />
+              <button type="button" className="btn-outline justify-center" onClick={applyDiscount}>Aplicar código</button>
+              {appliedCode && <button type="button" className="min-h-11 px-3 text-xs font-black text-cls-orange" onClick={() => { setAppliedCode(""); setDiscountInput(""); setDiscountMessage(""); }}>Quitar</button>}
+            </div>
+            {discountMessage && <p role="status" className={`mt-3 rounded-xl p-3 text-xs font-bold ${appliedCode ? "bg-cls-sage/55 text-cls-primary-dark" : "bg-red-50 text-red-800"}`}>{discountMessage}</p>}
+          </CheckoutSection>
         </div>
 
         <aside className="self-start lg:sticky lg:top-[175px]">
@@ -127,9 +150,10 @@ export default function Checkout() {
             </ul>
             <dl className="mt-5 space-y-3 text-sm">
               <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-bold">{precioARS(total)}</dd></div>
-              {descuento > 0 && <div className="flex justify-between text-cls-primary"><dt>Descuento transferencia</dt><dd className="font-bold">− {precioARS(descuento)}</dd></div>}
-              <div className="flex justify-between"><dt>Envío</dt><dd className="text-xs text-cls-ink/55">A calcular</dd></div>
-              <div className="flex justify-between border-t border-cls-line pt-4 text-lg"><dt className="font-bold">Total parcial</dt><dd className="font-black text-cls-primary-dark">{precioARS(total - descuento)}</dd></div>
+              {promotion?.valid && <div className="flex justify-between gap-3 text-cls-primary"><dt>Promoción {promotion.code}</dt><dd className="shrink-0 font-bold">{promotion.freeShipping ? "Envío gratis" : `− ${precioARS(promotionDiscount)}`}</dd></div>}
+              {transferDiscount > 0 && <div className="flex justify-between text-cls-primary"><dt>Descuento transferencia</dt><dd className="font-bold">− {precioARS(transferDiscount)}</dd></div>}
+              <div className="flex justify-between"><dt>Envío</dt><dd className="text-xs font-bold text-cls-ink/65">{shipping > 0 ? precioARS(shipping) : "Gratis"}</dd></div>
+              <div className="flex justify-between border-t border-cls-line pt-4 text-lg"><dt className="font-bold">Total</dt><dd className="font-black text-cls-primary-dark">{precioARS(total - totalDiscount + shipping)}</dd></div>
             </dl>
             <label className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-cls-ink/65"><input required type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-4 w-4 accent-cls-primary" /> Confirmo que soy mayor de 18 años y acepto las condiciones de compra que se publicarán antes del lanzamiento.</label>
             <button type="submit" disabled={submitting} className="btn-primary mt-5 w-full">{submitting ? "Creando pedido…" : "Confirmar pedido"}</button>

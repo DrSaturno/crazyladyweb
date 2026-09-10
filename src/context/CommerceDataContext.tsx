@@ -1,25 +1,47 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { PRODUCTOS, type Producto } from "../data/catalogo";
 import type {
+  AbandonedCart,
   AdminCategory,
   AdminCustomer,
   AdminOrder,
+  AutomationEvent,
+  AutomationRun,
+  AutomationWorkflow,
   CommerceState,
   ContentEntry,
   CrmStage,
+  DiscountRule,
+  FulfillmentStatus,
+  MarketingCampaign,
+  OrderTimelineEvent,
   OrderStatus,
   PaymentStatus,
+  ReturnCase,
+  StaffMember,
   StoreSettings,
 } from "../types/commerce";
 
-const STORAGE_KEY = "cls_commerce_v1";
+const STORAGE_KEY = "cls_commerce_v2";
+const LEGACY_STORAGE_KEY = "cls_commerce_v1";
 const now = () => new Date().toISOString();
 const uid = (prefix: string) => `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+const configuredN8nBase = String(import.meta.env.VITE_N8N_WEBHOOK_BASE_URL ?? "").replace(/\/$/, "");
+
+const workflowTemplates: Omit<AutomationWorkflow, "updatedAt">[] = [
+  { id: "order-created", name: "Nuevo pedido", description: "Sincroniza cliente, avisa al equipo y abre el seguimiento.", event: "order.created", webhookUrl: configuredN8nBase ? `${configuredN8nBase}/order-created` : "", enabled: false },
+  { id: "payment-confirmed", name: "Pago confirmado", description: "Emite la confirmación y mueve el pedido a preparación.", event: "payment.confirmed", webhookUrl: configuredN8nBase ? `${configuredN8nBase}/payment-confirmed` : "", enabled: false },
+  { id: "fulfillment-shipped", name: "Pedido despachado", description: "Envía el seguimiento por el canal elegido por el cliente.", event: "fulfillment.shipped", webhookUrl: configuredN8nBase ? `${configuredN8nBase}/fulfillment-shipped` : "", enabled: false },
+  { id: "inventory-low", name: "Stock bajo", description: "Crea una alerta de reposición antes de quedarse sin unidades.", event: "inventory.low", webhookUrl: configuredN8nBase ? `${configuredN8nBase}/inventory-low` : "", enabled: false },
+  { id: "cart-abandoned", name: "Carrito abandonado", description: "Inicia una secuencia de recuperación sin duplicar contactos.", event: "cart.abandoned", webhookUrl: configuredN8nBase ? `${configuredN8nBase}/cart-abandoned` : "", enabled: false },
+  { id: "conversation-handoff", name: "Derivación humana", description: "Crea una tarea cuando Emma necesita intervención del equipo.", event: "conversation.handoff", webhookUrl: configuredN8nBase ? `${configuredN8nBase}/conversation-handoff` : "", enabled: false },
+  { id: "return-requested", name: "Devolución solicitada", description: "Notifica, etiqueta el pedido y abre el control de resolución.", event: "return.requested", webhookUrl: configuredN8nBase ? `${configuredN8nBase}/return-requested` : "", enabled: false },
+];
 
 function initialState(): CommerceState {
   const timestamp = now();
   return {
-    version: 1,
+    version: 2,
     products: PRODUCTOS,
     categories: [
       { id: "semilla", slug: "semillas", nombre: "Semillas", descripcion: "Semillas nacionales e importadas.", activa: true, orden: 1, createdAt: timestamp, updatedAt: timestamp },
@@ -45,17 +67,48 @@ function initialState(): CommerceState {
       compraInvitado: true,
       mercadoPagoActivo: false,
     },
+    discounts: [],
+    campaigns: [],
+    abandonedCarts: [],
+    returns: [],
+    automations: workflowTemplates.map((workflow) => ({ ...workflow, updatedAt: timestamp })),
+    automationRuns: [],
+    staff: [{ id: "local-owner", name: "Administrador local", email: "", role: "owner", status: "active", modules: ["*"], createdAt: timestamp, updatedAt: timestamp }],
   };
 }
 
 function readState(): CommerceState {
   if (typeof window === "undefined") return initialState();
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as Partial<CommerceState> | null;
-    if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.products)) return initialState();
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY) ?? "null") as Partial<CommerceState> | null;
+    if (!parsed || !Array.isArray(parsed.products)) return initialState();
     const seed = initialState();
     const savedContent = Array.isArray(parsed.content) ? parsed.content : [];
-    return { ...seed, ...parsed, content: [...savedContent, ...seed.content.filter((entry) => !savedContent.some((saved) => saved.id === entry.id))], version: 1 };
+    const savedWorkflows = Array.isArray(parsed.automations) ? parsed.automations : [];
+    return {
+      ...seed,
+      ...parsed,
+      version: 2,
+      settings: { ...seed.settings, ...parsed.settings },
+      orders: (parsed.orders ?? []).map((order) => ({
+        ...order,
+        promotionDiscount: order.promotionDiscount ?? 0,
+        transferDiscount: order.transferDiscount ?? order.descuento ?? 0,
+        fulfillmentStatus: order.fulfillmentStatus ?? (order.status === "enviado" ? "despachado" : order.status === "completado" ? "entregado" : "pendiente"),
+        carrier: order.carrier ?? "",
+        trackingCode: order.trackingCode ?? "",
+        internalNotes: order.internalNotes ?? "",
+        timeline: order.timeline ?? [{ id: uid("event"), type: "order", label: "Pedido creado", createdAt: order.createdAt }],
+      })),
+      content: [...savedContent, ...seed.content.filter((entry) => !savedContent.some((saved) => saved.id === entry.id))],
+      discounts: Array.isArray(parsed.discounts) ? parsed.discounts : [],
+      campaigns: Array.isArray(parsed.campaigns) ? parsed.campaigns : [],
+      abandonedCarts: Array.isArray(parsed.abandonedCarts) ? parsed.abandonedCarts : [],
+      returns: Array.isArray(parsed.returns) ? parsed.returns : [],
+      automations: [...savedWorkflows, ...seed.automations.filter((workflow) => !savedWorkflows.some((saved) => saved.id === workflow.id))],
+      automationRuns: Array.isArray(parsed.automationRuns) ? parsed.automationRuns : [],
+      staff: Array.isArray(parsed.staff) && parsed.staff.length ? parsed.staff : seed.staff,
+    };
   } catch {
     return initialState();
   }
@@ -66,7 +119,19 @@ interface NewOrderInput {
   customer: AdminOrder["customer"];
   paymentMethod: AdminOrder["paymentMethod"];
   notas: string;
+  discountCode?: string;
 }
+
+export interface DiscountQuote {
+  valid: boolean;
+  code: string;
+  ruleId?: string;
+  amount: number;
+  freeShipping: boolean;
+  message: string;
+}
+
+type OrderPatch = Partial<Pick<AdminOrder, "status" | "paymentStatus" | "fulfillmentStatus" | "carrier" | "trackingCode" | "internalNotes">>;
 
 interface CommerceValue extends CommerceState {
   saveProduct: (product: Producto) => void;
@@ -74,12 +139,25 @@ interface CommerceValue extends CommerceState {
   saveCategory: (category: AdminCategory) => void;
   removeCategory: (id: string) => boolean;
   createOrder: (input: NewOrderInput) => AdminOrder;
-  updateOrder: (id: string, patch: Partial<Pick<AdminOrder, "status" | "paymentStatus">>) => void;
+  quoteDiscount: (code: string, subtotal: number) => DiscountQuote;
+  updateOrder: (id: string, patch: OrderPatch) => void;
   saveCustomer: (customer: AdminCustomer) => void;
   updateCustomer: (id: string, patch: Partial<Pick<AdminCustomer, "stage" | "tags" | "notas">>) => void;
   adjustStock: (productId: string, delta: number, reason: string) => void;
   saveContent: (entry: ContentEntry) => void;
   updateSettings: (settings: StoreSettings) => void;
+  saveDiscount: (discount: DiscountRule) => void;
+  removeDiscount: (id: string) => void;
+  saveCampaign: (campaign: MarketingCampaign) => void;
+  updateCampaignStatus: (id: string, status: MarketingCampaign["status"]) => void;
+  saveAbandonedCart: (cart: AbandonedCart) => void;
+  updateAbandonedCart: (id: string, status: AbandonedCart["status"]) => void;
+  createReturn: (item: ReturnCase) => void;
+  updateReturn: (id: string, status: ReturnCase["status"]) => void;
+  saveAutomation: (workflow: AutomationWorkflow) => void;
+  runAutomation: (id: string, payload?: Record<string, unknown>) => Promise<AutomationRun>;
+  saveStaff: (member: StaffMember) => void;
+  updateStaffStatus: (id: string, status: StaffMember["status"]) => void;
   resetDemoData: () => void;
 }
 
@@ -89,13 +167,23 @@ function audit(entity: string, entityId: string, action: string, detail: string)
   return { id: uid("audit"), entity, entityId, action, detail, actor: "Administrador local", createdAt: now() };
 }
 
+function timelineEvent(type: "order" | "payment" | "fulfillment" | "note", label: string) {
+  return { id: uid("event"), type, label, createdAt: now() };
+}
+
+function parseDiscountDate(value: string, endOfDay: boolean) {
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  const parsed = new Date(dateOnly ? `${value}T${endOfDay ? "23:59:59.999" : "00:00:00"}` : value).getTime();
+  return Number.isNaN(parsed) ? (endOfDay ? Number.POSITIVE_INFINITY : 0) : parsed;
+}
+
 export function CommerceDataProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<CommerceState>(readState);
 
   function commit(recipe: (current: CommerceState) => CommerceState) {
     setState((current) => {
       const next = recipe(current);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* El estado en memoria sigue operativo si el navegador bloquea almacenamiento. */ }
       return next;
     });
   }
@@ -103,11 +191,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
   function saveProduct(product: Producto) {
     commit((current) => {
       const exists = current.products.some((item) => item.id === product.id);
-      return {
-        ...current,
-        products: exists ? current.products.map((item) => item.id === product.id ? product : item) : [product, ...current.products],
-        audit: [audit("product", product.id, exists ? "updated" : "created", product.nombre), ...current.audit],
-      };
+      return { ...current, products: exists ? current.products.map((item) => item.id === product.id ? product : item) : [product, ...current.products], audit: [audit("product", product.id, exists ? "updated" : "created", product.nombre), ...current.audit] };
     });
   }
 
@@ -121,11 +205,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
   function saveCategory(category: AdminCategory) {
     commit((current) => {
       const exists = current.categories.some((item) => item.id === category.id);
-      return {
-        ...current,
-        categories: exists ? current.categories.map((item) => item.id === category.id ? { ...category, updatedAt: now() } : item) : [...current.categories, category],
-        audit: [audit("category", category.id, exists ? "updated" : "created", category.nombre), ...current.audit],
-      };
+      return { ...current, categories: exists ? current.categories.map((item) => item.id === category.id ? { ...category, updatedAt: now() } : item) : [...current.categories, category], audit: [audit("category", category.id, exists ? "updated" : "created", category.nombre), ...current.audit] };
     });
   }
 
@@ -135,106 +215,131 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
     return true;
   }
 
+  function quoteDiscount(code: string, subtotal: number): DiscountQuote {
+    const normalized = code.trim().toUpperCase();
+    if (!normalized) return { valid: false, code: "", amount: 0, freeShipping: false, message: "Ingresá un código." };
+    const discount = state.discounts.find((item) => item.code.toUpperCase() === normalized);
+    if (!discount || discount.status !== "active") return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código no está disponible." };
+    const currentTime = Date.now();
+    const startTime = parseDiscountDate(discount.startsAt, false);
+    const endTime = discount.endsAt ? parseDiscountDate(discount.endsAt, true) : Number.POSITIVE_INFINITY;
+    if (currentTime < startTime) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código todavía no está vigente." };
+    if (currentTime > endTime) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código venció." };
+    if (discount.usageLimit !== undefined && discount.usageCount >= discount.usageLimit) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código alcanzó su límite de usos." };
+    if (subtotal < discount.minimumAmount) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: `La compra mínima para este código es $${discount.minimumAmount.toLocaleString("es-AR")}.` };
+    const amount = discount.type === "percentage" ? Math.round(subtotal * discount.value / 100) : discount.type === "fixed" ? Math.min(subtotal, discount.value) : 0;
+    return { valid: true, code: discount.code, ruleId: discount.id, amount, freeShipping: discount.type === "free_shipping", message: discount.type === "free_shipping" ? "Envío gratis aplicado." : `Descuento de $${amount.toLocaleString("es-AR")} aplicado.` };
+  }
+
+  async function dispatchEvent(event: AutomationEvent, payload: Record<string, unknown>) {
+    const targets = state.automations.filter((workflow) => workflow.event === event && workflow.enabled);
+    await Promise.all(targets.map((workflow) => executeWorkflow(workflow, payload, false)));
+  }
+
   function createOrder(input: NewOrderInput) {
     for (const line of input.items) {
       const currentProduct = state.products.find((product) => product.id === line.producto.id);
-      if (!currentProduct || currentProduct.visible_web === false || currentProduct.stock < line.cantidad) {
-        throw new Error(`No hay stock suficiente de ${line.producto.nombre}. Revisá el carrito antes de confirmar.`);
-      }
+      if (!currentProduct || currentProduct.visible_web === false || currentProduct.stock < line.cantidad) throw new Error(`No hay stock suficiente de ${line.producto.nombre}. Revisá el carrito antes de confirmar.`);
     }
     const createdAt = now();
     const subtotal = input.items.reduce((sum, item) => sum + item.producto.precio * item.cantidad, 0);
-    const descuento = input.paymentMethod === "transferencia" ? Math.round(subtotal * state.settings.descuentoTransferencia / 100) : 0;
+    const promotion = input.discountCode ? quoteDiscount(input.discountCode, subtotal) : null;
+    if (promotion && !promotion.valid) throw new Error(promotion.message);
+    const promotionDiscount = promotion?.amount ?? 0;
+    const transferDiscount = input.paymentMethod === "transferencia" ? Math.round((subtotal - promotionDiscount) * state.settings.descuentoTransferencia / 100) : 0;
+    const descuento = promotionDiscount + transferDiscount;
+    const envio = promotion?.freeShipping ? 0 : state.settings.envioBase;
     const order: AdminOrder = {
-      id: uid("order"),
-      publicNumber: `CLS-${new Date().getFullYear()}-${String(state.orders.length + 1).padStart(5, "0")}`,
+      id: uid("order"), publicNumber: `CLS-${new Date().getFullYear()}-${String(state.orders.length + 1).padStart(5, "0")}`,
       items: input.items.map(({ producto, cantidad }) => ({ productId: producto.id, nombre: producto.nombre, sku: producto.id, cantidad, precioUnitario: producto.precio })),
-      customer: input.customer,
-      status: "pendiente",
-      paymentStatus: "pendiente",
-      paymentMethod: input.paymentMethod,
-      subtotal,
-      descuento,
-      envio: state.settings.envioBase,
-      total: subtotal - descuento + state.settings.envioBase,
-      notas: input.notas,
-      createdAt,
-      updatedAt: createdAt,
+      customer: input.customer, status: "pendiente", paymentStatus: "pendiente", paymentMethod: input.paymentMethod,
+      subtotal, descuento, discountCode: promotion?.code, promotionDiscount, transferDiscount, envio, total: subtotal - descuento + envio, notas: input.notas,
+      fulfillmentStatus: "pendiente", carrier: "", trackingCode: "", internalNotes: "", timeline: [{ id: uid("event"), type: "order", label: "Pedido creado", createdAt }], createdAt, updatedAt: createdAt,
     };
-
     commit((current) => {
       const existing = current.customers.find((customer) => customer.email.toLowerCase() === input.customer.email.toLowerCase());
-      const customer: AdminCustomer = existing ? {
-        ...existing,
-        nombre: input.customer.nombre,
-        telefono: input.customer.telefono,
-        stage: "cliente" as CrmStage,
-        totalPedidos: existing.totalPedidos + 1,
-        gastoTotal: existing.gastoTotal + order.total,
-        lastOrderAt: createdAt,
-        updatedAt: createdAt,
-      } : {
-        id: uid("customer"), nombre: input.customer.nombre, email: input.customer.email, telefono: input.customer.telefono,
-        stage: "cliente", tags: ["checkout"], notas: "", totalPedidos: 1, gastoTotal: order.total,
-        lastOrderAt: createdAt, createdAt, updatedAt: createdAt,
-      };
+      const customer: AdminCustomer = existing ? { ...existing, nombre: input.customer.nombre, telefono: input.customer.telefono, stage: "cliente" as CrmStage, totalPedidos: existing.totalPedidos + 1, gastoTotal: existing.gastoTotal + order.total, lastOrderAt: createdAt, updatedAt: createdAt } : { id: uid("customer"), nombre: input.customer.nombre, email: input.customer.email, telefono: input.customer.telefono, stage: "cliente", tags: ["checkout"], notas: "", totalPedidos: 1, gastoTotal: order.total, lastOrderAt: createdAt, createdAt, updatedAt: createdAt };
       const movements = input.items.map(({ producto, cantidad }) => ({ id: uid("movement"), productId: producto.id, productName: producto.nombre, delta: -cantidad, reason: `Venta ${order.publicNumber}`, createdAt }));
-      return {
-        ...current,
-        orders: [order, ...current.orders],
-        customers: existing ? current.customers.map((item) => item.id === existing.id ? customer : item) : [customer, ...current.customers],
-        products: current.products.map((product) => {
-          const line = input.items.find((item) => item.producto.id === product.id);
-          return line ? { ...product, stock: Math.max(0, product.stock - line.cantidad) } : product;
-        }),
-        inventory: [...movements, ...current.inventory],
-        audit: [audit("order", order.id, "created", order.publicNumber), ...current.audit],
-      };
+      return { ...current, orders: [order, ...current.orders], customers: existing ? current.customers.map((item) => item.id === existing.id ? customer : item) : [customer, ...current.customers], products: current.products.map((product) => { const line = input.items.find((item) => item.producto.id === product.id); return line ? { ...product, stock: Math.max(0, product.stock - line.cantidad) } : product; }), discounts: promotion?.ruleId ? current.discounts.map((discount) => discount.id === promotion.ruleId ? { ...discount, usageCount: discount.usageCount + 1, updatedAt: createdAt } : discount) : current.discounts, inventory: [...movements, ...current.inventory], audit: [audit("order", order.id, "created", `${order.publicNumber}${promotion ? ` · cupón ${promotion.code}` : ""}`), ...current.audit] };
     });
+    void dispatchEvent("order.created", { orderId: order.id, publicNumber: order.publicNumber, total: order.total });
+    input.items.forEach(({ producto, cantidad }) => { if (producto.stock - cantidad <= 3) void dispatchEvent("inventory.low", { productId: producto.id, productName: producto.nombre, stock: Math.max(0, producto.stock - cantidad) }); });
     return order;
   }
 
-  function updateOrder(id: string, patch: Partial<Pick<AdminOrder, "status" | "paymentStatus">>) {
-    commit((current) => ({
-      ...current,
-      orders: current.orders.map((order) => order.id === id ? { ...order, ...patch, updatedAt: now() } : order),
-      audit: [audit("order", id, "status_updated", JSON.stringify(patch)), ...current.audit],
-    }));
+  function updateOrder(id: string, patch: OrderPatch) {
+    const previous = state.orders.find((order) => order.id === id);
+    if (!previous) return;
+    const events: OrderTimelineEvent[] = [];
+    if (patch.status && patch.status !== previous.status) events.push(timelineEvent("order", `Estado del pedido: ${patch.status}`));
+    if (patch.paymentStatus && patch.paymentStatus !== previous.paymentStatus) events.push(timelineEvent("payment", `Estado del pago: ${patch.paymentStatus}`));
+    if (patch.fulfillmentStatus && patch.fulfillmentStatus !== previous.fulfillmentStatus) events.push(timelineEvent("fulfillment", `Preparación: ${patch.fulfillmentStatus}`));
+    if (patch.internalNotes && patch.internalNotes !== previous.internalNotes) events.push(timelineEvent("note", "Nota interna actualizada"));
+    commit((current) => ({ ...current, orders: current.orders.map((order) => order.id === id ? { ...order, ...patch, timeline: [...events, ...order.timeline], updatedAt: now() } : order), audit: [audit("order", id, "updated", Object.keys(patch).join(", ")), ...current.audit] }));
+    if (patch.paymentStatus === "pagado" && previous.paymentStatus !== "pagado") void dispatchEvent("payment.confirmed", { orderId: id, publicNumber: previous.publicNumber, total: previous.total });
+    if (patch.fulfillmentStatus === "despachado" && previous.fulfillmentStatus !== "despachado") void dispatchEvent("fulfillment.shipped", { orderId: id, publicNumber: previous.publicNumber, carrier: patch.carrier ?? previous.carrier, trackingCode: patch.trackingCode ?? previous.trackingCode });
   }
 
-  function saveCustomer(customer: AdminCustomer) {
-    commit((current) => {
-      const exists = current.customers.some((item) => item.id === customer.id);
-      return { ...current, customers: exists ? current.customers.map((item) => item.id === customer.id ? { ...customer, updatedAt: now() } : item) : [customer, ...current.customers], audit: [audit("customer", customer.id, exists ? "updated" : "created", customer.nombre), ...current.audit] };
-    });
-  }
-
-  function updateCustomer(id: string, patch: Partial<Pick<AdminCustomer, "stage" | "tags" | "notas">>) {
-    commit((current) => ({ ...current, customers: current.customers.map((customer) => customer.id === id ? { ...customer, ...patch, updatedAt: now() } : customer), audit: [audit("customer", id, "updated", Object.keys(patch).join(", ")), ...current.audit] }));
-  }
+  function saveCustomer(customer: AdminCustomer) { commit((current) => { const exists = current.customers.some((item) => item.id === customer.id); return { ...current, customers: exists ? current.customers.map((item) => item.id === customer.id ? { ...customer, updatedAt: now() } : item) : [customer, ...current.customers], audit: [audit("customer", customer.id, exists ? "updated" : "created", customer.nombre), ...current.audit] }; }); }
+  function updateCustomer(id: string, patch: Partial<Pick<AdminCustomer, "stage" | "tags" | "notas">>) { commit((current) => ({ ...current, customers: current.customers.map((customer) => customer.id === id ? { ...customer, ...patch, updatedAt: now() } : customer), audit: [audit("customer", id, "updated", Object.keys(patch).join(", ")), ...current.audit] })); }
 
   function adjustStock(productId: string, delta: number, reason: string) {
     const product = state.products.find((item) => item.id === productId);
     if (!product || !Number.isFinite(delta) || delta === 0) return;
+    const nextStock = Math.max(0, product.stock + delta);
     const movement = { id: uid("movement"), productId, productName: product.nombre, delta, reason, createdAt: now() };
-    commit((current) => ({ ...current, products: current.products.map((item) => item.id === productId ? { ...item, stock: Math.max(0, item.stock + delta) } : item), inventory: [movement, ...current.inventory], audit: [audit("inventory", productId, "adjusted", `${delta > 0 ? "+" : ""}${delta}: ${reason}`), ...current.audit] }));
+    commit((current) => ({ ...current, products: current.products.map((item) => item.id === productId ? { ...item, stock: nextStock } : item), inventory: [movement, ...current.inventory], audit: [audit("inventory", productId, "adjusted", `${delta > 0 ? "+" : ""}${delta}: ${reason}`), ...current.audit] }));
+    if (nextStock <= 3) void dispatchEvent("inventory.low", { productId, productName: product.nombre, stock: nextStock });
   }
 
-  function saveContent(entry: ContentEntry) {
-    commit((current) => ({ ...current, content: current.content.some((item) => item.id === entry.id) ? current.content.map((item) => item.id === entry.id ? { ...entry, updatedAt: now() } : item) : [entry, ...current.content], audit: [audit("content", entry.id, "saved", entry.titulo), ...current.audit] }));
+  function saveContent(entry: ContentEntry) { commit((current) => ({ ...current, content: current.content.some((item) => item.id === entry.id) ? current.content.map((item) => item.id === entry.id ? { ...entry, updatedAt: now() } : item) : [entry, ...current.content], audit: [audit("content", entry.id, "saved", entry.titulo), ...current.audit] })); }
+  function updateSettings(settings: StoreSettings) { commit((current) => ({ ...current, settings, audit: [audit("settings", "store", "updated", "Configuración comercial"), ...current.audit] })); }
+
+  function saveDiscount(discount: DiscountRule) { commit((current) => { const exists = current.discounts.some((item) => item.id === discount.id); return { ...current, discounts: exists ? current.discounts.map((item) => item.id === discount.id ? { ...discount, updatedAt: now() } : item) : [{ ...discount, createdAt: discount.createdAt || now(), updatedAt: now() }, ...current.discounts], audit: [audit("discount", discount.id, exists ? "updated" : "created", discount.code), ...current.audit] }; }); }
+  function removeDiscount(id: string) { commit((current) => ({ ...current, discounts: current.discounts.filter((item) => item.id !== id), audit: [audit("discount", id, "deleted", id), ...current.audit] })); }
+  function saveCampaign(campaign: MarketingCampaign) { commit((current) => { const exists = current.campaigns.some((item) => item.id === campaign.id); return { ...current, campaigns: exists ? current.campaigns.map((item) => item.id === campaign.id ? { ...campaign, updatedAt: now() } : item) : [{ ...campaign, updatedAt: now() }, ...current.campaigns], audit: [audit("campaign", campaign.id, exists ? "updated" : "created", campaign.name), ...current.audit] }; }); }
+  function updateCampaignStatus(id: string, status: MarketingCampaign["status"]) { commit((current) => ({ ...current, campaigns: current.campaigns.map((item) => item.id === id ? { ...item, status, updatedAt: now() } : item), audit: [audit("campaign", id, "status_updated", status), ...current.audit] })); }
+  function saveAbandonedCart(cart: AbandonedCart) { const exists = state.abandonedCarts.some((item) => item.id === cart.id); commit((current) => ({ ...current, abandonedCarts: exists ? current.abandonedCarts.map((item) => item.id === cart.id ? { ...cart, updatedAt: now() } : item) : [{ ...cart, updatedAt: now() }, ...current.abandonedCarts], audit: [audit("abandoned_cart", cart.id, exists ? "updated" : "created", cart.email), ...current.audit] })); if (!exists) void dispatchEvent("cart.abandoned", { cartId: cart.id, total: cart.total, recoveryCode: cart.recoveryCode }); }
+  function updateAbandonedCart(id: string, status: AbandonedCart["status"]) { commit((current) => ({ ...current, abandonedCarts: current.abandonedCarts.map((item) => item.id === id ? { ...item, status, updatedAt: now() } : item), audit: [audit("abandoned_cart", id, "status_updated", status), ...current.audit] })); }
+  function createReturn(item: ReturnCase) { commit((current) => ({ ...current, returns: [item, ...current.returns], audit: [audit("return", item.id, "created", item.publicNumber), ...current.audit] })); void dispatchEvent("return.requested", { returnId: item.id, orderId: item.orderId, publicNumber: item.publicNumber, amount: item.amount }); }
+  function updateReturn(id: string, status: ReturnCase["status"]) { commit((current) => { const target = current.returns.find((item) => item.id === id); const shouldRefund = target?.resolution === "refund" && status === "resolved"; return { ...current, returns: current.returns.map((item) => item.id === id ? { ...item, status, updatedAt: now() } : item), orders: shouldRefund ? current.orders.map((order) => order.id === target?.orderId ? { ...order, paymentStatus: "reintegrado", timeline: [timelineEvent("payment", "Reintegro registrado"), ...order.timeline], updatedAt: now() } : order) : current.orders, audit: [audit("return", id, "status_updated", status), ...current.audit] }; }); }
+  function saveAutomation(workflow: AutomationWorkflow) { commit((current) => ({ ...current, automations: current.automations.map((item) => item.id === workflow.id ? { ...workflow, updatedAt: now() } : item), audit: [audit("automation", workflow.id, "updated", workflow.name), ...current.audit] })); }
+
+  function recordRun(run: AutomationRun) { commit((current) => ({ ...current, automationRuns: [run, ...current.automationRuns].slice(0, 100), audit: [audit("automation", run.workflowId, "executed", `${run.status}: ${run.detail}`), ...current.audit] })); }
+
+  async function executeWorkflow(workflow: AutomationWorkflow, payload: Record<string, unknown>, isTest: boolean): Promise<AutomationRun> {
+    const createdAt = now();
+    if (!workflow.webhookUrl.trim()) {
+      const run: AutomationRun = { id: uid("run"), workflowId: workflow.id, workflowName: workflow.name, event: workflow.event, status: "configuration_required", detail: "Falta configurar la URL del webhook de n8n.", createdAt };
+      recordRun(run);
+      return run;
+    }
+    try {
+      const url = new URL(workflow.webhookUrl);
+      if (url.protocol !== "https:" && url.hostname !== "localhost" && url.hostname !== "127.0.0.1") throw new Error("El webhook debe usar HTTPS.");
+      const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ schema: "cls.automation.v1", source: "crazy-lady-admin", event: workflow.event, test: isTest, occurredAt: createdAt, data: payload }) });
+      const run: AutomationRun = { id: uid("run"), workflowId: workflow.id, workflowName: workflow.name, event: workflow.event, status: response.ok ? "success" : "failed", httpStatus: response.status, detail: response.ok ? "n8n aceptó el evento." : `n8n respondió HTTP ${response.status}.`, createdAt };
+      recordRun(run);
+      return run;
+    } catch (error) {
+      const run: AutomationRun = { id: uid("run"), workflowId: workflow.id, workflowName: workflow.name, event: workflow.event, status: "failed", detail: error instanceof Error ? error.message : "No se pudo contactar a n8n.", createdAt };
+      recordRun(run);
+      return run;
+    }
   }
 
-  function updateSettings(settings: StoreSettings) {
-    commit((current) => ({ ...current, settings, audit: [audit("settings", "store", "updated", "Configuración comercial"), ...current.audit] }));
+  async function runAutomation(id: string, payload: Record<string, unknown> = {}) {
+    const workflow = state.automations.find((item) => item.id === id);
+    if (!workflow) throw new Error("La automatización no existe.");
+    return executeWorkflow(workflow, { manualTest: true, ...payload }, true);
   }
 
-  function resetDemoData() {
-    const fresh = initialState();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-    setState(fresh);
-  }
+  function saveStaff(member: StaffMember) { commit((current) => { const exists = current.staff.some((item) => item.id === member.id); return { ...current, staff: exists ? current.staff.map((item) => item.id === member.id ? { ...member, updatedAt: now() } : item) : [{ ...member, updatedAt: now() }, ...current.staff], audit: [audit("staff", member.id, exists ? "updated" : "invited", member.email || member.name), ...current.audit] }; }); }
+  function updateStaffStatus(id: string, status: StaffMember["status"]) { if (id === "local-owner") return; commit((current) => ({ ...current, staff: current.staff.map((item) => item.id === id ? { ...item, status, updatedAt: now() } : item), audit: [audit("staff", id, "status_updated", status), ...current.audit] })); }
 
-  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, saveCategory, removeCategory, createOrder, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, resetDemoData }), [state]);
+  function resetDemoData() { const fresh = initialState(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); localStorage.removeItem(LEGACY_STORAGE_KEY); } catch { /* Conservamos el reinicio en memoria. */ } setState(fresh); }
+
+  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, saveStaff, updateStaffStatus, resetDemoData }), [state]);
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }
 
@@ -251,4 +356,8 @@ export const ORDER_STATUS: { value: OrderStatus; label: string }[] = [
 
 export const PAYMENT_STATUS: { value: PaymentStatus; label: string }[] = [
   { value: "pendiente", label: "Pendiente" }, { value: "pagado", label: "Pagado" }, { value: "fallido", label: "Fallido" }, { value: "reintegrado", label: "Reintegrado" },
+];
+
+export const FULFILLMENT_STATUS: { value: FulfillmentStatus; label: string }[] = [
+  { value: "pendiente", label: "Sin preparar" }, { value: "preparando", label: "Preparando" }, { value: "despachado", label: "Despachado" }, { value: "entregado", label: "Entregado" }, { value: "cancelado", label: "Cancelado" },
 ];

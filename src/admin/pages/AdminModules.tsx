@@ -33,7 +33,7 @@ import { Link } from "react-router-dom";
 import { useAdminModules } from "../AdminModuleContext";
 import { ADMIN_MODULES } from "../moduleRegistry";
 import { EmptyState, AdminPage, Panel, StatCard, StatusBadge, fieldClass, labelClass } from "../components/AdminUI";
-import { ORDER_STATUS, PAYMENT_STATUS, useCommerceData } from "../../context/CommerceDataContext";
+import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, useCommerceData } from "../../context/CommerceDataContext";
 import { classifyTopic, CLS_INFO, getBotResponse } from "../../data/clsKnowledge";
 import { precioARS, type Producto } from "../../data/catalogo";
 import type { AdminCategory, AdminCustomer, ContentEntry, CrmStage } from "../../types/commerce";
@@ -43,7 +43,7 @@ const slugify = (value: string) => value.toLowerCase().normalize("NFD").replace(
 const newId = (prefix: string) => `${prefix}-${globalThis.crypto?.randomUUID?.() ?? Date.now()}`;
 
 export function AdminDashboard() {
-  const { products, orders, customers, inventory } = useCommerceData();
+  const { products, orders, customers, inventory, abandonedCarts, returns, automations, automationRuns } = useCommerceData();
   const revenue = orders.filter((order) => order.paymentStatus === "pagado").reduce((sum, order) => sum + order.total, 0);
   const openOrders = orders.filter((order) => !["completado", "cancelado"].includes(order.status));
   const lowStock = products.filter((product) => product.visible_web !== false && product.stock <= 3);
@@ -63,10 +63,12 @@ export function AdminDashboard() {
         <div className="space-y-2">
           <AlertRow icon={AlertTriangle} label="Stock bajo" value={lowStock.length} href="/admin/inventario" tone="warn" />
           <AlertRow icon={ClipboardList} label="Pedidos abiertos" value={openOrders.length} href="/admin/ventas" />
-          <AlertRow icon={FileClock} label="Movimientos auditados" value={inventory.length} href="/admin/auditoria" />
+          <AlertRow icon={ShoppingBag} label="Carritos por recuperar" value={abandonedCarts.filter((cart) => ["open", "contacted"].includes(cart.status)).length} href="/admin/carritos-abandonados" />
+          <AlertRow icon={RefreshCw} label="Devoluciones abiertas" value={returns.filter((item) => !["resolved", "rejected"].includes(item.status)).length} href="/admin/devoluciones" />
         </div>
       </Panel>
     </div>
+    <div className="mt-4 grid gap-4 xl:grid-cols-3"><Panel title="Operación de hoy" description="Atajos al flujo diario"><div className="grid gap-2"><Link className="btn-secondary justify-center" to="/admin/envios"><PackagePlus className="h-4 w-4" /> Preparar pedidos</Link><Link className="btn-outline justify-center" to="/admin/finanzas"><DollarSign className="h-4 w-4" /> Conciliar cobros</Link></div></Panel><Panel title="n8n" description="Estado del orquestador"><p className="text-3xl font-black text-cls-primary-dark">{automations.filter((workflow) => workflow.enabled).length}/{automations.length}</p><p className="mt-1 text-xs text-cls-ink/55">flujos activos · {automationRuns.filter((run) => run.status === "failed").length} ejecuciones fallidas</p><Link to="/admin/automatizaciones" className="mt-3 inline-flex min-h-11 items-center text-xs font-black text-cls-primary underline">Administrar automatizaciones</Link></Panel><Panel title="Trazabilidad" description="Actividad conservada"><p className="text-3xl font-black text-cls-primary-dark">{inventory.length}</p><p className="mt-1 text-xs text-cls-ink/55">movimientos de inventario registrados</p><Link to="/admin/auditoria" className="mt-3 inline-flex min-h-11 items-center text-xs font-black text-cls-primary underline"><FileClock className="mr-2 h-4 w-4" /> Ver auditoría</Link></Panel></div>
   </AdminPage>;
 }
 
@@ -130,21 +132,26 @@ export function AdminCategories() {
 
 export function AdminOrders() {
   const { orders, updateOrder } = useCommerceData();
-  return <AdminPage eyebrow="Ventas" title="Pedidos y cobros" description="Seguimiento del pedido, estado de pago y detalle trazable por cliente.">
-    <Panel title="Todas las ventas" description={`${orders.length} pedidos registrados`}>
-      {orders.length ? <div className="space-y-3">{orders.map((order) => <article key={order.id} className="rounded-2xl border border-cls-line bg-cls-cream p-4">
-        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-start">
-          <div className="min-w-0"><strong className="block text-sm text-cls-primary-dark">{order.publicNumber}</strong><span className="text-[10px] text-cls-ink/50">{dateTime(order.createdAt)} · {order.items.length} ítems</span></div>
-          <div className="min-w-0"><strong className="block truncate text-xs">{order.customer.nombre}</strong><span className="block truncate text-[10px] text-cls-ink/50">{order.customer.email} · {order.customer.telefono}</span></div>
-          <strong className="text-lg text-cls-primary-dark">{precioARS(order.total)}</strong>
-        </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <Field label="Estado del pedido"><select className={fieldClass} value={order.status} onChange={(event) => updateOrder(order.id, { status: event.target.value as typeof order.status })}>{ORDER_STATUS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></Field>
-          <Field label="Estado del pago"><select className={fieldClass} value={order.paymentStatus} onChange={(event) => updateOrder(order.id, { paymentStatus: event.target.value as typeof order.paymentStatus })}>{PAYMENT_STATUS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></Field>
-        </div>
-        <details className="mt-3 rounded-xl border border-cls-line bg-cls-paper p-3"><summary className="min-h-11 cursor-pointer py-3 text-xs font-black text-cls-primary">Ver productos y entrega</summary><div className="border-t border-cls-line pt-3"><ul className="space-y-2">{order.items.map((item) => <li key={`${order.id}-${item.productId}`} className="flex justify-between gap-3 text-xs"><span>{item.cantidad} × {item.nombre}</span><strong>{precioARS(item.cantidad * item.precioUnitario)}</strong></li>)}</ul><p className="mt-3 text-xs leading-relaxed text-cls-ink/60">{order.customer.direccion}, {order.customer.localidad}, {order.customer.provincia} ({order.customer.codigoPostal})</p>{order.notas && <p className="mt-2 text-xs text-cls-ink/60"><strong>Notas:</strong> {order.notas}</p>}</div></details>
-      </article>)}</div> : <EmptyState title="No hay ventas todavía" text="Los pedidos creados desde el checkout aparecerán acá con su identificador público." />}
-    </Panel>
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("todos");
+  const [selectedId, setSelectedId] = useState("");
+  const selected = orders.find((order) => order.id === selectedId);
+  const filtered = orders.filter((order) => (status === "todos" || order.status === status) && `${order.publicNumber} ${order.customer.nombre} ${order.customer.email}`.toLowerCase().includes(query.toLowerCase()));
+  return <AdminPage eyebrow="Ventas" title="Pedidos y cobros" description="Una bandeja accionable para cobrar, preparar, despachar y resolver cada pedido con historial completo.">
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <Panel title="Todas las ventas" description={`${filtered.length} de ${orders.length} pedidos`}>
+        <div className="mb-4 grid gap-2 sm:grid-cols-[1fr_190px]"><div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/40" /><input className={`${fieldClass} pl-9`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente o email" /></div><select className={fieldClass} value={status} onChange={(event) => setStatus(event.target.value)}><option value="todos">Todos los estados</option>{ORDER_STATUS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
+        {filtered.length ? <div className="space-y-2">{filtered.map((order) => <button type="button" key={order.id} onClick={() => setSelectedId(order.id)} className={`grid w-full gap-3 rounded-2xl border p-4 text-left sm:grid-cols-[1fr_1fr_auto] sm:items-center ${selectedId === order.id ? "border-cls-primary bg-cls-sage/40" : "border-cls-line bg-cls-cream hover:border-cls-primary"}`}><span className="min-w-0"><strong className="block text-sm text-cls-primary-dark">{order.publicNumber}</strong><span className="text-[10px] text-cls-ink/50">{dateTime(order.createdAt)} · {order.items.reduce((sum, item) => sum + item.cantidad, 0)} unidades</span></span><span className="min-w-0"><strong className="block truncate text-xs">{order.customer.nombre}</strong><span className="mt-1 flex flex-wrap gap-1"><StatusBadge tone={order.paymentStatus === "pagado" ? "good" : "warn"}>{order.paymentStatus}</StatusBadge><StatusBadge>{order.fulfillmentStatus}</StatusBadge></span></span><strong className="text-lg text-cls-primary-dark">{precioARS(order.total)}</strong></button>)}</div> : <EmptyState title="No hay pedidos con esos filtros" text={orders.length ? "Probá otra búsqueda o estado." : "Los pedidos creados desde el checkout aparecerán acá."} />}
+      </Panel>
+      {selected ? <Panel title={selected.publicNumber} description={`${selected.customer.nombre} · ${selected.customer.email}`} className="xl:sticky xl:top-24 xl:self-start">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1"><Field label="Estado comercial"><select className={fieldClass} value={selected.status} onChange={(event) => updateOrder(selected.id, { status: event.target.value as typeof selected.status })}>{ORDER_STATUS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></Field><Field label="Pago"><select className={fieldClass} value={selected.paymentStatus} onChange={(event) => updateOrder(selected.id, { paymentStatus: event.target.value as typeof selected.paymentStatus })}>{PAYMENT_STATUS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></Field><Field label="Preparación"><select className={fieldClass} value={selected.fulfillmentStatus} onChange={(event) => updateOrder(selected.id, { fulfillmentStatus: event.target.value as typeof selected.fulfillmentStatus })}>{FULFILLMENT_STATUS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></Field></div>
+        <div className="mt-4 rounded-xl bg-cls-cream p-3"><h3 className="text-xs font-black">Productos</h3><ul className="mt-2 space-y-2">{selected.items.map((item) => <li key={item.productId} className="flex justify-between gap-3 text-xs"><span>{item.cantidad} × {item.nombre}</span><strong>{precioARS(item.cantidad * item.precioUnitario)}</strong></li>)}</ul><dl className="mt-3 space-y-1 border-t border-cls-line pt-3 text-xs"><div className="flex justify-between"><dt>Subtotal</dt><dd>{precioARS(selected.subtotal)}</dd></div>{selected.discountCode ? <div className="flex justify-between text-cls-primary"><dt>Promoción {selected.discountCode}</dt><dd>− {precioARS(selected.promotionDiscount)}</dd></div> : null}{selected.transferDiscount > 0 ? <div className="flex justify-between text-cls-primary"><dt>Transferencia</dt><dd>− {precioARS(selected.transferDiscount)}</dd></div> : null}<div className="flex justify-between"><dt>Envío</dt><dd>{selected.envio > 0 ? precioARS(selected.envio) : "Gratis"}</dd></div><div className="flex justify-between pt-2 text-sm"><dt className="font-black">Total</dt><dd className="font-black">{precioARS(selected.total)}</dd></div></dl></div>
+        <p className="mt-3 text-xs leading-relaxed text-cls-ink/60"><strong className="block text-cls-primary-dark">Entrega</strong>{selected.customer.direccion}, {selected.customer.localidad}, {selected.customer.provincia} ({selected.customer.codigoPostal})</p>
+        <div className="mt-4"><Field label="Nota interna"><textarea key={selected.id} defaultValue={selected.internalNotes} onBlur={(event) => updateOrder(selected.id, { internalNotes: event.target.value })} className={`${fieldClass} min-h-20 py-3`} placeholder="Visible solo para el equipo" /></Field></div>
+        <div className="mt-4"><h3 className="text-xs font-black">Línea de tiempo</h3><ol className="mt-2 space-y-2">{selected.timeline.map((event) => <li key={event.id} className="flex gap-3 text-xs"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-cls-orange" /><span><strong className="block">{event.label}</strong><small className="text-cls-ink/45">{dateTime(event.createdAt)}</small></span></li>)}</ol></div>
+        <Link to="/admin/envios" className="btn-secondary mt-4 justify-center">Abrir preparación y envío</Link>
+      </Panel> : <Panel title="Ficha del pedido" description="Seleccioná una venta"><EmptyState title="Elegí un pedido" text="Acá vas a ver productos, cliente, estados, notas y trazabilidad." /></Panel>}
+    </div>
   </AdminPage>;
 }
 

@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { ADMIN_MODULES } from "./moduleRegistry";
 
-const STORAGE_KEY = "cls_admin_modules_v1";
+const STORAGE_KEY = "cls_admin_modules_v2";
 
 function defaults() {
   return ADMIN_MODULES.filter((module) => module.defaultEnabled || module.locked).map((module) => module.id);
@@ -50,4 +50,3 @@ export function useAdminModules() {
   if (!value) throw new Error("useAdminModules debe usarse dentro de AdminModuleProvider");
   return value;
 }
-
