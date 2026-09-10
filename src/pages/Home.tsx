@@ -4,7 +4,6 @@ import {
   BookOpen,
   CircleHelp,
   CreditCard,
-  FileCheck2,
   Globe2,
   HeartHandshake,
   Leaf,
@@ -36,10 +35,10 @@ const BENEFICIOS = [
 ];
 
 const ACCESOS = [
-  { title: "INASE", text: "Genéticas certificadas y con respaldo oficial.", cta: "Ver genéticas", to: "/semillas?origen=nacional", icon: ShieldCheck, color: "bg-[#CDE0C5]" },
-  { title: "Esquejes", text: "Clones listos para arrancar con ventaja.", cta: "Ver esquejes", to: "/esquejes", icon: Sprout, color: "bg-[#F4D4B5]" },
-  { title: "Seeds", text: "Bancos nacionales e importados en un solo lugar.", cta: "Ver semillas", to: "/semillas", icon: Leaf, color: "bg-[#F6DEB0]" },
-  { title: "REPROCANN", text: "Información clara para iniciar tu trámite.", cta: "Te asesoramos", to: "/reprocann", icon: FileCheck2, color: "bg-[#CDE0C5]" },
+  { label: "Ver genéticas certificadas por INASE", to: "/semillas?origen=nacional", horizontal: "/images/home/inase-horizontal.jpg", vertical: "/images/home/inase-vertical.jpg" },
+  { label: "Ver esquejes disponibles", to: "/esquejes", horizontal: "/images/home/esquejes-horizontal.jpg", vertical: "/images/home/esquejes-vertical.jpg" },
+  { label: "Ver el catálogo de semillas", to: "/semillas", horizontal: "/images/home/semillas-horizontal.jpg", vertical: "/images/home/semillas-vertical.jpg" },
+  { label: "Conocer la orientación sobre REPROCANN", to: "/reprocann", horizontal: "/images/home/reprocann-horizontal.jpg", vertical: "/images/home/reprocann-vertical.jpg" },
 ];
 
 const FAQS = [
@@ -70,30 +69,19 @@ export default function Home() {
   return (
     <div className="pb-8">
       <section className="site-container pt-3" aria-labelledby="hero-title">
-        <div className="hero-rays paper-grain relative min-h-[430px] overflow-hidden rounded-[30px] border-[5px] border-cls-paper shadow-lift md:min-h-[390px]">
-          <div className="absolute inset-0 bg-cls-primary/10" />
-          <Sparkles className="absolute left-[42%] top-7 h-9 w-9 text-cls-honey" aria-hidden="true" />
-          <Sparkles className="absolute bottom-12 left-[47%] h-6 w-6 text-cls-paper" aria-hidden="true" />
-          <div className="relative z-10 grid min-h-[430px] items-center gap-4 px-6 py-10 md:min-h-[390px] md:grid-cols-[1.05fr_0.95fr] md:px-10 lg:px-14">
-            <div className="relative z-20 max-w-[660px] text-cls-paper drop-shadow-[0_2px_6px_rgba(12,56,44,0.32)]">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-cls-honey">Semillas y esquejes registrados</p>
-              <h1 id="hero-title" className="font-serif text-[52px] font-black leading-[0.82] tracking-[-0.06em] text-[#FBE8C8] sm:text-7xl lg:text-[92px]">
-                Sembrando<br />felicidad
-              </h1>
-              <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-cls-paper/90 md:text-base">
-                {heroBanner?.contenido ?? "Genéticas nacionales e importadas con origen claro. Te acompañamos desde la elección hasta la cosecha."}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                <Link to="/semillas" className="btn-primary">Ver el catálogo <ArrowRight className="h-4 w-4" /></Link>
-                <Link to="/notas/primer-cultivo-por-donde-arrancar" className="btn-outline border-cls-paper bg-cls-paper/95">¿Primera vez cultivando?</Link>
-              </div>
-            </div>
-
-            <div className="pointer-events-none absolute -bottom-24 right-[-92px] z-0 h-[390px] w-[390px] rounded-full bg-cls-sage/80 opacity-45 sm:right-[-30px] md:-bottom-24 md:right-[-30px] md:h-[500px] md:w-[500px] md:opacity-100 lg:right-5">
-              <img src="/mascot-cls-05.png" alt="Ilustración de la guardiana de Crazy Lady Seeds" className="absolute left-1/2 top-1/2 w-[112%] max-w-none -translate-x-1/2 -translate-y-[54%] drop-shadow-[0_12px_0_rgba(12,56,44,0.12)]" />
-              <div className="absolute right-10 top-16 hidden rotate-6 rounded-[42%] bg-cls-paper px-6 py-4 text-center font-serif text-xl font-black leading-[0.9] text-cls-primary-dark shadow-md md:block">
-                Same seeds,<br />brighter days
-              </div>
+        <div className="relative">
+          <div className="overflow-hidden rounded-[26px] border-[5px] border-cls-paper bg-cls-primary shadow-lift md:rounded-[30px]">
+            <h1 id="hero-title" className="sr-only">Sembrando felicidad</h1>
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/images/home/head-vertical.jpg" />
+              <img src="/images/home/head-horizontal.jpg" alt="" width="2172" height="724" loading="eager" decoding="async" className="block aspect-[941/1672] w-full object-cover md:aspect-[3/1]" />
+            </picture>
+          </div>
+          <div className="relative z-10 mx-3 -mt-5 flex flex-col gap-3 rounded-2xl border border-cls-line bg-cls-paper/95 p-3 shadow-lift backdrop-blur sm:mx-6 md:flex-row md:items-center md:justify-between md:px-4">
+            <p className="hidden max-w-xl text-xs leading-relaxed text-cls-ink/65 lg:block">{heroBanner?.contenido ?? "Genéticas nacionales e importadas con origen claro. Te acompañamos desde la elección hasta la cosecha."}</p>
+            <div className="flex flex-col gap-2 sm:flex-row md:ml-auto">
+              <Link to="/semillas" className="btn-primary">Ver el catálogo <ArrowRight className="h-4 w-4" /></Link>
+              <Link to="/notas/primer-cultivo-por-donde-arrancar" className="btn-outline">¿Primera vez cultivando?</Link>
             </div>
           </div>
         </div>
@@ -113,12 +101,13 @@ export default function Home() {
       <BancosRow />
 
       <section className="site-container mt-3 grid grid-cols-2 gap-2 md:grid-cols-4" aria-label="Categorías destacadas">
-        {ACCESOS.map(({ title, text, cta, to, icon: Icon, color }) => (
-          <Link key={title} to={to} className={`${color} group relative min-h-[150px] overflow-hidden rounded-2xl border border-cls-line p-4 transition hover:-translate-y-0.5 hover:shadow-lift md:min-h-[178px] md:p-5`}>
-            <Icon className="absolute -bottom-5 -right-2 h-28 w-28 rotate-[-8deg] text-cls-primary/30 transition duration-300 group-hover:rotate-0 group-hover:scale-105" strokeWidth={1.4} aria-hidden="true" />
-            <h2 className="relative text-3xl font-black leading-none text-cls-primary-dark">{title}</h2>
-            <p className="relative mt-2 max-w-[14rem] text-xs leading-snug text-cls-ink/75 md:text-sm">{text}</p>
-            <span className="btn-secondary relative mt-4 min-h-9 px-4 py-1.5 text-xs">{cta} <ArrowRight className="h-3.5 w-3.5" /></span>
+        {ACCESOS.map(({ label, to, horizontal, vertical }) => (
+          <Link key={to} to={to} aria-label={label} className="group relative overflow-hidden rounded-2xl border border-cls-line bg-white shadow-[0_3px_12px_rgba(23,53,44,0.04)] transition duration-300 hover:-translate-y-1 hover:border-cls-primary hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cls-orange focus-visible:ring-offset-2">
+            <picture>
+              <source media="(max-width: 767px)" srcSet={vertical} />
+              <img src={horizontal} alt="" width="1200" height="675" loading="lazy" decoding="async" className="block aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-[1.015] md:aspect-video" />
+            </picture>
+            <span className="absolute bottom-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-full border border-cls-paper/70 bg-cls-primary text-cls-paper shadow-md transition group-hover:bg-cls-orange" aria-hidden="true"><ArrowRight className="h-4 w-4" /></span>
           </Link>
         ))}
       </section>
