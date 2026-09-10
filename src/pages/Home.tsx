@@ -149,22 +149,22 @@ export default function Home() {
         </div>
 
         <div id="comunidad" className="grid gap-3 sm:grid-cols-2">
-          <Link to="/notas" className="overflow-hidden rounded-lg border border-cls-line sm:col-span-2">
+          <Link to="/notas" className="block sm:col-span-2">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/fundacion-vertical.png" />
-              <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full object-cover" />
+              <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full" />
             </picture>
           </Link>
-          <div className="overflow-hidden rounded-lg border border-cls-line">
+          <div>
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/comunidad-vertical.png" />
-              <img src="/images/home/comunidad-horizontal.png" alt="Comunidad — Cultivando en comunidad" width="600" height="400" loading="lazy" decoding="async" className="block w-full object-cover" />
+              <img src="/images/home/comunidad-horizontal.png" alt="Comunidad — Cultivando en comunidad" width="600" height="400" loading="lazy" decoding="async" className="block w-full" />
             </picture>
           </div>
-          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="overflow-hidden rounded-lg border border-cls-line text-left transition hover:-translate-y-0.5 hover:shadow-lift">
+          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="text-left transition hover:-translate-y-0.5 hover:shadow-lift">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/doctor-vertical.png" />
-              <img src="/images/home/doctor-horizontal.png" alt="Plant Doctor — Diagnóstico en vivo" width="600" height="400" loading="lazy" decoding="async" className="block w-full object-cover" />
+              <img src="/images/home/doctor-horizontal.png" alt="Plant Doctor — Diagnóstico en vivo" width="600" height="400" loading="lazy" decoding="async" className="block w-full" />
             </picture>
           </button>
         </div>
