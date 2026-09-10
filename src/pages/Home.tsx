@@ -10,7 +10,6 @@ import {
   Scissors,
   ShieldCheck,
   Sparkles,
-  Sprout,
   Sun,
   Truck,
   UsersRound,
@@ -45,7 +44,12 @@ const FAQS = [
   { q: "¿Cómo elijo la genética ideal para mí?", a: "Empezá por espacio, experiencia, tiempo de cultivo y objetivo. Podés usar los filtros o hablar con Emma para comparar opciones disponibles." },
 ];
 
-const ARTICLE_ICONS = [Sprout, Sun, Leaf, BookOpen];
+const BEGINNER_IMAGES = [
+  { square: "/images/home/blog1-square.jpg", vertical: "/images/home/blog1-vertical.jpg" },
+  { square: "/images/home/blog2-square.jpg", vertical: "/images/home/blog2-vertical.jpg" },
+  { square: "/images/home/blog3-square.jpg", vertical: "/images/home/blog3-vertical.jpg" },
+  { square: "/images/home/blog4-square.jpg", vertical: "/images/home/blog4-vertical.jpg" },
+];
 
 const DIARIO_IMAGES = [
   { horizontal: "/images/home/diario1-horizontal.png", vertical: "/images/home/diario1-vertical.png" },
@@ -132,12 +136,13 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
             {notas.map((nota, index) => {
-              const Icon = ARTICLE_ICONS[index % ARTICLE_ICONS.length];
+              const img = BEGINNER_IMAGES[index % BEGINNER_IMAGES.length];
               return (
                 <Link key={nota.slug} to={`/notas/${nota.slug}`} className="group overflow-hidden rounded-xl border border-cls-line bg-cls-paper">
-                  <div className={`flex aspect-[4/3] items-center justify-center ${index % 2 ? "bg-[#EEC49D]" : "bg-cls-sage"}`}>
-                    <Icon className="h-12 w-12 text-cls-primary transition group-hover:scale-110" strokeWidth={1.3} aria-hidden="true" />
-                  </div>
+                  <picture>
+                    <source media="(max-width: 767px)" srcSet={img.vertical} />
+                    <img src={img.square} alt="" width="900" height="900" loading="lazy" decoding="async" className="block aspect-[3/4] w-full object-cover transition duration-500 group-hover:scale-[1.025] md:aspect-square" />
+                  </picture>
                   <div className="p-2.5">
                     <h3 className="line-clamp-3 font-sans text-xs font-bold leading-snug text-cls-primary-dark">{nota.titulo}</h3>
                     <ArrowRight className="ml-auto mt-2 h-4 w-4 text-cls-primary" aria-hidden="true" />
@@ -149,22 +154,22 @@ export default function Home() {
         </div>
 
         <div id="comunidad" className="grid gap-3 sm:grid-cols-2">
-          <Link to="/notas" className="relative min-h-[178px] overflow-hidden rounded-2xl sm:col-span-2">
+          <Link to="/notas" className="overflow-hidden rounded-2xl sm:col-span-2">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/fundacion-vertical.png" />
-              <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full" />
             </picture>
           </Link>
-          <div className="relative min-h-[160px] overflow-hidden rounded-2xl">
+          <div className="overflow-hidden rounded-2xl">
             <picture>
-              <source media="(max-width: 767px)" srcSet="/images/home/comunidad-vertical.png" />
-              <img src="/images/home/comunidad-horizontal.png" alt="Comunidad — Cultivando en comunidad" width="600" height="400" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <source media="(max-width: 767px)" srcSet="/images/home/comunidad-vertical.jpg" />
+              <img src="/images/home/comunidad-horizontal.jpg" alt="Comunidad — Cultivando en comunidad" width="1400" height="525" loading="lazy" decoding="async" className="block h-full w-full object-cover" />
             </picture>
           </div>
-          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="relative min-h-[160px] overflow-hidden rounded-2xl text-left transition hover:-translate-y-0.5 hover:shadow-lift">
+          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="overflow-hidden rounded-2xl text-left transition hover:-translate-y-0.5 hover:shadow-lift">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/doctor-vertical.png" />
-              <img src="/images/home/doctor-horizontal.png" alt="Plant Doctor — Diagnóstico en vivo" width="600" height="400" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <img src="/images/home/doctor-horizontal.png" alt="Plant Doctor — Diagnóstico en vivo" width="600" height="400" loading="lazy" decoding="async" className="block h-full w-full object-cover" />
             </picture>
           </button>
         </div>
