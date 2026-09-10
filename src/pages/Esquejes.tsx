@@ -1,6 +1,6 @@
 import { Droplets, Scissors, ShieldCheck, Thermometer } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-import { ESQUEJES } from "../data/catalogo";
+import { useCommerceData } from "../context/CommerceDataContext";
 
 const CUIDADOS = [
   { icon: Droplets, title: "Llega con raíz", text: "El esqueje viaja enraizado. Al recibirlo, trasplantalo sin romper el cepellón." },
@@ -9,7 +9,8 @@ const CUIDADOS = [
 ];
 
 export default function Esquejes() {
-  const disponibles = ESQUEJES.filter((item) => item.stock > 0 && item.visible_web !== false);
+  const { products } = useCommerceData();
+  const disponibles = products.filter((item) => item.categoria === "esqueje" && item.stock > 0 && item.visible_web !== false);
 
   return (
     <div className="site-container py-8 md:py-12">

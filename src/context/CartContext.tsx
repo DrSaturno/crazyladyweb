@@ -33,26 +33,21 @@ export function useCart() {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [sessionToken, setSessionToken] = useState("");
-
-  useEffect(() => {
-    let token = localStorage.getItem(STORAGE_TOKEN);
-    if (!token) {
-      token = `cls-${Math.random().toString(36).slice(2, 11)}-${Date.now()}`;
-      localStorage.setItem(STORAGE_TOKEN, token);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_ITEMS) ?? "[]");
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
     }
-    setSessionToken(token);
-
-    const guardado = localStorage.getItem(STORAGE_ITEMS);
-    if (guardado) {
-      try {
-        setItems(JSON.parse(guardado));
-      } catch {
-        localStorage.removeItem(STORAGE_ITEMS);
-      }
-    }
-  }, []);
+  });
+  const [sessionToken] = useState(() => {
+    const existing = localStorage.getItem(STORAGE_TOKEN);
+    if (existing) return existing;
+    const created = `cls-${Math.random().toString(36).slice(2, 11)}-${Date.now()}`;
+    localStorage.setItem(STORAGE_TOKEN, created);
+    return created;
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_ITEMS, JSON.stringify(items));

@@ -1,6 +1,6 @@
 # SPEC-WEB-02 — Ecommerce Crazy Lady Seeds
 
-**Estado:** interfaz pública implementada; integración operativa pendiente
+**Estado:** tienda y operación local implementadas; integraciones productivas pendientes
 **Fecha:** 9 de septiembre de 2026
 **Dirección visual:** aprobada por Crazy Lady Seeds mediante `opcion5.png`
 **Alcance de este ciclo:** tienda pública. El panel admin y el bot se especifican después de estabilizar contenido, catálogo y operaciones de la tienda.
@@ -32,8 +32,8 @@ Una tienda responsive, accesible y orientada a conversión que permita descubrir
 | `/notas/:slug` | lectura + recomendación contextual | implementado con contenido a validar |
 | `/reprocann` | información y derivación responsable | implementado como borrador a validar |
 | `/carrito` | resumen editable | implementado y persistente en navegador |
-| `/checkout` | datos, entrega y pago | interfaz implementada; backend pendiente |
-| `/gracias/:orderId` | confirmación trazable | pendiente |
+| `/checkout` | datos, entrega y pago | crea pedido trazable en modo local; backend productivo pendiente |
+| `/gracias/:orderId` | confirmación trazable | implementado |
 | `/semillas?q=` | resultados globales | implementado |
 | `/cuenta` | acceso, pedidos y datos | interfaz informativa; pendiente de Auth |
 | `/favoritos` | lista persistente | implementado en navegador |
@@ -139,6 +139,6 @@ No registrar contenido sensible de formularios ni mensajes del bot dentro de ana
 2. Implementar el sistema visual y la home contra fixtures reales. **Completado.**
 3. Rediseñar catálogo, producto, contenido y carrito. **Completado.**
 4. Implementar las interfaces de checkout, cuenta y políticas. **Completado; integración pendiente.**
-5. Definir esquema/migraciones y reemplazar fixtures por Supabase.
-6. Ejecutar pruebas unitarias, integración, accesibilidad, responsive y compra real.
+5. Definir esquema/migraciones y reemplazar fixtures por una fuente compartida. **Esquema y adaptador listos; conexión remota pendiente.**
+6. Ejecutar pruebas unitarias, integración, accesibilidad, responsive y compra real. **Build, flujo local y responsive verificados; compra productiva pendiente.**
 7. Solo entonces conectar el bot a la fuente publicada.

@@ -22,7 +22,8 @@ import {
 import { Link } from "react-router-dom";
 import BancosRow from "../components/BancosRow";
 import ProductCard from "../components/ProductCard";
-import { ESQUEJES, SEMILLAS, disponibles, esInase } from "../data/catalogo";
+import { esInase, type Producto } from "../data/catalogo";
+import { useCommerceData } from "../context/CommerceDataContext";
 import { NOTAS } from "../data/notas";
 
 const BENEFICIOS = [
@@ -51,14 +52,20 @@ const FAQS = [
 const ARTICLE_ICONS = [Sprout, Sun, Leaf, BookOpen];
 
 export default function Home() {
+  const { products, content, settings } = useCommerceData();
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [email, setEmail] = useState("");
   const [suscripto, setSuscripto] = useState(false);
-  const conStock = disponibles();
+  const semillas = products.filter((product) => product.categoria === "semilla");
+  const esquejes = products.filter((product) => product.categoria === "esqueje");
+  const conStock = semillas.filter((product) => product.stock > 0 && product.visible_web !== false).sort((a, b) => b.stock - a.stock);
   const masVendidas = conStock.slice(0, 5);
   const seleccion = conStock.slice(5, 10);
-  const inaseCount = SEMILLAS.filter((product) => product.stock > 0 && esInase(product.banco)).length;
+  const inaseCount = semillas.filter((product) => product.stock > 0 && esInase(product.banco)).length;
   const notas = NOTAS.filter((nota) => nota.tipo === "guia").slice(0, 4);
+  const cmsFaqs = content.filter((entry) => entry.tipo === "faq" && entry.publicado).map((entry) => ({ q: entry.titulo, a: entry.contenido }));
+  const faqs = cmsFaqs.length ? cmsFaqs : FAQS;
+  const heroBanner = content.find((entry) => entry.id === "banner-home" && entry.publicado);
 
   return (
     <div className="pb-8">
@@ -74,7 +81,7 @@ export default function Home() {
                 Sembrando<br />felicidad
               </h1>
               <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-cls-paper/90 md:text-base">
-                Genéticas nacionales e importadas con origen claro. Te acompañamos desde la elección hasta la cosecha.
+                {heroBanner?.contenido ?? "Genéticas nacionales e importadas con origen claro. Te acompañamos desde la elección hasta la cosecha."}
               </p>
               <div className="mt-6 flex flex-wrap gap-2.5">
                 <Link to="/semillas" className="btn-primary">Ver el catálogo <ArrowRight className="h-4 w-4" /></Link>
@@ -118,7 +125,7 @@ export default function Home() {
 
       <section className="site-container mt-3 grid gap-3 xl:grid-cols-2" aria-label="Productos destacados">
         <ProductShelf title="Más vendidas" subtitle="Lo que más elige la comunidad." icon={Sparkles} products={masVendidas} href="/semillas?stock=1" />
-        <ProductShelf title="Elegidas esta semana" subtitle="10% OFF pagando por transferencia." icon={Sun} products={seleccion} href="/semillas?stock=1" accent />
+        <ProductShelf title="Elegidas esta semana" subtitle={`${settings.descuentoTransferencia}% OFF pagando por transferencia.`} icon={Sun} products={seleccion} href="/semillas?stock=1" accent />
       </section>
 
       <section id="principiantes" className="site-container mt-3 grid gap-3 lg:grid-cols-2">
@@ -222,7 +229,7 @@ export default function Home() {
             <div><h2 className="section-heading">Preguntas frecuentes</h2><p className="mt-1 text-xs text-cls-ink/60">Resolvemos tus dudas.</p></div>
           </div>
           <div className="divide-y divide-cls-line border-y border-cls-line">
-            {FAQS.map((item, index) => {
+            {faqs.map((item, index) => {
               const open = faqAbierta === index;
               return (
                 <div key={item.q}>
@@ -259,14 +266,14 @@ export default function Home() {
       <section className="site-container mt-3">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cls-line bg-cls-sage px-5 py-4 text-sm">
           <p className="font-bold text-cls-primary-dark"><Scissors className="mr-2 inline h-5 w-5" aria-hidden="true" /> También trabajamos con esquejes seleccionados.</p>
-          <p className="text-cls-ink/70">{ESQUEJES.filter((item) => item.stock > 0).length} variedad disponible · {inaseCount} genéticas INASE con stock</p>
+          <p className="text-cls-ink/70">{esquejes.filter((item) => item.stock > 0).length} variedad disponible · {inaseCount} genéticas INASE con stock</p>
         </div>
       </section>
     </div>
   );
 }
 
-function ProductShelf({ title, subtitle, icon: Icon, products, href, accent = false }: { title: string; subtitle: string; icon: typeof Sparkles; products: typeof SEMILLAS; href: string; accent?: boolean }) {
+function ProductShelf({ title, subtitle, icon: Icon, products, href, accent = false }: { title: string; subtitle: string; icon: typeof Sparkles; products: Producto[]; href: string; accent?: boolean }) {
   return (
     <div className="section-shell p-3 md:p-4">
       <div className="mb-3 flex items-end justify-between gap-3">

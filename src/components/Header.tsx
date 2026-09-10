@@ -3,7 +3,8 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown, Heart, Menu, Search, ShoppingCart, UserRound, X } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
-import { BANCOS, GENETICA_LABEL, ORIGEN_LABEL, PRODUCTOS, TIPO_LABEL } from "../data/catalogo";
+import { useCommerceData } from "../context/CommerceDataContext";
+import { BANCOS, GENETICA_LABEL, ORIGEN_LABEL, TIPO_LABEL } from "../data/catalogo";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -23,6 +24,7 @@ export default function Header() {
   const navigate = useNavigate();
   const { totalItems } = useCart();
   const { total: totalFavoritos } = useWishlist();
+  const { products, settings } = useCommerceData();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [semillasAbierto, setSemillasAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -31,11 +33,11 @@ export default function Header() {
   const sugerencias = useMemo(() => {
     const query = normalize(busqueda.trim());
     if (query.length < 2) return [];
-    return PRODUCTOS.filter((producto) => {
+    return products.filter((producto) => {
       if (producto.visible_web === false) return false;
       return normalize(`${producto.nombre} ${producto.banco} ${producto.tipo} ${producto.genetica}`).includes(query);
     }).slice(0, 6);
-  }, [busqueda]);
+  }, [busqueda, products]);
 
   function buscar() {
     const query = busqueda.trim();
@@ -54,7 +56,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 border-b border-cls-line bg-cls-cream/95 shadow-[0_4px_18px_rgba(23,53,44,0.08)] backdrop-blur">
       <div className="bg-cls-primary text-cls-paper">
         <div className="site-container flex min-h-8 items-center justify-center gap-2 py-1 text-center text-[11px] font-bold sm:justify-between">
-          <p><span className="text-cls-honey" aria-hidden="true">✦</span> Envíos discretos a todo el país <span className="hidden sm:inline">| 10% OFF en transferencia</span> <span className="text-cls-honey" aria-hidden="true">✦</span></p>
+          <p><span className="text-cls-honey" aria-hidden="true">✦</span> Envíos discretos a todo el país <span className="hidden sm:inline">| {settings.descuentoTransferencia}% OFF en transferencia</span> <span className="text-cls-honey" aria-hidden="true">✦</span></p>
           <a
             href="https://instagram.com/crazyladyseedsok"
             target="_blank"
@@ -68,8 +70,8 @@ export default function Header() {
       </div>
 
       <div className="site-container">
-        <div className="flex min-h-[82px] items-center gap-3 md:gap-6">
-          <Link to="/" className="brand-logo-frame" aria-label="Crazy Lady Seeds — inicio">
+        <div className="flex min-h-[76px] items-center gap-2 sm:min-h-[82px] sm:gap-3 md:gap-6">
+          <Link to="/" className="brand-logo-frame header-brand-logo" aria-label="Crazy Lady Seeds — inicio">
             <img src="/logo-cls-01.png" alt="" />
           </Link>
 
@@ -88,7 +90,7 @@ export default function Header() {
               onBlur={() => setBuscadorActivo(false)}
               autoComplete="off"
               placeholder="Buscá tu variedad, banco o lo que necesites…"
-              className="h-12 w-full rounded-full border border-cls-primary/55 bg-cls-paper pl-12 pr-14 text-sm shadow-inner outline-none transition focus:border-cls-primary-dark focus:ring-2 focus:ring-cls-honey/60"
+              className="h-12 w-full rounded-full border border-cls-primary/55 bg-cls-paper pl-12 pr-14 text-base shadow-inner outline-none transition focus:border-cls-primary-dark focus:ring-2 focus:ring-cls-honey/60 md:text-sm"
               aria-controls="search-suggestions"
               aria-expanded={buscadorActivo && sugerencias.length > 0}
             />
@@ -143,7 +145,7 @@ export default function Header() {
         <form role="search" className="relative pb-3 md:hidden" onSubmit={(event) => { event.preventDefault(); buscar(); }}>
           <label htmlFor="mobile-site-search" className="sr-only">Buscar en el catálogo</label>
           <Search className="pointer-events-none absolute left-4 top-[22px] h-4 w-4 -translate-y-1/2 text-cls-primary/70" />
-          <input id="mobile-site-search" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar variedades o bancos…" className="h-11 w-full rounded-full border border-cls-primary/45 bg-cls-paper pl-11 pr-4 text-sm outline-none focus:ring-2 focus:ring-cls-honey/60" />
+          <input id="mobile-site-search" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar variedades o bancos…" className="h-11 w-full rounded-full border border-cls-primary/45 bg-cls-paper pl-11 pr-4 text-base outline-none focus:ring-2 focus:ring-cls-honey/60" />
         </form>
       </div>
 

@@ -15,7 +15,8 @@
 export type Origen = "nacional" | "importada";
 export type TipoSemilla = "feminizada" | "automatica" | "cbd";
 export type Genetica = "indica" | "sativa" | "hibrida";
-export type Categoria = "semilla" | "esqueje";
+/** Identificador de categoría administrable (las iniciales son semilla y esqueje). */
+export type Categoria = string;
 
 export interface Producto {
   id: string;
@@ -29,6 +30,13 @@ export interface Producto {
   precio: number;
   stock: number;
   presentacion: string;
+  descripcion?: string;
+  fotoperiodo?: string;
+  ambiente?: string;
+  dificultad?: string;
+  ciclo_semanas?: number;
+  thc?: string;
+  cbd?: string;
   /** Imagen aprobada/entregada por el cliente. Sin valor se usa arte neutro de catálogo. */
   imagen?: string;
   /**

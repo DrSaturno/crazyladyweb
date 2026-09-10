@@ -4,20 +4,20 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+import { useCommerceData } from "../context/CommerceDataContext";
 import {
   BANCOS,
   GENETICA_LABEL,
   ORIGEN_LABEL,
-  SEMILLAS,
   TIPO_LABEL,
   esInase,
-  getProducto,
   precioARS,
 } from "../data/catalogo";
 
 export default function ProductoDetalle() {
   const { slug } = useParams();
-  const producto = slug ? getProducto(slug) : undefined;
+  const { products } = useCommerceData();
+  const producto = slug ? products.find((item) => item.slug === slug && item.visible_web !== false) : undefined;
   const { agregar } = useCart();
   const { alternar, contiene } = useWishlist();
   const [cantidad, setCantidad] = useState(1);
@@ -29,7 +29,7 @@ export default function ProductoDetalle() {
   const inase = esInase(producto.banco);
   const favorito = contiene(producto.id);
   const banco = BANCOS.find((item) => item.nombre === producto.banco);
-  const relacionados = SEMILLAS.filter((item) => item.id !== producto.id && item.stock > 0 && item.visible_web !== false && (item.banco === producto.banco || item.genetica === producto.genetica)).slice(0, 5);
+  const relacionados = products.filter((item) => item.categoria === "semilla" && item.id !== producto.id && item.stock > 0 && item.visible_web !== false && (item.banco === producto.banco || item.genetica === producto.genetica)).slice(0, 5);
 
   function handleAgregar() {
     agregar(producto!, cantidad);
@@ -79,6 +79,7 @@ export default function ProductoDetalle() {
 
           <p className="mt-5 text-3xl font-black text-cls-primary-dark">{precioARS(producto.precio)}</p>
           <p className="mt-1 text-xs text-cls-ink/60">Presentación {producto.presentacion} · Precio final en pesos argentinos</p>
+          {producto.descripcion && <p className="mt-5 text-sm leading-relaxed text-cls-ink/70">{producto.descripcion}</p>}
 
           <dl className="mt-6 grid grid-cols-2 gap-2">
             {[
@@ -93,6 +94,24 @@ export default function ProductoDetalle() {
               </div>
             ))}
           </dl>
+
+          {(producto.fotoperiodo || producto.ambiente || producto.dificultad || producto.ciclo_semanas || producto.thc || producto.cbd) && (
+            <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {[
+                ["Fotoperiodo", producto.fotoperiodo],
+                ["Ambiente", producto.ambiente],
+                ["Dificultad", producto.dificultad],
+                ["Ciclo", producto.ciclo_semanas ? `${producto.ciclo_semanas} semanas` : undefined],
+                ["THC", producto.thc],
+                ["CBD", producto.cbd],
+              ].filter((item): item is [string, string] => Boolean(item[1])).map(([key, value]) => (
+                <div key={key} className="rounded-xl border border-cls-line bg-cls-sage/45 px-4 py-3">
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-cls-ink/55">{key}</dt>
+                  <dd className="mt-1 text-sm font-bold text-cls-primary-dark">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
 
           {!sinStock ? (
             <div className="mt-6 rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper">

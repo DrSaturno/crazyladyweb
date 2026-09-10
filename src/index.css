@@ -32,6 +32,7 @@
   body {
     margin: 0;
     min-width: 320px;
+    overflow-x: clip;
     background:
       radial-gradient(circle at 12% 3%, rgba(232, 117, 61, 0.06), transparent 26rem),
       var(--cls-cream);
@@ -164,6 +165,85 @@
 
   .skip-link {
     @apply fixed left-4 top-4 z-[100] -translate-y-24 rounded-full bg-cls-honey px-4 py-2 font-bold text-cls-primary-dark transition-transform focus:translate-y-0;
+  }
+
+  .header-brand-logo {
+    @apply h-[52px] w-[80px] sm:h-[62px] sm:w-[96px] md:h-[78px] md:w-[122px];
+  }
+
+  .admin-table {
+    @apply w-full border-collapse text-left text-xs;
+  }
+
+  .admin-table th {
+    @apply border-b border-cls-line px-3 py-2 text-[10px] font-black uppercase tracking-wider text-cls-ink/45;
+  }
+
+  .admin-table td {
+    @apply border-b border-cls-line px-3 py-3 align-middle text-cls-ink/70;
+  }
+
+  .admin-table td strong,
+  .admin-table td small {
+    @apply block;
+  }
+
+  .admin-table td strong {
+    @apply text-xs text-cls-primary-dark;
+  }
+
+  .admin-table td small {
+    @apply mt-0.5 text-[10px] text-cls-ink/45;
+  }
+}
+
+@media (max-width: 639px) {
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .admin-table tr {
+    overflow: hidden;
+    border: 1px solid var(--cls-line);
+    border-radius: 0.875rem;
+    background: var(--cls-cream);
+  }
+
+  .admin-table td {
+    display: grid;
+    grid-template-columns: minmax(5rem, 0.38fr) minmax(0, 0.62fr);
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    text-align: right;
+  }
+
+  .admin-table td::before {
+    content: attr(data-label);
+    text-align: left;
+    font-size: 0.625rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(23, 53, 44, 0.52);
+  }
+
+  .admin-table td > * {
+    min-width: 0;
+    justify-self: end;
   }
 }
 

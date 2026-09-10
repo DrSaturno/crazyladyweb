@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
+import { useCommerceData } from "../context/CommerceDataContext";
 import {
   BANCOS,
   GENETICA_LABEL,
   ORIGEN_LABEL,
-  SEMILLAS,
   TIPO_LABEL,
   type Genetica,
   type Origen,
@@ -18,6 +18,8 @@ function normalize(value: string) {
 }
 
 export default function Semillas() {
+  const { products } = useCommerceData();
+  const semillas = useMemo(() => products.filter((product) => product.categoria === "semilla"), [products]);
   const [params, setParams] = useSearchParams();
   const origen = params.get("origen") as Origen | null;
   const tipo = params.get("tipo") as TipoSemilla | null;
@@ -46,7 +48,7 @@ export default function Semillas() {
 
   const resultados = useMemo(() => {
     const normalizedQuery = normalize(query);
-    return SEMILLAS.filter((product) => {
+    return semillas.filter((product) => {
       if (product.visible_web === false) return false;
       if (origen && product.origen !== origen) return false;
       if (tipo && product.tipo !== tipo) return false;
@@ -56,7 +58,7 @@ export default function Semillas() {
       if (normalizedQuery && !normalize(`${product.nombre} ${product.banco} ${product.tipo} ${product.genetica}`).includes(normalizedQuery)) return false;
       return true;
     }).sort((a, b) => b.stock - a.stock || a.nombre.localeCompare(b.nombre));
-  }, [bancoNombre, genetica, origen, query, soloStock, tipo]);
+  }, [bancoNombre, genetica, origen, query, semillas, soloStock, tipo]);
 
   const hayFiltros = Boolean(origen || tipo || genetica || banco || soloStock);
   const title = query ? `Resultados para “${query}”` : bancoNombre ?? "Semillas";

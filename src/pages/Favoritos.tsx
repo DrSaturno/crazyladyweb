@@ -1,12 +1,13 @@
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { PRODUCTOS } from "../data/catalogo";
+import { useCommerceData } from "../context/CommerceDataContext";
 import { useWishlist } from "../context/WishlistContext";
 
 export default function Favoritos() {
+  const { products } = useCommerceData();
   const { ids } = useWishlist();
-  const productos = PRODUCTOS.filter((producto) => ids.includes(producto.id));
+  const productos = products.filter((producto) => ids.includes(producto.id) && producto.visible_web !== false);
 
   return (
     <div className="site-container py-10 md:py-14">

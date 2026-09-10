@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ArrowLeft, LockKeyhole, ShieldCheck, Truck } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useCommerceData } from "../context/CommerceDataContext";
 import { precioARS } from "../data/catalogo";
 
 interface FormState {
@@ -31,10 +32,13 @@ const INITIAL: FormState = {
 };
 
 export default function Checkout() {
-  const { items, total } = useCart();
+  const { items, total, vaciar } = useCart();
+  const { createOrder, settings } = useCommerceData();
+  const navigate = useNavigate();
   const [form, setForm] = useState<FormState>(INITIAL);
-  const [status, setStatus] = useState("");
-  const descuento = form.payment === "transferencia" ? Math.round(total * 0.1) : 0;
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const descuento = form.payment === "transferencia" ? Math.round(total * settings.descuentoTransferencia / 100) : 0;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -42,7 +46,22 @@ export default function Checkout() {
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    setStatus("El formulario está validado. La creación de órdenes se habilitará cuando se conecten Supabase, envíos y el proveedor de pagos.");
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const order = createOrder({
+        items,
+        customer: { nombre: form.nombre, email: form.email, telefono: form.telefono, direccion: form.direccion, localidad: form.localidad, provincia: form.provincia, codigoPostal: form.codigoPostal },
+        paymentMethod: form.payment,
+        notas: form.notas,
+      });
+      vaciar();
+      navigate(`/gracias/${order.id}`, { replace: true, state: { publicNumber: order.publicNumber } });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "No pudimos crear el pedido. Revisá los datos e intentá otra vez.");
+      setSubmitting(false);
+    }
   }
 
   if (!items.length) {
@@ -113,9 +132,9 @@ export default function Checkout() {
               <div className="flex justify-between border-t border-cls-line pt-4 text-lg"><dt className="font-bold">Total parcial</dt><dd className="font-black text-cls-primary-dark">{precioARS(total - descuento)}</dd></div>
             </dl>
             <label className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-cls-ink/65"><input required type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-4 w-4 accent-cls-primary" /> Confirmo que soy mayor de 18 años y acepto las condiciones de compra que se publicarán antes del lanzamiento.</label>
-            <button type="submit" className="btn-primary mt-5 w-full">Validar datos del pedido</button>
-            <p className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-cls-ink/55"><ShieldCheck className="h-4 w-4 shrink-0" /> Esta maqueta no crea órdenes ni procesa pagos reales.</p>
-            {status && <p role="status" className="mt-4 rounded-xl bg-cls-primary p-3 text-xs font-bold leading-relaxed text-cls-paper">{status}</p>}
+            <button type="submit" disabled={submitting} className="btn-primary mt-5 w-full">{submitting ? "Creando pedido…" : "Confirmar pedido"}</button>
+            <p className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-cls-ink/55"><ShieldCheck className="h-4 w-4 shrink-0" /> El pedido queda registrado y pendiente de validación. Ningún pago se procesa dentro de esta pantalla.</p>
+            {error && <p role="alert" className="mt-3 rounded-xl bg-red-100 p-3 text-xs font-bold text-red-800">{error}</p>}
           </div>
         </aside>
       </form>
