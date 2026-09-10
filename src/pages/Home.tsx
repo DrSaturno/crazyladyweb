@@ -4,8 +4,6 @@ import {
   BookOpen,
   CircleHelp,
   CreditCard,
-  Globe2,
-  HeartHandshake,
   Leaf,
   Mail,
   MessageCircle,
@@ -13,7 +11,6 @@ import {
   ShieldCheck,
   Sparkles,
   Sprout,
-  Stethoscope,
   Sun,
   Truck,
   UsersRound,
@@ -49,6 +46,13 @@ const FAQS = [
 ];
 
 const ARTICLE_ICONS = [Sprout, Sun, Leaf, BookOpen];
+
+const DIARIO_IMAGES = [
+  { horizontal: "/images/home/diario1-horizontal.png", vertical: "/images/home/diario1-vertical.png" },
+  { horizontal: "/images/home/diario2-horizontal.png", vertical: "/images/home/diario2-vertical.png" },
+  { horizontal: "/images/home/diario3-horizontal.png", vertical: "/images/home/diario3-vertical.png" },
+  { horizontal: "/images/home/diario4-horizontal.png", vertical: "/images/home/diario4-vertical.png" },
+];
 
 export default function Home() {
   const { products, content, settings } = useCommerceData();
@@ -105,7 +109,7 @@ export default function Home() {
           <Link key={to} to={to} aria-label={label} className="group relative overflow-hidden rounded-2xl border border-cls-line bg-white shadow-[0_3px_12px_rgba(23,53,44,0.04)] transition duration-300 hover:-translate-y-1 hover:border-cls-primary hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cls-orange focus-visible:ring-offset-2">
             <picture>
               <source media="(max-width: 767px)" srcSet={vertical} />
-              <img src={horizontal} alt="" width="1200" height="675" loading="lazy" decoding="async" className="block aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-[1.015] md:aspect-video" />
+              <img src={horizontal} alt="" width="1200" height="675" loading="lazy" decoding="async" className="block aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-[1.015] md:aspect-[11/5]" />
             </picture>
             <span className="absolute bottom-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-full border border-cls-paper/70 bg-cls-primary text-cls-paper shadow-md transition group-hover:bg-cls-orange" aria-hidden="true"><ArrowRight className="h-4 w-4" /></span>
           </Link>
@@ -145,22 +149,37 @@ export default function Home() {
         </div>
 
         <div id="comunidad" className="grid gap-3 sm:grid-cols-2">
-          <Link to="/notas" className="relative min-h-[178px] overflow-hidden rounded-2xl border border-cls-line bg-[#F2C08E] p-5 sm:col-span-2">
-            <HeartHandshake className="absolute -bottom-7 right-4 h-36 w-36 text-cls-primary/25" strokeWidth={1.25} aria-hidden="true" />
-            <p className="eyebrow">Fundación</p>
-            <h2 className="mt-1 max-w-sm text-3xl font-black leading-none">Comunidad de cultivadoras</h2>
-            <p className="mt-2 max-w-md text-sm text-cls-ink/70">Más plantas, más libertad. Construyendo un futuro verde e inclusivo.</p>
-            <span className="btn-secondary mt-4 min-h-9 px-4 py-1.5 text-xs">Conocé la comunidad <ArrowRight className="h-3.5 w-3.5" /></span>
+          <Link to="/notas" className="relative min-h-[178px] overflow-hidden rounded-2xl border border-cls-line sm:col-span-2">
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/images/home/fundacion-vertical.png" />
+              <img src="/images/home/fundacion-horizontal.png" alt="" width="1200" height="600" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+            </picture>
+            <div className="relative z-10 p-5">
+              <p className="eyebrow">Fundación</p>
+              <h2 className="mt-1 max-w-sm text-3xl font-black leading-none">Comunidad de cultivadoras</h2>
+              <p className="mt-2 max-w-md text-sm text-cls-ink/70">Más plantas, más libertad. Construyendo un futuro verde e inclusivo.</p>
+              <span className="btn-secondary mt-4 min-h-9 px-4 py-1.5 text-xs">Conocé la comunidad <ArrowRight className="h-3.5 w-3.5" /></span>
+            </div>
           </Link>
-          <div className="min-h-[160px] rounded-2xl border border-cls-line bg-cls-primary p-5 text-cls-paper">
-            <Globe2 className="h-8 w-8 text-cls-honey" aria-hidden="true" />
-            <h3 className="mt-3 text-2xl font-black leading-none text-cls-paper">Comunidad</h3>
-            <p className="mt-2 text-xs leading-relaxed text-cls-paper/75">Compartí experiencias y resolvé dudas en compañía.</p>
+          <div className="relative min-h-[160px] overflow-hidden rounded-2xl border border-cls-line">
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/images/home/comunidad-vertical.png" />
+              <img src="/images/home/comunidad-horizontal.png" alt="" width="600" height="400" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+            </picture>
+            <div className="relative z-10 p-5 text-cls-paper">
+              <h3 className="mt-3 text-2xl font-black leading-none text-cls-paper">Comunidad</h3>
+              <p className="mt-2 text-xs leading-relaxed text-cls-paper/75">Compartí experiencias y resolvé dudas en compañía.</p>
+            </div>
           </div>
-          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="min-h-[160px] rounded-2xl border border-cls-line bg-cls-sage p-5 text-left transition hover:-translate-y-0.5 hover:shadow-lift">
-            <Stethoscope className="h-8 w-8 text-cls-primary" aria-hidden="true" />
-            <h3 className="mt-3 text-2xl font-black leading-none">Plant Doctor</h3>
-            <p className="mt-2 text-xs leading-relaxed text-cls-ink/70">Contale a Emma qué le pasa a tu planta.</p>
+          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="relative min-h-[160px] overflow-hidden rounded-2xl border border-cls-line text-left transition hover:-translate-y-0.5 hover:shadow-lift">
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/images/home/doctor-vertical.png" />
+              <img src="/images/home/doctor-horizontal.png" alt="" width="600" height="400" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+            </picture>
+            <div className="relative z-10 p-5">
+              <h3 className="mt-3 text-2xl font-black leading-none">Plant Doctor</h3>
+              <p className="mt-2 text-xs leading-relaxed text-cls-ink/70">Contale a Emma qué le pasa a tu planta.</p>
+            </div>
           </button>
         </div>
       </section>
@@ -176,12 +195,13 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
             {notas.map((nota, index) => {
-              const Icon = ARTICLE_ICONS[(index + 1) % ARTICLE_ICONS.length];
+              const img = DIARIO_IMAGES[index % DIARIO_IMAGES.length];
               return (
                 <Link key={nota.slug} to={`/notas/${nota.slug}`} className="group overflow-hidden rounded-xl border border-cls-line bg-cls-paper">
-                  <div className="flex aspect-[16/10] items-center justify-center bg-cls-primary/10">
-                    <Icon className="h-10 w-10 text-cls-primary transition group-hover:scale-110" strokeWidth={1.4} />
-                  </div>
+                  <picture>
+                    <source media="(max-width: 767px)" srcSet={img.vertical} />
+                    <img src={img.horizontal} alt="" width="1200" height="750" loading="lazy" decoding="async" className="block aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.02]" />
+                  </picture>
                   <div className="p-2.5">
                     <h3 className="line-clamp-3 font-sans text-xs font-bold leading-snug">{nota.titulo}</h3>
                     <p className="mt-2 text-[10px] text-cls-ink/55">{nota.minutos} min de lectura</p>
