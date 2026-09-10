@@ -149,37 +149,23 @@ export default function Home() {
         </div>
 
         <div id="comunidad" className="grid gap-3 sm:grid-cols-2">
-          <Link to="/notas" className="relative min-h-[178px] overflow-hidden rounded-2xl border border-cls-line sm:col-span-2">
+          <Link to="/notas" className="overflow-hidden rounded-2xl border border-cls-line sm:col-span-2">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/fundacion-vertical.png" />
-              <img src="/images/home/fundacion-horizontal.png" alt="" width="1200" height="600" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full object-cover" />
             </picture>
-            <div className="relative z-10 p-5">
-              <p className="eyebrow">Fundación</p>
-              <h2 className="mt-1 max-w-sm text-3xl font-black leading-none">Comunidad de cultivadoras</h2>
-              <p className="mt-2 max-w-md text-sm text-cls-ink/70">Más plantas, más libertad. Construyendo un futuro verde e inclusivo.</p>
-              <span className="btn-secondary mt-4 min-h-9 px-4 py-1.5 text-xs">Conocé la comunidad <ArrowRight className="h-3.5 w-3.5" /></span>
-            </div>
           </Link>
-          <div className="relative min-h-[160px] overflow-hidden rounded-2xl border border-cls-line">
+          <div className="overflow-hidden rounded-2xl border border-cls-line">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/comunidad-vertical.png" />
-              <img src="/images/home/comunidad-horizontal.png" alt="" width="600" height="400" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <img src="/images/home/comunidad-horizontal.png" alt="Comunidad — Cultivando en comunidad" width="600" height="400" loading="lazy" decoding="async" className="block w-full object-cover" />
             </picture>
-            <div className="relative z-10 p-5 text-cls-paper">
-              <h3 className="mt-3 text-2xl font-black leading-none text-cls-paper">Comunidad</h3>
-              <p className="mt-2 text-xs leading-relaxed text-cls-paper/75">Compartí experiencias y resolvé dudas en compañía.</p>
-            </div>
           </div>
-          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="relative min-h-[160px] overflow-hidden rounded-2xl border border-cls-line text-left transition hover:-translate-y-0.5 hover:shadow-lift">
+          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="overflow-hidden rounded-2xl border border-cls-line text-left transition hover:-translate-y-0.5 hover:shadow-lift">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/doctor-vertical.png" />
-              <img src="/images/home/doctor-horizontal.png" alt="" width="600" height="400" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <img src="/images/home/doctor-horizontal.png" alt="Plant Doctor — Diagnóstico en vivo" width="600" height="400" loading="lazy" decoding="async" className="block w-full object-cover" />
             </picture>
-            <div className="relative z-10 p-5">
-              <h3 className="mt-3 text-2xl font-black leading-none">Plant Doctor</h3>
-              <p className="mt-2 text-xs leading-relaxed text-cls-ink/70">Contale a Emma qué le pasa a tu planta.</p>
-            </div>
           </button>
         </div>
       </section>
