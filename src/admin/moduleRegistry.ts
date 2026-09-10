@@ -29,6 +29,9 @@ const load = <T extends keyof typeof import("./pages/AdminModules")>(name: T) =>
 const loadOperations = <T extends keyof typeof import("./pages/AdminOperations")>(name: T) =>
   lazy(() => import("./pages/AdminOperations").then((module) => ({ default: module[name] as ComponentType })));
 
+const loadBot = <T extends keyof typeof import("./pages/AdminBotCenter")>(name: T) =>
+  lazy(() => import("./pages/AdminBotCenter").then((module) => ({ default: module[name] as ComponentType })));
+
 export interface AdminModuleDefinition {
   id: string;
   label: string;
@@ -51,7 +54,7 @@ export const ADMIN_MODULES: AdminModuleDefinition[] = [
   { id: "inventory", label: "Inventario", description: "Ajustes de stock y trazabilidad.", path: "/admin/inventario", group: "Operación", icon: Boxes, component: load("AdminInventory"), defaultEnabled: true },
   { id: "customers", label: "Clientes / CRM", description: "Etapas, etiquetas y seguimiento.", path: "/admin/clientes", group: "Relación", icon: UsersRound, component: load("AdminCustomers"), defaultEnabled: true },
   { id: "abandoned-carts", label: "Carritos abandonados", description: "Recuperación, contacto y conversión.", path: "/admin/carritos-abandonados", group: "Relación", icon: ShoppingCart, component: loadOperations("AdminAbandonedCarts"), defaultEnabled: true },
-  { id: "bot", label: "Bot y conversaciones", description: "Acceso al bot existente y sus canales.", path: "/admin/bot", group: "Relación", icon: Bot, component: load("AdminBot"), defaultEnabled: true },
+  { id: "bot", label: "Bot y conversaciones", description: "Bandeja omnicanal, intervención y métricas de Emma.", path: "/admin/bot", group: "Relación", icon: Bot, component: loadBot("AdminBot"), defaultEnabled: true },
   { id: "content", label: "Contenidos", description: "FAQ, banners y páginas informativas.", path: "/admin/contenidos", group: "Relación", icon: FileText, component: load("AdminContent"), defaultEnabled: true },
   { id: "discounts", label: "Descuentos", description: "Códigos, vigencia, reglas y límites.", path: "/admin/descuentos", group: "Crecimiento", icon: BadgePercent, component: loadOperations("AdminDiscounts"), defaultEnabled: true },
   { id: "marketing", label: "Marketing", description: "Campañas, audiencias, canales y calendario.", path: "/admin/marketing", group: "Crecimiento", icon: Megaphone, component: loadOperations("AdminMarketing"), defaultEnabled: true },

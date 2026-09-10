@@ -2,7 +2,7 @@
 
 **Estado:** centro operativo modular v2 implementado en modo local; conectores productivos pendientes de credenciales
 **Fecha:** 10 de septiembre de 2026
-**Alcance del bot:** integración visual del repositorio `DrSaturno/crazzyladyseeds`; sin ampliación de lógica ni canales reales.
+**Alcance del bot:** centro omnicanal y métricas integrados sobre la información disponible de `DrSaturno/crazzyladyseeds`; sin ampliar la lógica conversacional ni conectar canales reales.
 
 ## 1. Objetivo
 
@@ -21,7 +21,7 @@ Centralizar la operación del ecommerce en un tablero de marca que permita admin
 | Devoluciones | solicitud, aprobación, recepción, resolución y reintegro enlazado | pedidos/pagos |
 | Clientes / CRM | alta, etapa, etiquetas, notas, pedidos y gasto | checkout/manual |
 | Carritos abandonados | captura, contacto, descarte y recuperación | checkout/n8n |
-| Bot | simulación existente para WhatsApp, Instagram, Telegram y Web | `clsKnowledge.ts` |
+| Bot | bandeja única filtrable, etiquetas por canal, intervención humana y métricas para WhatsApp, Instagram, Telegram y Web | conversaciones/analítica |
 | Contenidos | FAQ, banner y página; borrador/publicado | contenido compartido |
 | Descuentos | códigos, condiciones, vigencia, límites y activación | promociones |
 | Marketing | campañas por canal, audiencia, presupuesto y ciclo de publicación | CRM/n8n |
@@ -70,6 +70,14 @@ Centralizar la operación del ecommerce en un tablero de marca que permita admin
 3. La prueba manual envía un payload `cls.automation.v1` sin secretos y registra éxito, error HTTP o configuración faltante.
 4. Los secretos, firmas y reintentos productivos deben vivir en una Edge Function o backend; nunca en el bundle del navegador.
 5. Eventos cubiertos: `order.created`, `payment.confirmed`, `fulfillment.shipped`, `inventory.low`, `cart.abandoned`, `conversation.handoff` y `return.requested`.
+
+### Bot omnicanal
+
+1. El módulo contiene dos vistas internas: `Conversaciones` y `Métricas`.
+2. La bandeja reúne todas las charlas, permite buscar y filtrar por WhatsApp, Instagram, Telegram o Widget web y mantiene visible el canal, estado y tema de cada conversación.
+3. La ficha muestra el historial completo; intervenir cambia el estado a atención humana y emite `conversation.handoff` hacia n8n cuando el flujo está habilitado.
+4. Las métricas concentran volumen, resolución, tiempo promedio, contactos nuevos, derivaciones, ventas, actividad horaria, temas y rendimiento por canal.
+5. En modo local se utilizan conversaciones y métricas demostrativas; la fuente productiva será `conversations`, `messages` y eventos analíticos de Supabase.
 
 ## 5. Fuente de datos y transición
 

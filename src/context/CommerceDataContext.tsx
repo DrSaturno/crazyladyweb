@@ -156,6 +156,7 @@ interface CommerceValue extends CommerceState {
   updateReturn: (id: string, status: ReturnCase["status"]) => void;
   saveAutomation: (workflow: AutomationWorkflow) => void;
   runAutomation: (id: string, payload?: Record<string, unknown>) => Promise<AutomationRun>;
+  triggerAutomation: (event: AutomationEvent, payload: Record<string, unknown>) => Promise<void>;
   saveStaff: (member: StaffMember) => void;
   updateStaffStatus: (id: string, status: StaffMember["status"]) => void;
   resetDemoData: () => void;
@@ -339,7 +340,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
 
   function resetDemoData() { const fresh = initialState(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); localStorage.removeItem(LEGACY_STORAGE_KEY); } catch { /* Conservamos el reinicio en memoria. */ } setState(fresh); }
 
-  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, saveStaff, updateStaffStatus, resetDemoData }), [state]);
+  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, triggerAutomation: dispatchEvent, saveStaff, updateStaffStatus, resetDemoData }), [state]);
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }
 

@@ -1,10 +1,9 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
   BarChart3,
-  Bot,
   Boxes,
   CheckCircle2,
   ClipboardList,
@@ -13,16 +12,12 @@ import {
   Eye,
   EyeOff,
   FileClock,
-  Globe2,
-  Camera,
-  MessageCircle,
   PackagePlus,
   Pencil,
   Plus,
   RefreshCw,
   Save,
   Search,
-  Send,
   Settings2,
   ShoppingBag,
   Trash2,
@@ -34,7 +29,6 @@ import { useAdminModules } from "../AdminModuleContext";
 import { ADMIN_MODULES } from "../moduleRegistry";
 import { EmptyState, AdminPage, Panel, StatCard, StatusBadge, fieldClass, labelClass } from "../components/AdminUI";
 import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, useCommerceData } from "../../context/CommerceDataContext";
-import { classifyTopic, CLS_INFO, getBotResponse } from "../../data/clsKnowledge";
 import { precioARS, type Producto } from "../../data/catalogo";
 import type { AdminCategory, AdminCustomer, ContentEntry, CrmStage } from "../../types/commerce";
 
@@ -206,28 +200,6 @@ export function AdminContent() {
   return <AdminPage eyebrow="Contenido" title="Contenidos de la tienda" description="Gestioná preguntas frecuentes, banners y páginas informativas desde un módulo separado." action={<button className="btn-primary" onClick={() => setEditing({ id: newId("content"), tipo: "faq", titulo: "", contenido: "", publicado: false, updatedAt: new Date().toISOString() })}><Plus className="h-4 w-4" /> Nuevo contenido</button>}>
     {editing && <Panel title="Editor" className="mb-4"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2"><Field label="Tipo"><select className={fieldClass} value={editing.tipo} onChange={(event) => setEditing({ ...editing, tipo: event.target.value as ContentEntry["tipo"] })}><option value="faq">Pregunta frecuente</option><option value="banner">Banner</option><option value="pagina">Página</option></select></Field><Field label="Título"><input required className={fieldClass} value={editing.titulo} onChange={(event) => setEditing({ ...editing, titulo: event.target.value })} /></Field><div className="sm:col-span-2"><Field label="Contenido"><textarea required className={`${fieldClass} min-h-28 py-3`} value={editing.contenido} onChange={(event) => setEditing({ ...editing, contenido: event.target.value })} /></Field></div><label className="flex min-h-11 items-center gap-2 text-xs font-bold"><input type="checkbox" checked={editing.publicado} onChange={(event) => setEditing({ ...editing, publicado: event.target.checked })} /> Publicado</label><div className="flex gap-2 sm:col-span-2"><button className="btn-secondary"><Save className="h-4 w-4" /> Guardar</button><button type="button" className="btn-outline" onClick={() => setEditing(null)}>Cancelar</button></div></form></Panel>}
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{content.map((entry) => <article key={entry.id} className="rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper"><div className="flex items-center justify-between gap-2"><StatusBadge tone={entry.publicado ? "good" : "neutral"}>{entry.publicado ? "Publicado" : "Borrador"}</StatusBadge><span className="text-[10px] font-bold uppercase text-cls-ink/45">{entry.tipo}</span></div><h2 className="mt-3 font-sans text-sm font-black">{entry.titulo}</h2><p className="mt-2 line-clamp-3 min-h-12 text-xs text-cls-ink/60">{entry.contenido}</p><button className="btn-outline mt-3 min-h-11 px-3 py-1 text-xs" onClick={() => setEditing({ ...entry })}><Pencil className="h-3.5 w-3.5" /> Editar</button></article>)}</div>
-  </AdminPage>;
-}
-
-type Channel = "whatsapp" | "instagram" | "telegram" | "web";
-type ChatMessage = { id: string; from: "user" | "bot"; text: string; time: string; topic?: string };
-const CHANNELS: { id: Channel; label: string; icon: typeof Globe2 }[] = [{ id: "whatsapp", label: "WhatsApp", icon: MessageCircle }, { id: "instagram", label: "Instagram", icon: Camera }, { id: "telegram", label: "Telegram", icon: Send }, { id: "web", label: "Web", icon: Globe2 }];
-const QUICK = ["¿Hay stock de automáticas?", "¿Qué precio tenés?", "¿Hacen envíos a todo el país?", "¿Cómo tramito el REPROCANN?"];
-const clock = () => new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-
-export function AdminBot() {
-  const [channel, setChannel] = useState<Channel>("whatsapp");
-  const [messages, setMessages] = useState<ChatMessage[]>([{ id: "welcome", from: "bot", text: CLS_INFO.saludo, time: clock() }]);
-  const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
-  const timer = useRef<number>();
-  function sendMessage(text: string) { if (!text.trim() || typing) return; const clean = text.trim(); setMessages((current) => [...current, { id: newId("msg"), from: "user", text: clean, topic: classifyTopic(clean), time: clock() }]); setInput(""); setTyping(true); window.clearTimeout(timer.current); timer.current = window.setTimeout(() => { setMessages((current) => [...current, { id: newId("msg"), from: "bot", text: getBotResponse(clean), time: clock() }]); setTyping(false); }, 650); }
-  return <AdminPage eyebrow="Canales" title="Bot y conversaciones" description="Módulo integrado desde DrSaturno/crazzyladyseeds. Conserva el simulador existente; en este ciclo no se amplió su cerebro ni se conectaron canales reales.">
-    <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-cls-honey bg-cls-honey/20 p-3 text-xs"><Bot className="h-5 w-5 shrink-0 text-cls-primary" /><strong>Vista de integración</strong><span className="text-cls-ink/65">Las respuestas se ejecutan localmente por palabras clave y no envían mensajes externos.</span></div>
-    <div className="grid min-h-[620px] gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
-      <Panel title="Bandejas" description="Un cerebro, cuatro adaptadores"><div className="space-y-2">{CHANNELS.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => setChannel(id)} className={`flex min-h-12 w-full items-center gap-3 rounded-xl border px-3 text-left text-xs font-bold ${channel === id ? "border-cls-primary bg-cls-sage" : "border-cls-line bg-cls-cream hover:border-cls-primary"}`}><Icon className="h-4 w-4" />{label}<span className="ml-auto h-2 w-2 rounded-full bg-cls-primary" /></button>)}</div><div className="mt-5 rounded-xl bg-cls-cream p-3 text-[11px] leading-relaxed text-cls-ink/55"><strong className="block text-cls-primary-dark">Integración pendiente</strong>Webhooks, credenciales, historial remoto y derivación humana se habilitan cuando se apruebe la fase del bot.</div></Panel>
-      <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-cls-line bg-cls-paper shadow-paper"><header className="flex items-center gap-3 border-b border-cls-line p-4"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-cls-primary text-cls-paper"><Bot className="h-5 w-5" /></span><div><h2 className="font-sans text-sm font-black">Emma · {CHANNELS.find((item) => item.id === channel)?.label}</h2><p className="text-[10px] font-bold text-cls-primary">Simulador disponible</p></div><button onClick={() => setMessages([{ id: "welcome", from: "bot", text: CLS_INFO.saludo, time: clock() }])} className="ml-auto flex h-11 w-11 items-center justify-center rounded-full border border-cls-line" aria-label="Reiniciar conversación"><RefreshCw className="h-4 w-4" /></button></header><div className="flex flex-wrap gap-2 border-b border-cls-line p-3">{QUICK.map((text) => <button key={text} disabled={typing} onClick={() => sendMessage(text)} className="min-h-11 rounded-full border border-cls-line bg-cls-cream px-3 text-[10px] font-bold hover:border-cls-primary">{text}</button>)}</div><div className="flex-1 space-y-3 overflow-y-auto bg-cls-cream/50 p-4">{messages.map((message) => <div key={message.id} className={`flex ${message.from === "user" ? "justify-end" : "justify-start"}`}><div className={`max-w-[88%] rounded-2xl px-4 py-3 text-xs leading-relaxed sm:max-w-[72%] ${message.from === "user" ? "rounded-br-sm bg-cls-primary text-cls-paper" : "rounded-bl-sm border border-cls-line bg-cls-paper"}`}><p className="whitespace-pre-wrap break-words">{message.text}</p>{message.topic && <span className="mt-2 block text-[9px] opacity-60">Tema: {message.topic}</span>}<span className="mt-1 block text-right text-[9px] opacity-50">{message.time}</span></div></div>)}{typing && <p className="text-xs font-bold text-cls-primary">Emma está escribiendo…</p>}</div><form onSubmit={(event) => { event.preventDefault(); sendMessage(input); }} className="flex gap-2 border-t border-cls-line p-3"><input className={`${fieldClass} min-w-0 flex-1`} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribí una consulta de prueba…" /><button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark" disabled={!input.trim() || typing} aria-label="Enviar"><Send className="h-4 w-4" /></button></form></section>
-    </div>
   </AdminPage>;
 }
 

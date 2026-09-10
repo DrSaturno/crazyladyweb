@@ -22,6 +22,8 @@ La cabecera de cada flujo muestra un **camino de estados** compacto: el operador
 
 Los módulos de alto uso presentan una lista maestra y una ficha lateral o expandida. En móvil la ficha sigue a la selección en el flujo natural, sin overlays que oculten acciones críticas.
 
+El centro de Emma usa dos vistas internas: una bandeja viva de conversaciones etiquetadas por canal y un panel de métricas exclusivo del bot. Ambas conservan la paleta de la tienda para que la operación importada se sienta nativa de Crazy Lady Seeds.
+
 ## Modularidad
 
 La navegación se deriva de un único registro. Los módulos opcionales se pueden activar/desactivar; resumen, configuración y gestor de módulos permanecen bloqueados para garantizar recuperación.
