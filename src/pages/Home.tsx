@@ -160,12 +160,10 @@ export default function Home() {
               <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full md:absolute md:inset-0 md:h-full md:object-cover" />
             </picture>
           </Link>
-          <div className="relative overflow-hidden rounded-2xl bg-[#005C3A] md:min-h-[160px]">
-            <img src="/images/home/comunidad-horizontal.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async" className="absolute inset-0 hidden h-full w-full scale-110 object-cover blur-lg md:block" />
-            <div className="absolute inset-0 hidden bg-[#004D31]/45 md:block" aria-hidden="true" />
+          <div className="relative overflow-hidden rounded-2xl md:min-h-[160px]">
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/comunidad-vertical.jpg" />
-              <img src="/images/home/comunidad-horizontal.jpg" alt="Comunidad — Cultivando en comunidad" width="1400" height="525" loading="lazy" decoding="async" className="relative block w-full object-contain md:absolute md:inset-0 md:h-full" />
+              <img src="/images/home/comunidad-horizontal.jpg" alt="Comunidad — Cultivando en comunidad" width="1400" height="525" loading="lazy" decoding="async" className="relative block w-full md:absolute md:inset-0 md:h-full md:object-fill" />
             </picture>
           </div>
           <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="overflow-hidden rounded-2xl text-left transition hover:-translate-y-0.5 hover:shadow-lift">
