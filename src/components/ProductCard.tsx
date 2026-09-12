@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { GENETICA_LABEL, TIPO_LABEL, esInase, precioARS, type Producto } from "../data/catalogo";
+import { isStudioImage } from "../data/productPhotography";
 
 const TIPO_STYLE: Record<string, string> = {
   feminizada: "border-[#80589A]/30 bg-[#E6D7ED] text-[#553667]",
@@ -18,6 +19,7 @@ export default function ProductCard({ producto, compact = false }: { producto: P
   const sinStock = producto.stock === 0;
   const favorito = contiene(producto.id);
   const inase = esInase(producto.banco);
+  const studioPhoto = isStudioImage(producto.imagen);
 
   function handleAgregar() {
     agregar(producto);
@@ -29,11 +31,15 @@ export default function ProductCard({ producto, compact = false }: { producto: P
     <article className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-cls-line bg-cls-paper shadow-[0_4px_14px_rgba(23,53,44,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-cls-primary/40 hover:shadow-lift">
       <div className="relative">
         <Link to={`/producto/${producto.slug}`} className="block overflow-hidden" aria-label={`Ver ${producto.nombre}`}>
-          <div className={`${compact ? "aspect-[4/3]" : "aspect-[4/3] sm:aspect-square"} product-art relative flex items-center justify-center overflow-hidden`}>
+          <div className={`${studioPhoto ? "aspect-square" : compact ? "aspect-[4/3]" : "aspect-[4/3] sm:aspect-square"} product-art relative flex items-center justify-center overflow-hidden`}>
             {producto.imagen ? (
               <img
                 src={producto.imagen}
-                alt={`Presentación de ${producto.nombre}`}
+                srcSet={studioPhoto ? `${producto.imagen.replace(/\.webp$/, "-480.webp")} 480w, ${producto.imagen} 1200w` : undefined}
+                sizes={compact ? "(min-width: 1280px) 120px, (min-width: 640px) 30vw, 45vw" : "(min-width: 1280px) 280px, (min-width: 768px) 30vw, 45vw"}
+                alt={studioPhoto ? `Imagen ilustrativa de la flor de ${producto.nombre}` : `Presentación de ${producto.nombre}`}
+                width={studioPhoto ? 1200 : undefined}
+                height={studioPhoto ? 1200 : undefined}
                 loading="lazy"
                 decoding="async"
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.035]"

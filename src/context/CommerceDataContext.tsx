@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { PRODUCTOS, type Producto } from "../data/catalogo";
+import { resolveCatalogImage } from "../data/productPhotography";
 import type {
   AbandonedCart,
   AdminCategory,
@@ -89,6 +90,7 @@ function readState(): CommerceState {
       ...seed,
       ...parsed,
       version: 2,
+      products: parsed.products.map((product) => ({ ...product, imagen: resolveCatalogImage(product) })),
       settings: { ...seed.settings, ...parsed.settings },
       orders: (parsed.orders ?? []).map((order) => ({
         ...order,

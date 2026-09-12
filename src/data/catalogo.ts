@@ -12,6 +12,8 @@
 //     a secas (Choco OG, Malvina, Onora, Santanesia) quedó como "A confirmar" —
 //     es justamente el dato que falta para poder marcar `inase`.
 
+import { PRODUCT_STUDIO_IMAGES } from "./productPhotography";
+
 export type Origen = "nacional" | "importada";
 export type TipoSemilla = "feminizada" | "automatica" | "cbd";
 export type Genetica = "indica" | "sativa" | "hibrida";
@@ -37,7 +39,7 @@ export interface Producto {
   ciclo_semanas?: number;
   thc?: string;
   cbd?: string;
-  /** Imagen aprobada/entregada por el cliente. Sin valor se usa arte neutro de catálogo. */
+  /** Imagen de catálogo o imagen personalizada. La serie studio es ilustrativa y generada. */
   imagen?: string;
   /**
    * Si aparece o no en la vidriera pública. Hoy arranca en `true` para todo lo
@@ -192,13 +194,6 @@ const FILAS: Fila[] = [
   ["Deep Mandarine CBD", "Delicious Seeds", "importada", "cbd", "hibrida", 12000, 0, "x3"],
 ];
 
-const IMAGENES_POR_NOMBRE: Record<string, string> = {
-  "0G 324": "/products/og-324.jpg",
-  "Choco OG x3": "/products/choco-og.png",
-  "Onora x5": "/products/onora.png",
-  "Santanesia x5": "/products/santanesia.png",
-};
-
 export const SEMILLAS: Producto[] = FILAS.map(([nombre, banco, origen, tipo, genetica, precio, stock, presentacion], i) => ({
   id: `sem-${i + 1}`,
   slug: slugify(`${nombre}-${banco}`),
@@ -211,7 +206,7 @@ export const SEMILLAS: Producto[] = FILAS.map(([nombre, banco, origen, tipo, gen
   precio,
   stock,
   presentacion,
-  imagen: IMAGENES_POR_NOMBRE[nombre],
+  imagen: PRODUCT_STUDIO_IMAGES[slugify(`${nombre}-${banco}`)],
   visible_web: stock > 0,
   destacado: stock >= 50,
 }));
@@ -229,6 +224,7 @@ export const ESQUEJES: Producto[] = [
     precio: 22000,
     stock: 6,
     presentacion: "1 esqueje",
+    imagen: PRODUCT_STUDIO_IMAGES["esqueje-jet-puft-compound-genetics"],
     visible_web: true,
   },
 ];

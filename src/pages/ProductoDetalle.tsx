@@ -5,6 +5,7 @@ import ProductCard from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useCommerceData } from "../context/CommerceDataContext";
+import { isStudioImage } from "../data/productPhotography";
 import {
   BANCOS,
   GENETICA_LABEL,
@@ -29,6 +30,7 @@ export default function ProductoDetalle() {
   const inase = esInase(producto.banco);
   const favorito = contiene(producto.id);
   const banco = BANCOS.find((item) => item.nombre === producto.banco);
+  const studioPhoto = isStudioImage(producto.imagen);
   const relacionados = products.filter((item) => item.categoria === "semilla" && item.id !== producto.id && item.stock > 0 && item.visible_web !== false && (item.banco === producto.banco || item.genetica === producto.genetica)).slice(0, 5);
 
   function handleAgregar() {
@@ -50,7 +52,16 @@ export default function ProductoDetalle() {
         <div className="section-shell relative overflow-hidden p-3 md:p-5">
           <div className="product-art relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl">
             {producto.imagen ? (
-              <img src={producto.imagen} alt={`Presentación de ${producto.nombre}`} className="h-full w-full object-contain" />
+              <img
+                src={producto.imagen}
+                srcSet={studioPhoto ? `${producto.imagen.replace(/\.webp$/, "-480.webp")} 480w, ${producto.imagen} 1200w` : undefined}
+                sizes="(min-width: 1024px) 600px, 90vw"
+                alt={studioPhoto ? `Imagen ilustrativa de la flor de ${producto.nombre}` : `Presentación de ${producto.nombre}`}
+                width={studioPhoto ? 1200 : undefined}
+                height={studioPhoto ? 1200 : undefined}
+                decoding="async"
+                className="h-full w-full object-contain"
+              />
             ) : (
               <div className="relative flex h-full w-full items-center justify-center overflow-hidden" aria-hidden="true">
                 <span className="absolute -bottom-24 -left-16 h-72 w-72 rounded-full border-[36px] border-cls-orange/65" />
@@ -60,6 +71,7 @@ export default function ProductoDetalle() {
             )}
             {sinStock && <div className="absolute inset-0 flex items-center justify-center bg-cls-primary-dark/80"><span className="rounded-full border border-cls-paper/40 px-5 py-2 text-sm font-bold text-cls-paper">Sin stock por el momento</span></div>}
           </div>
+          {studioPhoto && <p className="px-1 pt-3 text-xs leading-relaxed text-cls-ink/65">Imagen ilustrativa de la flor, generada digitalmente. El producto corresponde a {producto.categoria === "esqueje" ? "un esqueje" : "semillas"}.</p>}
         </div>
 
         <div className="self-start lg:sticky lg:top-[175px]">
