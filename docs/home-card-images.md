@@ -1,0 +1,16 @@
+# Rediseño de tarjetas de inicio
+
+Generadas con la herramienta integrada image_gen. Imágenes originales conservadas. Resolución de ambas: 1672 × 941 px.
+
+## Comunidad
+Archivo: public/images/home/comunidad-card-v2.png
+
+Prompt:
+Use case: ads-marketing. Redesign the provided Comunidad banner as a finished raster website card. Reference image 1 is the existing banner to redesign: preserve its forest green, cream, sage and golden yellow palette and friendly retro botanical aesthetic. Output a landscape image EXACTLY 1536x864 (16:9). It will be displayed just 268px wide by 151px tall, so ALL lettering must be unusually large, bold, sharp and readable at that size. Edge-to-edge deep forest green background, no outer border, no inset card, no rounded corners. Strong balanced composition: giant cream retro Cooper-style title 'Comunidad' across the upper full width, filling roughly 85% of canvas width, with natural unsqueezed letter proportions. Under it the exact sage subtitle 'Cultivando en comunidad' in large bold type, split over two lines if needed. Lower left, exact cream supporting text 'Foros, tips y experiencias\npara crecer en red.' in a large clear sans-serif, approximately 80px at this resolution. Keep left/right safe margin approximately 65px. Lower right compact illustration of golden hands supporting a small cream community of people, naturally proportioned, never stretching, occupying at most 25% of the width and not overlapping text. Very restrained botanical sage leaf details at bottom edge. Text is the hero and fills most of the card, illustration secondary. Optical centering across card. No tiny text. Preserve spelling and accents. No extra text or watermarks.
+
+## Plant Doctor
+Archivo: public/images/home/doctor-card-v2.png
+
+Prompt:
+Use case: ads-marketing. Redesign the provided Plant Doctor banner into a finished compact raster website card, with far larger text and stronger use of card area. Input image is style and subject reference: preserve pale sage background, dark forest-green letters, friendly chunky retro Cooper typography, botanical potted plant and a small medical plus. Output landscape 1536x864, 16:9 aspect ratio, full bleed background, no outer margins/frame or rounded corners. Will be displayed only 268x151 CSS pixels so letterforms must be big and naturally proportioned, sharp, readable. Layout: at top one very large headline 'Plant Doctor', across almost full width with about 65px margin each side, visually filling 85-90% of width. Directly underneath large bold subtitle 'Diagnóstico en vivo' on one line occupying most width. Lower left in clear large sans-serif exact copy over three lines: '¿Qué le pasa\na tu planta?\nConsultá con nuestro equipo.' Last line may use two lines for fit, but all body lettering should be approximately 90px high at this image resolution, no tiny lettering. Right bottom quadrant a beautiful compact illustrated healthy cannabis plant in a dark green pot, secondary to the text, approximately 25% of canvas width, plus a small forest green plus symbol above/beside it, no text overlaps. Light botanical curved wave accents near bottom edge only. Text primary, plant secondary. Hierarchy and very compact spacing designed for small web card, visual balance, keep natural plant and letter proportions. No watermarks, no extra text.
+

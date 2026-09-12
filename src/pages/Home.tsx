@@ -160,17 +160,11 @@ export default function Home() {
               <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full md:absolute md:inset-0 md:h-full md:object-cover" />
             </picture>
           </Link>
-          <div className="relative overflow-hidden rounded-2xl md:min-h-[160px]">
-            <picture>
-              <source media="(max-width: 767px)" srcSet="/images/home/comunidad-vertical.jpg" />
-              <img src="/images/home/comunidad-horizontal.jpg" alt="Comunidad — Cultivando en comunidad" width="1400" height="525" loading="lazy" decoding="async" className="relative block w-full md:absolute md:inset-0 md:h-full md:object-fill" />
-            </picture>
+          <div className="self-start overflow-hidden rounded-2xl">
+            <img src="/images/home/comunidad-card-v2.png" alt="Comunidad — Cultivando en comunidad. Foros, tips y experiencias para crecer en red." width="1672" height="941" loading="lazy" decoding="async" className="block h-auto w-full" />
           </div>
-          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} className="overflow-hidden rounded-2xl text-left transition hover:-translate-y-0.5 hover:shadow-lift">
-            <picture>
-              <source media="(max-width: 767px)" srcSet="/images/home/doctor-vertical.png" />
-              <img src="/images/home/doctor-horizontal.png" alt="Plant Doctor — Diagnóstico en vivo" width="600" height="400" loading="lazy" decoding="async" className="block h-full w-full object-cover" />
-            </picture>
+          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} aria-label="Abrir Plant Doctor: diagnóstico en vivo. Consultá con nuestro equipo." className="self-start overflow-hidden rounded-2xl text-left transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cls-orange focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none">
+            <img src="/images/home/doctor-card-v2.png" alt="Plant Doctor — Diagnóstico en vivo. ¿Qué le pasa a tu planta? Consultá con nuestro equipo." width="1672" height="941" loading="lazy" decoding="async" className="block h-auto w-full" />
           </button>
         </div>
       </section>
