@@ -28,9 +28,18 @@ Auditoría técnica completa (arquitectura, UX/UI, seguridad, base de datos) del
 - **Todos los módulos de `AdminOperations.tsx`** (Preparación y envíos, Devoluciones, Descuentos, Marketing, Carritos abandonados, Finanzas, Automatizaciones, Equipo): sin paginación, sin búsqueda, sin bulk actions. Validaciones inconsistentes entre módulos (Descuentos es estricto; Marketing y Carritos abandonados casi no validan — ver detalle abajo).
 - **Desalineación de esquema**: `products.images` en SQL es un array jsonb; el frontend (`Producto.imagen`) maneja una sola URL string. Si se conecta Supabase, definir si se migra a galería real o se deja en 1 imagen.
 
-## 🟡 Medio
+## 🟠 Alto — implementado en esta sesión (continuación 2)
 
-- Validaciones débiles puntuales: `AdminMarketing` solo valida `name`; presupuesto puede quedar negativo sin bloqueo real (el `min="0"` del input es solo HTML). `AdminAbandonedCarts` no valida formato de email. `AdminReturns` no compara el importe de la devolución contra el total del pedido original.
+- **`AdminOperations.tsx` — búsqueda, filtros, paginación y validación real en los módulos de mayor volumen**:
+  - **Preparación y envíos**: búsqueda por pedido/cliente en la cola (antes no existía).
+  - **Descuentos**: búsqueda por código + filtro por estado + paginación (12 por página). Probado con 15 códigos de prueba: filtro y paginación correctos.
+  - **Marketing**: filtro por canal y estado + validación real (nombre, audiencia y presupuesto no negativo — antes el `min="0"` del input era solo HTML, se podía guardar un presupuesto negativo). Probado: presupuesto `-500` ahora se rechaza con mensaje.
+  - **Carritos abandonados**: filtro por estado, validación de formato de email y de cantidades (antes solo se validaba que el email no estuviera vacío), y una acción masiva "Marcar los N abiertos como contactados" (antes no existía ninguna acción en lote). Probado de punta a punta.
+  - **Devoluciones**: filtro por estado + validación de que el importe sea mayor a 0 y **no supere el total del pedido original** (antes no había ningún tope, se podía reintegrar más de lo que se cobró). Probado con un pedido de $20.000 e importe $999.999: rechazado con mensaje.
+  - **Finanzas**: búsqueda por pedido/cliente + filtro por estado + paginación (12 por página) en la tabla de movimientos, que antes renderizaba todos los pedidos sin límite.
+  - **Automatizaciones**: el historial de ejecuciones estaba fijo en las últimas 20 aunque el store conserva hasta 100 — sin forma de ver el resto. Ahora tiene paginación real sobre las 100.
+
+## 🟡 Medio
 - Catches silenciosos en `CommerceDataContext.tsx:199,377` — si `localStorage.setItem` falla (cuota llena, modo incógnito), el cambio queda solo en memoria sin avisar al usuario; se pierde en el próximo refresh sin ningún mensaje.
 - Umbral de "stock bajo" (`≤3`) hardcodeado en 3 lugares distintos sin constante compartida (`AdminLayout.tsx`, `AdminModules.tsx`, `CommerceDataContext.tsx`).
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
@@ -44,8 +53,7 @@ Auditoría técnica completa (arquitectura, UX/UI, seguridad, base de datos) del
 
 1. ~~Sidebar (logo, colapso, layout)~~ — hecho 15/09/2026.
 2. ~~Productos: filtros, bulk actions, importación/exportación Excel/CSV con preview y reporte de errores~~ — hecho 15/09/2026.
-3. Paginación + búsqueda + bulk actions en los módulos de `AdminOperations.tsx` que reciben más volumen (Ventas ya tiene búsqueda/filtro; Devoluciones, Carritos abandonados, Descuentos, Marketing no) — siguiente paso.
-4. Reforzar validaciones débiles (Marketing, Carritos abandonados, Devoluciones).
-5. Constante compartida para umbral de stock bajo.
-6. Feedback visible cuando falla la persistencia local (toast, no silencioso).
-7. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
+3. ~~Paginación + búsqueda + validaciones reales en los módulos de `AdminOperations.tsx` (Preparación y envíos, Descuentos, Marketing, Carritos abandonados, Devoluciones, Finanzas, Automatizaciones)~~ — hecho 15/09/2026.
+4. Constante compartida para umbral de stock bajo — siguiente paso.
+5. Feedback visible cuando falla la persistencia local (toast, no silencioso).
+6. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
