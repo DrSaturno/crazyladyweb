@@ -1,8 +1,16 @@
 # SPEC-ADMIN-01 — Centro de operaciones Crazy Lady Seeds
 
-**Estado:** centro operativo modular v2 implementado en modo local; conectores productivos pendientes de credenciales
-**Fecha:** 10 de septiembre de 2026
-**Alcance del bot:** centro omnicanal y métricas integrados sobre la información disponible de `DrSaturno/crazzyladyseeds`; sin ampliar la lógica conversacional ni conectar canales reales.
+**Estado:** centro operativo modular v3 implementado en modo local; conectores productivos pendientes de credenciales
+**Fecha:** 10 de septiembre de 2026 — última revisión 15 de septiembre de 2026
+**Alcance del bot:** centro omnicanal, métricas y personalización del prompt integrados sobre la información disponible; sin ampliar la lógica conversacional ni conectar canales reales.
+**Metodología:** este documento es la fuente de verdad — se actualiza antes de implementar, no después (spec-driven development, decisión del cliente del 15/09/2026). `docs/ADMIN_AUDIT.md` es el registro fechado de auditoría, bugs y decisiones que sustenta cada cambio de este spec; no lo reemplaza.
+
+## Principios no negociables (agregado 15/09/2026, tras el bug de precio de checkout)
+
+1. El precio y el nombre de cada línea de pedido se resuelven **siempre** contra el catálogo vivo (`state.products`) en el momento de crear la orden — nunca contra la copia que trae el carrito, que puede tener horas o días.
+2. El carrito se resincroniza contra el catálogo vivo cada vez que cambia, no solo al pagar: lo que la persona ve siempre tiene que coincidir con lo que termina pagando. Un producto que se agota o se oculta mientras está en un carrito se quita solo.
+3. Ningún formulario copia un valor del store a `useState` sin un mecanismo que lo resincronice si el store cambia por otra vía (reset, otra pestaña, otra acción). Si un componente hace `useState(valorDelStore)`, tiene que existir un `useEffect` o un `key` que lo mantenga al día.
+4. Todo input nativo (`type="url"`, `type="email"`, etc.) tiene que aceptar los valores reales que el sistema produce — si el catálogo guarda rutas internas relativas, el campo no puede exigir una URL absoluta.
 
 ## 1. Objetivo
 
@@ -13,26 +21,27 @@ Centralizar la operación del ecommerce en un tablero de marca que permita admin
 | Módulo | Capacidad implementada | Fuente |
 |---|---|---|
 | Resumen | ventas cobradas, pedidos abiertos, clientes, stock y alertas | datos operativos |
-| Productos | alta, edición, búsqueda, publicación, precio, stock y baja | catálogo compartido |
+| Productos | alta, edición, búsqueda, filtros (categoría/stock/publicación), paginación, selección y acciones masivas (publicar/ocultar/destacar/eliminar), importación y exportación Excel/CSV con validación y reporte de errores | catálogo compartido |
 | Categorías | alta, edición, orden, estado y borrado protegido | catálogo compartido |
-| Ventas | pedido, cliente, total, estado comercial y de pago | checkout |
+| Ventas | pedido, cliente, total, estado comercial y de pago, búsqueda y filtro por estado | checkout |
 | Inventario | ajuste con motivo e historial de movimientos | productos/pedidos |
-| Preparación y envíos | cola de picking, transportista, seguimiento, despacho y entrega | pedidos |
-| Devoluciones | solicitud, aprobación, recepción, resolución y reintegro enlazado | pedidos/pagos |
-| Clientes / CRM | alta, etapa, etiquetas, notas, pedidos y gasto | checkout/manual |
-| Carritos abandonados | captura, contacto, descarte y recuperación | checkout/n8n |
+| Preparación y envíos | cola de picking con búsqueda, transportista, seguimiento, despacho y entrega | pedidos |
+| Devoluciones | solicitud, aprobación, recepción, resolución, reintegro enlazado, filtro por estado y tope de importe contra el total del pedido | pedidos/pagos |
+| Clientes / CRM | alta, edición, búsqueda, filtro por etapa, etiquetas, notas, pedidos y gasto | checkout/manual |
+| Carritos abandonados | captura, contacto, descarte, recuperación, filtro por estado y acción masiva de contacto | checkout/n8n |
 | Bot | bandeja única filtrable, etiquetas por canal, intervención humana, métricas y personalización del prompt para WhatsApp, Instagram, Telegram y Web | conversaciones/analítica/prompt |
 | Contenidos | FAQ, banner y página; borrador/publicado | contenido compartido |
 | Diario / Blog | alta, edición, vista previa, publicación y baja de notas del diario | notas compartidas |
-| Descuentos | códigos, condiciones, vigencia, límites y activación | promociones |
-| Marketing | campañas por canal, audiencia, presupuesto y ciclo de publicación | CRM/n8n |
+| Descuentos | códigos, condiciones, vigencia, límites, activación, búsqueda, filtro por estado y paginación | promociones |
+| Marketing | campañas por canal, audiencia, presupuesto, ciclo de publicación, filtros por canal/estado y validación real (nombre, audiencia, presupuesto no negativo) | CRM/n8n |
 | Métricas | ingresos, ticket, conversión, recurrencia y ranking | ventas reales |
-| Finanzas | conciliación de cobros, pendientes, reintegros y exportación | pedidos/pagos |
-| Automatizaciones | siete eventos configurables, prueba de webhook e historial de ejecuciones | n8n |
+| Finanzas | conciliación de cobros, pendientes, reintegros, exportación, búsqueda, filtro por estado y paginación | pedidos/pagos |
+| Automatizaciones | siete eventos configurables, prueba de webhook e historial de ejecuciones paginado sobre las últimas 100 | n8n |
 | Equipo y permisos | roles, estado y alcance modular preparados para Auth | administración |
 | Auditoría | actor, entidad, acción, detalle, fecha y CSV | mutaciones administrativas |
-| Configuración | datos comerciales, descuento, envío y flags de compra | configuración compartida |
+| Configuración | datos comerciales, descuento, envío y flags de compra; el formulario se resincroniza si el store cambia por otra vía (p. ej. reset) | configuración compartida |
 | Módulos | activación/desactivación persistente; esenciales bloqueados | registro de módulos |
+| Búsqueda global | busca productos, pedidos, clientes y módulos reales desde el header; cada resultado navega al módulo con el filtro ya aplicado (`?q=`) | catálogo/ventas/clientes |
 
 ## 3. Arquitectura modular
 
@@ -111,10 +120,12 @@ La migración `commerce_core` modela productos, categorías, clientes, órdenes,
 
 ## 7. Responsive y accesibilidad
 
-- Sidebar fijo en escritorio y drawer táctil en móvil.
+- Sidebar fijo en escritorio (colapsable a un riel de solo íconos, persistente en `localStorage`, con tooltips) y drawer táctil en móvil.
 - Tablas se transforman en fichas etiquetadas por debajo de 640 px.
 - No existe scroll horizontal de página desde 320 px.
 - Controles esenciales de 44 px, foco visible, labels persistentes y estados vacíos explícitos.
+- Checkboxes y radios usan el color de marca (`accent-color` global) en todo el sitio, admin y tienda pública.
+- Si `localStorage.setItem` falla (cuota llena, modo privado), se muestra un aviso persistente en el admin en vez de perder el cambio en silencio.
 
 ## 8. Pendientes para producción
 
