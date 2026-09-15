@@ -6,6 +6,7 @@ import { useWishlist } from "../context/WishlistContext";
 import { useCommerceData } from "../context/CommerceDataContext";
 import { BANCOS, GENETICA_LABEL, ORIGEN_LABEL, TIPO_LABEL } from "../data/catalogo";
 import { useEscapeClose } from "../hooks/useEscapeClose";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -33,6 +34,7 @@ export default function Header() {
   const [activeSugerencia, setActiveSugerencia] = useState(-1);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const semillasButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useFocusTrap<HTMLElement>(menuAbierto);
 
   const sugerencias = useMemo(() => {
     const query = normalize(busqueda.trim());
@@ -78,7 +80,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cls-line bg-cls-cream/95 shadow-[0_4px_18px_rgba(23,53,44,0.08)] backdrop-blur">
+    <header className="relative top-0 z-40 border-b border-cls-line bg-cls-cream/95 shadow-[0_4px_18px_rgba(23,53,44,0.08)] backdrop-blur md:sticky">
       <div className="bg-cls-primary text-cls-paper">
         <div className="site-container flex min-h-8 items-center justify-center gap-2 py-1 text-center text-[11px] font-bold sm:justify-between">
           <p><span className="text-cls-honey" aria-hidden="true">✦</span> Envíos discretos a todo el país <span className="hidden sm:inline">| {settings.descuentoTransferencia}% OFF en transferencia</span> <span className="text-cls-honey" aria-hidden="true">✦</span></p>
@@ -95,9 +97,9 @@ export default function Header() {
       </div>
 
       <div className="site-container">
-        <div className="flex min-h-[76px] items-center gap-2 sm:min-h-[82px] sm:gap-3 md:gap-6">
+        <div className="flex min-h-16 items-center gap-1.5 sm:min-h-[76px] sm:gap-3 md:min-h-[82px] md:gap-6">
           <Link to="/" className="brand-logo-frame header-brand-logo" aria-label="Crazy Lady Seeds — inicio">
-            <img src="/logo-cls-01.png" alt="" />
+            <img src="/logo-cls-01.png" alt="" width="4500" height="5625" />
           </Link>
 
           <form
@@ -109,12 +111,14 @@ export default function Header() {
             <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-cls-primary/70" aria-hidden="true" />
             <input
               id="site-search"
+              name="search"
               value={busqueda}
               onChange={(event) => { setBusqueda(event.target.value); setActiveSugerencia(-1); }}
               onFocus={() => setBuscadorActivo(true)}
               onBlur={() => setBuscadorActivo(false)}
               onKeyDown={handleSearchKeyDown}
               autoComplete="off"
+              spellCheck={false}
               placeholder="Buscá tu variedad, banco o lo que necesites…"
               className="h-12 w-full rounded-full border border-cls-primary/55 bg-cls-paper pl-12 pr-14 text-base shadow-inner outline-none transition focus:border-cls-primary-dark focus:ring-2 focus:ring-cls-honey/60 md:text-sm"
               role="combobox"
@@ -167,16 +171,16 @@ export default function Header() {
                 )}
               </Link>
             ))}
-            <button ref={menuButtonRef} onClick={() => setMenuAbierto((open) => !open)} className="flex h-11 w-11 items-center justify-center rounded-xl text-cls-primary hover:bg-cls-paper lg:hidden" aria-expanded={menuAbierto} aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}>
-              {menuAbierto ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <button ref={menuButtonRef} type="button" onClick={() => setMenuAbierto(true)} className="flex h-11 w-11 items-center justify-center rounded-xl text-cls-primary hover:bg-cls-paper lg:hidden" aria-expanded={menuAbierto} aria-haspopup="dialog" aria-label="Abrir menú">
+              <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
           </nav>
         </div>
 
         <form role="search" className="relative pb-3 md:hidden" onSubmit={(event) => { event.preventDefault(); buscar(); }}>
           <label htmlFor="mobile-site-search" className="sr-only">Buscar en el catálogo</label>
-          <Search className="pointer-events-none absolute left-4 top-[22px] h-4 w-4 -translate-y-1/2 text-cls-primary/70" />
-          <input id="mobile-site-search" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar variedades o bancos…" className="h-11 w-full rounded-full border border-cls-primary/45 bg-cls-paper pl-11 pr-4 text-base outline-none focus:ring-2 focus:ring-cls-honey/60" />
+          <Search className="pointer-events-none absolute left-4 top-[22px] h-4 w-4 -translate-y-1/2 text-cls-primary/70" aria-hidden="true" />
+          <input id="mobile-site-search" name="search" autoComplete="off" spellCheck={false} value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar variedades o bancos…" className="h-11 w-full rounded-full border border-cls-primary/45 bg-cls-paper pl-11 pr-4 text-base outline-none focus:ring-2 focus:ring-cls-honey/60" />
         </form>
       </div>
 
@@ -212,22 +216,39 @@ export default function Header() {
       </div>
 
       {menuAbierto && (
-        <nav className="max-h-[70vh] overflow-y-auto border-t border-cls-line bg-cls-paper px-4 py-5 lg:hidden" aria-label="Navegación móvil">
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              ["Semillas", "/semillas"], ["Esquejes", "/esquejes"], ["INASE", "/semillas?origen=nacional"], ["REPROCANN", "/reprocann"],
-              ["Para principiantes", "/#principiantes"], ["Comunidad", "/#comunidad"], ["Blog", "/notas"], ["Preguntas frecuentes", "/#faq"],
-            ].map(([label, to]) => (
-              <Link key={label} to={to} onClick={() => setMenuAbierto(false)} className="flex min-h-11 items-center rounded-xl border border-cls-line bg-cls-cream px-3 text-sm font-bold text-cls-primary hover:border-cls-primary">{label}</Link>
-            ))}
-          </div>
-          <p className="eyebrow mb-2 mt-5">Explorar por tipo</p>
-          <div className="flex flex-wrap gap-2">
-            {(["feminizada", "automatica", "cbd"] as const).map((type) => (
-              <Link key={type} to={`/semillas?tipo=${type}`} onClick={() => setMenuAbierto(false)} className="rounded-full border border-cls-primary/30 px-3 py-2 text-xs font-bold text-cls-primary">{TIPO_LABEL[type]}</Link>
-            ))}
-          </div>
-        </nav>
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button type="button" className="absolute inset-0 bg-cls-primary-dark/60 backdrop-blur-sm" onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" />
+          <nav ref={mobileMenuRef} role="dialog" aria-modal="true" aria-label="Navegación móvil" className="absolute inset-y-0 right-0 flex h-[100dvh] w-[min(90vw,360px)] flex-col bg-cls-paper shadow-2xl">
+            <div className="flex min-h-16 shrink-0 items-center justify-between border-b border-cls-line px-4">
+              <Link to="/" onClick={() => setMenuAbierto(false)} className="flex min-h-11 items-center gap-3 rounded-xl font-bold text-cls-primary-dark">
+                <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-cls-cream"><img src="/logo-cls-01.png" alt="" width="4500" height="5625" className="h-full w-full object-contain" /></span>
+                Explorar la tienda
+              </Link>
+              <button type="button" onClick={() => setMenuAbierto(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-primary hover:bg-cls-cream" aria-label="Cerrar menú"><X className="h-5 w-5" aria-hidden="true" /></button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5">
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  ["Semillas", "/semillas"], ["Esquejes", "/esquejes"], ["INASE", "/semillas?origen=nacional"], ["REPROCANN", "/reprocann"],
+                  ["Para principiantes", "/#principiantes"], ["Comunidad", "/#comunidad"], ["Blog", "/notas"], ["Preguntas frecuentes", "/#faq"],
+                ].map(([label, to]) => (
+                  <Link key={label} to={to} onClick={() => setMenuAbierto(false)} className="flex min-h-12 items-center rounded-xl border border-cls-line bg-cls-cream px-3 text-sm font-bold text-cls-primary hover:border-cls-primary">{label}</Link>
+                ))}
+              </div>
+              <p className="eyebrow mb-2 mt-6">Explorar por tipo</p>
+              <div className="flex flex-wrap gap-2">
+                {(["feminizada", "automatica", "cbd"] as const).map((type) => (
+                  <Link key={type} to={`/semillas?tipo=${type}`} onClick={() => setMenuAbierto(false)} className="inline-flex min-h-11 items-center rounded-full border border-cls-primary/30 px-4 py-2 text-xs font-bold text-cls-primary">{TIPO_LABEL[type]}</Link>
+                ))}
+              </div>
+              <div className="mt-6 grid gap-2 border-t border-cls-line pt-5">
+                <Link to="/cuenta" onClick={() => setMenuAbierto(false)} className="flex min-h-12 items-center rounded-xl px-3 text-sm font-bold text-cls-primary hover:bg-cls-cream">Mi cuenta</Link>
+                <Link to="/favoritos" onClick={() => setMenuAbierto(false)} className="flex min-h-12 items-center rounded-xl px-3 text-sm font-bold text-cls-primary hover:bg-cls-cream">Favoritos</Link>
+                <Link to="/carrito" onClick={() => setMenuAbierto(false)} className="flex min-h-12 items-center rounded-xl px-3 text-sm font-bold text-cls-primary hover:bg-cls-cream">Carrito</Link>
+              </div>
+            </div>
+          </nav>
+        </div>
       )}
     </header>
   );

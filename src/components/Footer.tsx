@@ -17,15 +17,15 @@ export default function Footer() {
     <footer className="relative mt-8 overflow-hidden bg-cls-primary text-cls-paper">
       <div className="absolute inset-x-0 top-0 h-8 bg-cls-cream" style={{ clipPath: "ellipse(56% 72% at 50% 0%)" }} />
       <div className="site-container pb-7 pt-16">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.25fr_1fr_1fr_1fr_0.9fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-[1.25fr_1fr_1fr_1fr_0.9fr]">
+          <div className="col-span-2 sm:col-span-1">
             <Link to="/" className="brand-logo-frame" aria-label="Crazy Lady Seeds — inicio">
-              <img src="/logo-cls-01.png" alt="" />
+              <img src="/logo-cls-01.png" alt="" width="4500" height="5625" />
             </Link>
             <p className="mt-2 max-w-[220px] font-serif text-lg font-black leading-tight text-cls-paper">Sembrando un mundo más verde y libre.</p>
           </div>
 
-          <FooterColumn title="Atención al cliente">
+          <FooterColumn title="Atención al cliente" className="col-span-2 sm:col-span-1">
             <a href="https://wa.me/5491176086771" target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> WhatsApp +54 9 11 7608-6771</a>
             <span><Mail className="h-4 w-4" /> Consultas por WhatsApp o Instagram</span>
             <span><Clock3 className="h-4 w-4" /> Lun a vie, 9 a 18 h</span>
@@ -47,7 +47,7 @@ export default function Footer() {
             <Link to="/favoritos">Favoritos</Link>
           </FooterColumn>
 
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cls-honey">Seguinos</p>
             <a href="https://instagram.com/crazyladyseedsok" target="_blank" rel="noreferrer" className="mt-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-cls-paper/30 transition hover:bg-cls-paper hover:text-cls-primary" aria-label="Instagram"><InstagramIcon className="h-5 w-5" /></a>
             <div className="mt-5 flex flex-wrap gap-2 text-[10px] font-bold">
@@ -82,11 +82,11 @@ export default function Footer() {
   );
 }
 
-function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
+function FooterColumn({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div>
+    <div className={className}>
       <p className="text-xs font-bold uppercase tracking-[0.14em] text-cls-honey">{title}</p>
-      <div className="mt-3 flex flex-col gap-2.5 text-xs text-cls-paper/70 [&>*]:flex [&>*]:items-center [&>*]:gap-2 [&>a]:transition [&>a:hover]:text-cls-paper">
+      <div className="mt-3 flex flex-col gap-1 text-xs text-cls-paper/70 [&>*]:flex [&>*]:min-h-9 [&>*]:items-center [&>*]:gap-2 [&>a]:transition [&>a:hover]:text-cls-paper sm:gap-2.5 sm:[&>*]:min-h-0">
         {children}
       </div>
     </div>

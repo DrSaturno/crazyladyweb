@@ -66,6 +66,7 @@ export default function ProductCard({ producto, compact = false }: { producto: P
         </div>
 
         <button
+          type="button"
           onClick={() => alternar(producto.id)}
           className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full border border-cls-line bg-cls-paper/95 text-cls-primary shadow-sm transition hover:scale-105"
           aria-label={favorito ? `Quitar ${producto.nombre} de favoritos` : `Guardar ${producto.nombre} en favoritos`}
@@ -96,7 +97,7 @@ export default function ProductCard({ producto, compact = false }: { producto: P
 
         <div className="mt-auto pt-3">
           <p className="text-lg font-black leading-none text-cls-primary-dark">{precioARS(producto.precio)}</p>
-          <button onClick={handleAgregar} disabled={sinStock || agregado} className="btn-primary mt-3 w-full px-3 text-xs" aria-live="polite">
+          <button type="button" onClick={handleAgregar} disabled={sinStock || agregado} className="btn-primary mt-3 w-full px-3 text-xs" aria-live="polite">
             {agregado ? "Agregado al carrito" : sinStock ? "Sin stock" : "Sumar al carrito"}
           </button>
         </div>

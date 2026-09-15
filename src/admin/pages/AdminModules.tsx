@@ -35,7 +35,7 @@ import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, useCommerceData } fro
 import { LOW_STOCK_THRESHOLD, precioARS, type Producto } from "../../data/catalogo";
 import type { AdminCategory, AdminCustomer, ContentEntry, CrmStage } from "../../types/commerce";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 12;
 
 const dateTime = (value: string) => new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 const slugify = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

@@ -102,31 +102,31 @@ export default function Checkout() {
         <div className="space-y-4">
           <CheckoutSection number="1" title="Contacto">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id="nombre" label="Nombre y apellido"><input id="nombre" required autoComplete="name" value={form.nombre} onChange={(event) => update("nombre", event.target.value)} /></Field>
-              <Field id="email" label="Correo electrónico"><input id="email" required type="email" autoComplete="email" value={form.email} onChange={(event) => update("email", event.target.value)} /></Field>
-              <Field id="telefono" label="Teléfono"><input id="telefono" required type="tel" autoComplete="tel" value={form.telefono} onChange={(event) => update("telefono", event.target.value)} /></Field>
+              <Field id="nombre" label="Nombre y apellido"><input id="nombre" name="name" required autoComplete="name" value={form.nombre} onChange={(event) => update("nombre", event.target.value)} /></Field>
+              <Field id="email" label="Correo electrónico"><input id="email" name="email" required type="email" inputMode="email" autoComplete="email" spellCheck={false} value={form.email} onChange={(event) => update("email", event.target.value)} /></Field>
+              <Field id="telefono" label="Teléfono"><input id="telefono" name="tel" required type="tel" inputMode="tel" autoComplete="tel" value={form.telefono} onChange={(event) => update("telefono", event.target.value)} /></Field>
             </div>
           </CheckoutSection>
 
           <CheckoutSection number="2" title="Entrega">
             <div className="mb-4 flex gap-3 rounded-xl bg-cls-sage/60 p-4 text-sm text-cls-ink/94"><Truck className="h-5 w-5 shrink-0 text-cls-primary" /><p>El costo final se calcula con el código postal. Antes de cobrar, el servidor validará cobertura, precio y stock.</p></div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id="codigoPostal" label="Código postal"><input id="codigoPostal" required inputMode="numeric" autoComplete="postal-code" value={form.codigoPostal} onChange={(event) => update("codigoPostal", event.target.value)} /></Field>
-              <Field id="provincia" label="Provincia"><input id="provincia" required autoComplete="address-level1" value={form.provincia} onChange={(event) => update("provincia", event.target.value)} /></Field>
-              <Field id="localidad" label="Localidad"><input id="localidad" required autoComplete="address-level2" value={form.localidad} onChange={(event) => update("localidad", event.target.value)} /></Field>
-              <Field id="direccion" label="Dirección"><input id="direccion" required autoComplete="street-address" value={form.direccion} onChange={(event) => update("direccion", event.target.value)} /></Field>
-              <Field id="notas" label="Indicaciones para la entrega" optional><textarea id="notas" rows={3} value={form.notas} onChange={(event) => update("notas", event.target.value)} /></Field>
+              <Field id="codigoPostal" label="Código postal"><input id="codigoPostal" name="postal-code" required inputMode="numeric" autoComplete="postal-code" value={form.codigoPostal} onChange={(event) => update("codigoPostal", event.target.value)} /></Field>
+              <Field id="provincia" label="Provincia"><input id="provincia" name="address-level1" required autoComplete="address-level1" value={form.provincia} onChange={(event) => update("provincia", event.target.value)} /></Field>
+              <Field id="localidad" label="Localidad"><input id="localidad" name="address-level2" required autoComplete="address-level2" value={form.localidad} onChange={(event) => update("localidad", event.target.value)} /></Field>
+              <Field id="direccion" label="Dirección"><input id="direccion" name="street-address" required autoComplete="street-address" value={form.direccion} onChange={(event) => update("direccion", event.target.value)} /></Field>
+              <Field id="notas" label="Indicaciones para la entrega" optional><textarea id="notas" name="delivery-notes" autoComplete="off" rows={3} value={form.notas} onChange={(event) => update("notas", event.target.value)} /></Field>
             </div>
           </CheckoutSection>
 
           <CheckoutSection number="3" title="Medio de pago">
             <div className="grid gap-3 sm:grid-cols-2">
               <label className={`flex min-h-24 cursor-pointer gap-3 rounded-2xl border p-4 transition ${form.payment === "transferencia" ? "border-cls-primary bg-cls-sage/55" : "border-cls-line bg-cls-paper"}`}>
-                <input type="radio" name="payment" checked={form.payment === "transferencia"} onChange={() => update("payment", "transferencia")} className="mt-1 accent-cls-primary" />
+                <input type="radio" name="payment" value="transferencia" checked={form.payment === "transferencia"} onChange={() => update("payment", "transferencia")} className="mt-1 h-5 w-5 shrink-0 accent-cls-primary" />
                 <span><strong className="block text-sm text-cls-primary-dark">Transferencia bancaria</strong><span className="mt-1 block text-xs text-cls-ink/92">10% de descuento. El pedido se confirma al validar el comprobante.</span></span>
               </label>
               <label className="flex min-h-24 cursor-not-allowed gap-3 rounded-2xl border border-cls-line bg-cls-cream p-4 opacity-65">
-                <input type="radio" name="payment" value="mercado_pago" disabled className="mt-1" />
+                <input type="radio" name="payment" value="mercado_pago" disabled className="mt-1 h-5 w-5 shrink-0" />
                 <span><strong className="block text-sm text-cls-primary-dark">Mercado Pago</strong><span className="mt-1 block text-xs text-cls-ink/92">Se habilita después de la aprobación comercial del rubro.</span></span>
               </label>
             </div>
@@ -134,7 +134,7 @@ export default function Checkout() {
 
           <CheckoutSection number="4" title="Código de descuento">
             <div className="flex flex-col gap-2 sm:flex-row">
-              <input aria-label="Código de descuento" className="min-h-11 min-w-0 flex-1 rounded-xl border border-cls-line bg-cls-paper px-3 uppercase outline-none focus:border-cls-primary focus:ring-2 focus:ring-cls-honey/50" value={discountInput} onChange={(event) => { setDiscountInput(event.target.value); setDiscountMessage(""); }} placeholder="Ej. BIENVENIDA10" />
+              <input name="discount-code" autoComplete="off" spellCheck={false} aria-label="Código de descuento" className="min-h-11 min-w-0 flex-1 rounded-xl border border-cls-line bg-cls-paper px-3 uppercase outline-none focus:border-cls-primary focus:ring-2 focus:ring-cls-honey/50" value={discountInput} onChange={(event) => { setDiscountInput(event.target.value); setDiscountMessage(""); }} placeholder="Ej. BIENVENIDA10" />
               <button type="button" className="btn-outline justify-center" onClick={applyDiscount}>Aplicar código</button>
               {appliedCode && <button type="button" className="min-h-11 px-3 text-xs font-black text-cls-orange" onClick={() => { setAppliedCode(""); setDiscountInput(""); setDiscountMessage(""); }}>Quitar</button>}
             </div>
@@ -155,7 +155,7 @@ export default function Checkout() {
               <div className="flex justify-between"><dt>Envío</dt><dd className="text-xs font-bold text-cls-ink/92">{shipping > 0 ? precioARS(shipping) : "Gratis"}</dd></div>
               <div className="flex justify-between border-t border-cls-line pt-4 text-lg"><dt className="font-bold">Total</dt><dd className="font-black text-cls-primary-dark">{precioARS(total - totalDiscount + shipping)}</dd></div>
             </dl>
-            <label className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-cls-ink/92"><input required type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-4 w-4 accent-cls-primary" /> Confirmo que soy mayor de 18 años y acepto las condiciones de compra que se publicarán antes del lanzamiento.</label>
+            <label className="mt-5 flex min-h-11 items-start gap-2 text-[11px] leading-relaxed text-cls-ink/92"><input name="terms" required type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-cls-primary" /> Confirmo que soy mayor de 18 años y acepto las condiciones de compra que se publicarán antes del lanzamiento.</label>
             <button type="submit" disabled={submitting} className="btn-primary mt-5 w-full">{submitting ? "Creando pedido…" : "Confirmar pedido"}</button>
             <p className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-cls-ink/88"><ShieldCheck className="h-4 w-4 shrink-0" /> El pedido queda registrado y pendiente de validación. Ningún pago se procesa dentro de esta pantalla.</p>
             {error && <p role="alert" className="mt-3 rounded-xl bg-red-100 p-3 text-xs font-bold text-red-800">{error}</p>}

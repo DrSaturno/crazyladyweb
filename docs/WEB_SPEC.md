@@ -120,6 +120,7 @@ No registrar contenido sensible de formularios ni mensajes del bot dentro de ana
 - Texto normal con contraste mínimo 4.5:1.
 - Targets táctiles de 44 px.
 - Imágenes con dimensiones reservadas, `loading="lazy"` fuera del primer viewport y alt descriptivo.
+- Imágenes fotográficas en JPEG optimizado (no PNG sin comprimir); las 16 imágenes de portada de Home pesaban 30 MB en PNG sin comprimir y hoy pesan 5.7 MB en JPEG (`mozjpeg`, calidad 82) a la misma resolución — verificado 15/09/2026.
 - `prefers-reduced-motion` respetado.
 - Búsqueda y formularios con labels y errores anunciados.
 

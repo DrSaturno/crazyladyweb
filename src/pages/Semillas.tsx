@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { useCommerceData } from "../context/CommerceDataContext";
@@ -17,6 +17,8 @@ function normalize(value: string) {
   return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+const PAGE_SIZE = 20;
+
 export default function Semillas() {
   const { products } = useCommerceData();
   const semillas = useMemo(() => products.filter((product) => product.categoria === "semilla"), [products]);
@@ -27,13 +29,23 @@ export default function Semillas() {
   const banco = params.get("banco");
   const soloStock = params.get("stock") === "1";
   const query = params.get("q")?.trim() ?? "";
+  const requestedPage = Math.max(1, Number.parseInt(params.get("pagina") ?? "1", 10) || 1);
   const bancoNombre = BANCOS.find((item) => item.slug === banco)?.nombre;
 
   function setFiltro(clave: string, valor: string | null) {
     const next = new URLSearchParams(params);
     if (valor === null || next.get(clave) === valor) next.delete(clave);
     else next.set(clave, valor);
+    next.delete("pagina");
     setParams(next, { replace: true });
+  }
+
+  function setPagina(value: number) {
+    const next = new URLSearchParams(params);
+    if (value <= 1) next.delete("pagina");
+    else next.set("pagina", String(value));
+    setParams(next);
+    window.requestAnimationFrame(() => document.getElementById("catalog-results")?.scrollIntoView({ block: "start" }));
   }
 
   function limpiarFiltros() {
@@ -62,6 +74,9 @@ export default function Semillas() {
 
   const hayFiltros = Boolean(origen || tipo || genetica || banco || soloStock);
   const title = query ? `Resultados para “${query}”` : bancoNombre ?? "Semillas";
+  const pageCount = Math.max(1, Math.ceil(resultados.length / PAGE_SIZE));
+  const currentPage = Math.min(requestedPage, pageCount);
+  const pagedResults = resultados.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const filters = (
     <Filters
@@ -110,7 +125,7 @@ export default function Semillas() {
           </div>
         </aside>
 
-        <section aria-label="Resultados del catálogo">
+        <section id="catalog-results" aria-label="Resultados del catálogo">
           {(query || hayFiltros) && (
             <div className="mb-4 flex flex-wrap items-center gap-2">
               {query && <Tag onRemove={() => setFiltro("q", null)}>Búsqueda: {query}</Tag>}
@@ -123,9 +138,18 @@ export default function Semillas() {
           )}
 
           {resultados.length ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {resultados.map((product) => <ProductCard key={product.id} producto={product} />)}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                {pagedResults.map((product) => <ProductCard key={product.id} producto={product} />)}
+              </div>
+              {pageCount > 1 && (
+                <nav aria-label="Paginación del catálogo" className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-cls-line bg-cls-paper p-3 shadow-paper">
+                  <button type="button" className="btn-outline min-w-11 px-3 sm:px-5" disabled={currentPage <= 1} onClick={() => setPagina(currentPage - 1)} aria-label="Página anterior"><ChevronLeft className="h-4 w-4" aria-hidden="true" /><span className="hidden sm:inline">Anterior</span></button>
+                  <span className="text-center text-xs font-bold text-cls-primary-dark">Página {currentPage} de {pageCount}<span className="mt-0.5 block text-[10px] font-normal text-cls-ink/84">{resultados.length} genéticas</span></span>
+                  <button type="button" className="btn-outline min-w-11 px-3 sm:px-5" disabled={currentPage >= pageCount} onClick={() => setPagina(currentPage + 1)} aria-label="Página siguiente"><span className="hidden sm:inline">Siguiente</span><ChevronRight className="h-4 w-4" aria-hidden="true" /></button>
+                </nav>
+              )}
+            </>
           ) : (
             <div className="section-shell flex min-h-[360px] flex-col items-center justify-center px-6 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cls-sage text-cls-primary"><Search className="h-6 w-6" /></span>
@@ -183,7 +207,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-9 rounded-full border px-3 py-1.5 text-left text-xs font-bold transition ${active ? "border-cls-primary bg-cls-primary text-cls-paper" : "border-cls-line bg-cls-paper text-cls-ink/94 hover:border-cls-primary hover:text-cls-primary"}`}
+      className={`min-h-11 rounded-full border px-3 py-1.5 text-left text-xs font-bold transition ${active ? "border-cls-primary bg-cls-primary text-cls-paper" : "border-cls-line bg-cls-paper text-cls-ink/94 hover:border-cls-primary hover:text-cls-primary"}`}
     >
       {children}
     </button>
@@ -192,9 +216,9 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 
 function Tag({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
   return (
-    <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-cls-line bg-cls-paper pl-3 pr-1.5 text-xs font-bold text-cls-primary shadow-sm">
+    <span className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-cls-line bg-cls-paper pl-3 pr-1.5 text-xs font-bold text-cls-primary shadow-sm">
       {children}
-      <button type="button" onClick={onRemove} className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-cls-cream" aria-label={`Quitar filtro ${String(children)}`}><X className="h-3.5 w-3.5" /></button>
+      <button type="button" onClick={onRemove} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-cls-cream" aria-label={`Quitar filtro ${String(children)}`}><X className="h-3.5 w-3.5" aria-hidden="true" /></button>
     </span>
   );
 }

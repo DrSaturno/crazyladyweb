@@ -52,10 +52,10 @@ const BEGINNER_IMAGES = [
 ];
 
 const DIARIO_IMAGES = [
-  { horizontal: "/images/home/diario1-horizontal.png", vertical: "/images/home/diario1-vertical.png" },
-  { horizontal: "/images/home/diario2-horizontal.png", vertical: "/images/home/diario2-vertical.png" },
-  { horizontal: "/images/home/diario3-horizontal.png", vertical: "/images/home/diario3-vertical.png" },
-  { horizontal: "/images/home/diario4-horizontal.png", vertical: "/images/home/diario4-vertical.png" },
+  { horizontal: "/images/home/diario1-horizontal.jpg", vertical: "/images/home/diario1-vertical.jpg" },
+  { horizontal: "/images/home/diario2-horizontal.jpg", vertical: "/images/home/diario2-vertical.jpg" },
+  { horizontal: "/images/home/diario3-horizontal.jpg", vertical: "/images/home/diario3-vertical.jpg" },
+  { horizontal: "/images/home/diario4-horizontal.jpg", vertical: "/images/home/diario4-vertical.jpg" },
 ];
 
 export default function Home() {
@@ -82,7 +82,7 @@ export default function Home() {
             <h1 id="hero-title" className="sr-only">Sembrando felicidad</h1>
             <picture>
               <source media="(max-width: 767px)" srcSet="/images/home/head-vertical.jpg" />
-              <img src="/images/home/head-horizontal.jpg" alt="" width="2172" height="724" loading="eager" decoding="async" className="block aspect-[941/1672] w-full object-cover md:aspect-[3/1]" />
+              <img src="/images/home/head-horizontal.jpg" alt="" width="2172" height="724" loading="eager" fetchPriority="high" decoding="async" className="block aspect-[941/1672] w-full object-cover md:aspect-[3/1]" />
             </picture>
           </div>
           <div className="relative z-10 mx-3 -mt-5 flex flex-col gap-3 rounded-2xl border border-cls-line bg-cls-paper/95 p-3 shadow-lift backdrop-blur sm:mx-6 md:flex-row md:items-center md:justify-between md:px-4">
@@ -156,15 +156,15 @@ export default function Home() {
         <div id="comunidad" className="grid gap-3 sm:grid-cols-2">
           <Link to="/notas" className="overflow-hidden rounded-2xl sm:col-span-2 md:relative md:min-h-[178px]">
             <picture>
-              <source media="(max-width: 767px)" srcSet="/images/home/fundacion-vertical.png" />
-              <img src="/images/home/fundacion-horizontal.png" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full md:absolute md:inset-0 md:h-full md:object-cover" />
+              <source media="(max-width: 767px)" srcSet="/images/home/fundacion-vertical.jpg" />
+              <img src="/images/home/fundacion-horizontal.jpg" alt="Fundación — Comunidad de cultivadoras" width="1200" height="600" loading="lazy" decoding="async" className="block w-full md:absolute md:inset-0 md:h-full md:object-cover" />
             </picture>
           </Link>
           <div className="self-start overflow-hidden rounded-2xl">
-            <img src="/images/home/comunidad-card-v2.png" alt="Comunidad — Cultivando en comunidad. Foros, tips y experiencias para crecer en red." width="1672" height="941" loading="lazy" decoding="async" className="block h-auto w-full" />
+            <img src="/images/home/comunidad-card-v2.jpg" alt="Comunidad — Cultivando en comunidad. Foros, tips y experiencias para crecer en red." width="1672" height="941" loading="lazy" decoding="async" className="block h-auto w-full" />
           </div>
           <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("cls:open-bot"))} aria-label="Abrir Plant Doctor: diagnóstico en vivo. Consultá con nuestro equipo." className="self-start overflow-hidden rounded-2xl text-left transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cls-orange focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none">
-            <img src="/images/home/doctor-card-v2.png" alt="Plant Doctor — Diagnóstico en vivo. ¿Qué le pasa a tu planta? Consultá con nuestro equipo." width="1672" height="941" loading="lazy" decoding="async" className="block h-auto w-full" />
+            <img src="/images/home/doctor-card-v2.jpg" alt="Plant Doctor — Diagnóstico en vivo. ¿Qué le pasa a tu planta? Consultá con nuestro equipo." width="1672" height="941" loading="lazy" decoding="async" className="block h-auto w-full" />
           </button>
         </div>
       </section>
@@ -247,10 +247,10 @@ export default function Home() {
             ) : (
               <form className="mt-5" onSubmit={(event) => { event.preventDefault(); if (email.trim()) setSuscripto(true); }}>
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <div className="flex-1"><label htmlFor="newsletter-email" className="sr-only">Correo electrónico</label><input id="newsletter-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Tu email…" className="h-11 w-full rounded-full border border-cls-primary bg-cls-paper px-4 text-sm outline-none focus:ring-2 focus:ring-cls-honey" /></div>
+                  <div className="flex-1"><label htmlFor="newsletter-email" className="sr-only">Correo electrónico</label><input id="newsletter-email" name="email" type="email" inputMode="email" autoComplete="email" spellCheck={false} required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Tu email…" className="h-11 w-full rounded-full border border-cls-primary bg-cls-paper px-4 text-base outline-none focus:ring-2 focus:ring-cls-honey sm:text-sm" /></div>
                   <button className="btn-primary" type="submit">Suscribirme</button>
                 </div>
-                <label className="mt-3 flex items-start gap-2 text-[11px] text-cls-ink/92"><input required type="checkbox" className="mt-0.5 h-4 w-4 accent-cls-primary" /> Acepto recibir comunicaciones de Crazy Lady Seeds. Puedo cancelar cuando quiera.</label>
+                <label className="mt-3 flex min-h-11 items-start gap-2 text-[11px] text-cls-ink/92"><input name="newsletter-consent" required type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-cls-primary" /> Acepto recibir comunicaciones de Crazy Lady Seeds. Puedo cancelar cuando quiera.</label>
               </form>
             )}
           </div>

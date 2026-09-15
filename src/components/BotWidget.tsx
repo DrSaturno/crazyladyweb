@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useCommerceData } from "../context/CommerceDataContext";
 import { getBotResponse } from "../data/clsKnowledge";
 import { useEscapeClose } from "../hooks/useEscapeClose";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 
 interface Message {
   from: "bot" | "user";
@@ -23,6 +24,7 @@ export default function BotWidget() {
   const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const widgetRef = useFocusTrap<HTMLElement>(open);
   const location = useLocation();
   const productSlug = location.pathname.startsWith("/producto/") ? location.pathname.replace("/producto/", "") : null;
   const viewedProduct = productSlug ? products.find((product) => product.slug === productSlug) : undefined;
@@ -65,17 +67,17 @@ export default function BotWidget() {
   return (
     <>
       {!open && (
-        <button ref={toggleButtonRef} onClick={openWidget} className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-cls-paper bg-cls-orange text-cls-primary-dark shadow-lift transition hover:-translate-y-1 hover:bg-cls-honey" aria-label={`Hablar con ${bot.nombre}`}>
+        <button ref={toggleButtonRef} type="button" onClick={openWidget} style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }} className="fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-cls-paper bg-cls-orange text-cls-primary-dark shadow-lift transition hover:-translate-y-1 hover:bg-cls-honey" aria-label={`Hablar con ${bot.nombre}`}>
           <MessageCircle className="h-6 w-6" aria-hidden="true" />
         </button>
       )}
 
       {open && (
-        <section aria-label={`Asistente virtual ${bot.nombre}`} className="fixed bottom-3 right-3 z-50 flex h-[560px] max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[22px] border border-cls-line bg-cls-cream shadow-2xl sm:bottom-5 sm:right-5 sm:w-[390px]">
+        <section ref={widgetRef} role="dialog" aria-modal="true" aria-label={`Asistente virtual ${bot.nombre}`} className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col overflow-hidden bg-cls-cream shadow-2xl sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[560px] sm:max-h-[calc(100dvh-2.5rem)] sm:w-[390px] sm:rounded-[22px] sm:border sm:border-cls-line">
           <header className="flex shrink-0 items-center gap-3 bg-cls-primary px-4 py-3 text-cls-paper">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark"><Sprout className="h-5 w-5" /></span>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark"><Sprout className="h-5 w-5" aria-hidden="true" /></span>
             <div className="min-w-0 flex-1"><h2 className="font-sans text-sm font-bold text-cls-paper">{bot.nombre}</h2><p className="text-[11px] text-cls-paper/70">Asistente de cultivo · demo informativa</p></div>
-            <button onClick={closeWidget} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper/80 hover:bg-white/10 hover:text-cls-paper" aria-label="Cerrar asistente"><X className="h-5 w-5" /></button>
+            <button type="button" onClick={closeWidget} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper/80 hover:bg-white/10 hover:text-cls-paper" aria-label="Cerrar asistente"><X className="h-5 w-5" aria-hidden="true" /></button>
           </header>
 
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite">
@@ -91,11 +93,11 @@ export default function BotWidget() {
             <div ref={bottomRef} />
           </div>
 
-          <form onSubmit={(event) => { event.preventDefault(); send(input); }} className="shrink-0 border-t border-cls-line bg-cls-paper p-3">
+          <form onSubmit={(event) => { event.preventDefault(); send(input); }} className="shrink-0 border-t border-cls-line bg-cls-paper px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
             <label htmlFor="bot-message" className="sr-only">Escribí tu consulta</label>
             <div className="flex gap-2">
-              <input id="bot-message" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribí tu consulta…" className="h-11 min-w-0 flex-1 rounded-full border border-cls-line bg-cls-cream px-4 text-sm outline-none focus:border-cls-primary focus:ring-2 focus:ring-cls-honey/50" />
-              <button type="submit" disabled={!input.trim() || typing} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark transition hover:bg-[#F7C85E] disabled:opacity-40" aria-label="Enviar mensaje"><Send className="h-4 w-4" /></button>
+              <input id="bot-message" name="message" autoComplete="off" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribí tu consulta…" className="h-11 min-w-0 flex-1 rounded-full border border-cls-line bg-cls-cream px-4 text-base outline-none focus:border-cls-primary focus:ring-2 focus:ring-cls-honey/50 sm:text-sm" />
+              <button type="submit" disabled={!input.trim() || typing} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark transition hover:bg-[#F7C85E] disabled:opacity-40" aria-label="Enviar mensaje"><Send className="h-4 w-4" aria-hidden="true" /></button>
             </div>
             <p className="mt-2 text-center text-[9px] text-cls-ink/84">Las respuestas actuales son locales; no se envían datos a terceros.</p>
           </form>

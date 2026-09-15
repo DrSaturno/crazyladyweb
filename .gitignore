@@ -47,6 +47,7 @@ Thumbs.db
 
 # Material de trabajo y fuentes privadas no necesarios para compilar la tienda
 output/
+.playwright-cli/
 info_drive/
 MOCKUPS_PARA_CLIENTE/
 scratch_env/

@@ -134,8 +134,26 @@ La causa es un efecto de las heurísticas automáticas de chunking de Rollup/Vit
 
 Lo que sí se aplicó (sin el riesgo del chunking automático): las miniaturas de producto que todavía no tenían `loading="lazy"` ([Carrito.tsx](../src/pages/Carrito.tsx), [NotaDetalle.tsx](../src/pages/NotaDetalle.tsx) — la imagen del artículo relacionado) ahora lo tienen, en línea con `ProductCard.tsx` y `Home.tsx`, que ya lo usaban. La imagen principal de `ProductoDetalle.tsx` se deja sin `lazy` a propósito (es la imagen más importante de la página, siempre arriba del pliegue).
 
+## 🟢 Implementado — continuación 12: auditoría móvil responsive (Codex) + peso de imágenes (Claude)
+
+Trabajo paralelo de otra sesión (Codex/GPT) hizo un pase de auditoría visual responsive real en navegador (194 capturas en `output/playwright/responsive-audit/`, a 390/768/1440 px, cubriendo sitio público y admin) y aplicó las correcciones que encontró. Quedó sin commitear porque esa sesión agotó su límite de uso a mitad de camino — se verificó acá (`tsc`, `npm run build`, `npm test`, inspección de las 4 últimas capturas y de cada diff) que el trabajo estaba completo y correcto antes de continuar:
+
+- **Menú móvil del sitio público** ([Header.tsx](../src/components/Header.tsx)): pasó de dropdown inline a un drawer lateral real con `role="dialog"`, `aria-modal`, foco atrapado (reusando `useFocusTrap`) y bloqueo de scroll del body — antes el fondo se podía seguir scrolleando detrás del menú abierto. Agrega enlaces a Mi cuenta/Favoritos/Carrito dentro del menú, que antes no estaban.
+- **Catálogo de Semillas** ([Semillas.tsx](../src/pages/Semillas.tsx)): agregó paginación real (20 por página) — antes renderizaba todos los resultados sin límite, un problema real de performance de scroll con catálogos grandes.
+- **Checkout** ([Checkout.tsx](../src/pages/Checkout.tsx)): agregó `name`/`autoComplete`/`inputMode` correctos a todos los campos (autofill del navegador no funcionaba bien sin `name`), radios/checkboxes a 20×20 px (antes 16×16, por debajo del mínimo táctil recomendado).
+- **Tabla del admin en mobile** ([index.css](../src/index.css)): reescribió el layout de ficha (antes label/valor en 2 columnas fijas, ahora columnas dinámicas por campo) y agregó `font-size: 1rem` global a inputs — Safari iOS hace zoom automático si un input tiene `font-size` menor a 16px al enfocarlo, un bug real de UX táctil.
+- **`useFocusTrap.ts`**: le agregó bloqueo de scroll del body (`overflow: hidden` + compensación del ancho de la scrollbar) mientras un overlay con foco atrapado está abierto — un gap real que había quedado en la versión que yo había escrito en la continuación 11.
+- **Footer, ProductCard, AdminLayout, BotWidget**: `type="button"` en botones que no envían formularios, `aria-hidden` en iconos decorativos, `width`/`height` explícitos en el logo, chat del bot ahora pantalla completa en mobile con `env(safe-area-inset-bottom)`.
+
+**Peso de imágenes** (lo único que esa sesión había dejado pendiente, según su propio último mensaje): las 16 imágenes de portada de `Home.tsx` (`diario1-4`, `fundacion`, `comunidad-card-v2`, `doctor-card-v2`) eran PNG sin comprimir pesando 25 MB en total — fotografías reales codificadas sin pérdida, el formato equivocado para ese contenido. Reconvertidas a JPEG (`sharp` + `mozjpeg`, calidad 82, misma resolución de píxeles — sin reescalar, sin pérdida visible) → **2.42 MB**, una reducción del 90%. Además:
+- Recomprimidos con el mismo método los JPEG que ya existían en `images/home/` (hero, blog, accesos) — otro ~1 MB adicional sin tocar resolución ni calidad visible.
+- Borradas 4 imágenes PNG huérfanas (`comunidad-horizontal.png`, `comunidad-vertical.png`, `doctor-horizontal.png`, `doctor-vertical.png`, ~6 MB) — confirmado con `grep` que ningún componente las referenciaba; estaban reemplazadas hace tiempo por las versiones `-card-v2`.
+- `public/images/home/` pasó de ~31 MB a 5.7 MB. Verificado con `tsc`, `npm run build`, `npm test` (31/31) y una comprobación en el DOM real (`img.complete` + `naturalWidth`/`naturalHeight` de las 16 imágenes) de que cada una carga con la resolución correcta tras el cambio de extensión `.png` → `.jpg`.
+- Nota: `comunidad-horizontal.jpg`/`comunidad-vertical.jpg` (~256 KB) existen en el mismo directorio y tampoco están referenciados en ningún componente — a diferencia de los 4 PNG borrados, estos ya existían antes de esta sesión y no se tocaron; quedan para una limpieza de assets separada si se confirma que son huérfanos.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
+- `comunidad-horizontal.jpg`/`comunidad-vertical.jpg` en `public/images/home/` sin referencias en el código — candidatos a borrar, no confirmado.
 
 ## 🟢 Confirmado sin código muerto
 
@@ -151,7 +169,9 @@ Lo que sí se aplicó (sin el riesgo del chunking automático): las miniaturas d
 5. ~~Feedback visible cuando falla la persistencia local~~ — hecho 15/09/2026.
 6. ~~Tests automatizados para la lógica de mayor riesgo (importación Excel, motor de descuentos del checkout)~~ — hecho 15/09/2026.
 7. ~~Navegación por teclado en overlays (drawer admin, buscadores, desplegables, panel de notificaciones, asistente)~~ — hecho 15/09/2026.
-8. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
-9. Doble enlace a la tienda pública con distinto label — cosmético, baja prioridad.
-10. Performance: `manualChunks` para el bundle principal (269 KB / 79 KB gzip hoy) — se intentó lazy-loading de páginas públicas y empeoró el resultado por heurísticas de Rollup; requiere configuración explícita de chunking, no intentado a fondo.
-9. Desalineación de esquema `products.images` (array) vs `Producto.imagen` (string) — a resolver cuando se conecte Supabase.
+8. ~~Auditoría responsive móvil completa (menú, filtros, chat, panel admin) + peso de imágenes de Home~~ — hecho 15/09/2026.
+9. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
+10. Doble enlace a la tienda pública con distinto label — cosmético, baja prioridad.
+11. Performance: `manualChunks` para el bundle principal (269 KB / 79 KB gzip hoy) — se intentó lazy-loading de páginas públicas y empeoró el resultado por heurísticas de Rollup; requiere configuración explícita de chunking, no intentado a fondo.
+12. Desalineación de esquema `products.images` (array) vs `Producto.imagen` (string) — a resolver cuando se conecte Supabase.
+13. `comunidad-horizontal.jpg`/`comunidad-vertical.jpg` sin referencias en el código — confirmar y limpiar.

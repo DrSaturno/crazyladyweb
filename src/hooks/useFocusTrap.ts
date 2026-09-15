@@ -10,6 +10,11 @@ export function useFocusTrap<T extends HTMLElement>(active: boolean) {
   useEffect(() => {
     if (!active) return;
     previouslyFocused.current = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
     const container = containerRef.current;
     const focusable = container?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
     focusable?.[0]?.focus();
@@ -32,6 +37,8 @@ export function useFocusTrap<T extends HTMLElement>(active: boolean) {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
       previouslyFocused.current?.focus();
     };
   }, [active]);
