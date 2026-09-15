@@ -3,6 +3,7 @@ import { BOT_LIMITS, DEFAULT_BOT_PROMPT } from "../data/botDefaults";
 import { LOW_STOCK_THRESHOLD, PRODUCTOS, type Producto } from "../data/catalogo";
 import { NOTAS_INICIALES, type Nota } from "../data/notas";
 import { resolveCatalogImage } from "../data/productPhotography";
+import { quoteDiscount as computeDiscountQuote, type DiscountQuote } from "./discountEngine";
 import type {
   AbandonedCart,
   AdminCategory,
@@ -131,14 +132,6 @@ interface NewOrderInput {
   discountCode?: string;
 }
 
-export interface DiscountQuote {
-  valid: boolean;
-  code: string;
-  ruleId?: string;
-  amount: number;
-  freeShipping: boolean;
-  message: string;
-}
 
 type OrderPatch = Partial<Pick<AdminOrder, "status" | "paymentStatus" | "fulfillmentStatus" | "carrier" | "trackingCode" | "internalNotes">>;
 
@@ -187,12 +180,6 @@ function audit(entity: string, entityId: string, action: string, detail: string)
 
 function timelineEvent(type: "order" | "payment" | "fulfillment" | "note", label: string) {
   return { id: uid("event"), type, label, createdAt: now() };
-}
-
-function parseDiscountDate(value: string, endOfDay: boolean) {
-  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
-  const parsed = new Date(dateOnly ? `${value}T${endOfDay ? "23:59:59.999" : "00:00:00"}` : value).getTime();
-  return Number.isNaN(parsed) ? (endOfDay ? Number.POSITIVE_INFINITY : 0) : parsed;
 }
 
 export function CommerceDataProvider({ children }: { children: React.ReactNode }) {
@@ -269,19 +256,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
   }
 
   function quoteDiscount(code: string, subtotal: number): DiscountQuote {
-    const normalized = code.trim().toUpperCase();
-    if (!normalized) return { valid: false, code: "", amount: 0, freeShipping: false, message: "Ingresá un código." };
-    const discount = state.discounts.find((item) => item.code.toUpperCase() === normalized);
-    if (!discount || discount.status !== "active") return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código no está disponible." };
-    const currentTime = Date.now();
-    const startTime = parseDiscountDate(discount.startsAt, false);
-    const endTime = discount.endsAt ? parseDiscountDate(discount.endsAt, true) : Number.POSITIVE_INFINITY;
-    if (currentTime < startTime) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código todavía no está vigente." };
-    if (currentTime > endTime) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código venció." };
-    if (discount.usageLimit !== undefined && discount.usageCount >= discount.usageLimit) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: "El código alcanzó su límite de usos." };
-    if (subtotal < discount.minimumAmount) return { valid: false, code: normalized, amount: 0, freeShipping: false, message: `La compra mínima para este código es $${discount.minimumAmount.toLocaleString("es-AR")}.` };
-    const amount = discount.type === "percentage" ? Math.round(subtotal * discount.value / 100) : discount.type === "fixed" ? Math.min(subtotal, discount.value) : 0;
-    return { valid: true, code: discount.code, ruleId: discount.id, amount, freeShipping: discount.type === "free_shipping", message: discount.type === "free_shipping" ? "Envío gratis aplicado." : `Descuento de $${amount.toLocaleString("es-AR")} aplicado.` };
+    return computeDiscountQuote(state.discounts, subtotal, code);
   }
 
   async function dispatchEvent(event: AutomationEvent, payload: Record<string, unknown>) {

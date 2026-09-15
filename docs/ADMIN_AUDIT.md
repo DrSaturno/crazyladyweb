@@ -44,6 +44,13 @@ Auditoría técnica completa (arquitectura, UX/UI, seguridad, base de datos) del
 - **Umbral de "stock bajo" unificado**: era `≤3` hardcodeado en 3 archivos distintos (`AdminLayout.tsx`, `AdminModules.tsx` ×3, `CommerceDataContext.tsx` ×2). Ahora es una sola constante `LOW_STOCK_THRESHOLD` en `src/data/catalogo.ts`, usada en los 6 lugares — incluido el texto del filtro ("Stock bajo (≤3)"), que antes podía quedar desactualizado si alguien cambiaba el número en un solo lugar.
 - **Feedback visible cuando falla la persistencia local**: antes, si `localStorage.setItem` fallaba (cuota llena, modo privado), el cambio quedaba solo en memoria sin ningún aviso — se perdía en el próximo refresh en silencio. Ahora `CommerceDataContext` expone `persistenceError` y `AdminLayout` muestra un banner rojo persistente en todas las páginas del admin mientras el último guardado no se pudo escribir, y desaparece solo en el próximo guardado exitoso. Probado simulando un `QuotaExceededError` real en `localStorage.setItem`.
 
+## 🟠 Alto — implementado en esta sesión (continuación 4: tests)
+
+- **Se agregó Vitest** (instalado en su versión 5, no la 2.x que tiene una vulnerabilidad de path traversal en `@vitest/mocker` — 0 vulnerabilidades tras la actualización). `npm test` corre la suite.
+- **`src/admin/productImport.ts` (validador de importación de productos) — 11 tests.** Cubre: alta nueva, actualización por slug (nombre+banco), actualización por id explícito, categorías/enums inválidos, tope de precio/stock, `ciclo_semanas` opcional, duplicados dentro del archivo, números de fila correctos, parsing de `visible_web`/`destacado`, y **test de regresión específico para el bug de `id=""` encontrado antes** (dos filas nuevas sin id nunca vuelven a colisionar).
+- **Motor de descuentos del checkout extraído y probado — 12 tests.** `quoteDiscount` vivía como función interna de `CommerceDataContext` (no se podía probar sin renderizar React); se extrajo tal cual a `src/context/discountEngine.ts` como función pura (mismo comportamiento, ahora con un parámetro `now` opcional para fechas determinísticas en tests). Cubre: código vacío, mayúsculas/espacios, código inexistente, borrador/pausado, antes de vigencia, vencido (incluyendo que el día de vencimiento cuenta completo), límite de usos, compra mínima, redondeo de porcentaje, tope de descuento fijo al subtotal, envío gratis, y que devuelve el `ruleId` correcto.
+- Verificado que el refactor no cambió el comportamiento real: se creó un cupón 10% desde el admin y se aplicó en el checkout público real — descuento de $2.100 sobre $21.000, correcto.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 
@@ -59,6 +66,7 @@ Auditoría técnica completa (arquitectura, UX/UI, seguridad, base de datos) del
 3. ~~Paginación + búsqueda + validaciones reales en los módulos de `AdminOperations.tsx` (Preparación y envíos, Descuentos, Marketing, Carritos abandonados, Devoluciones, Finanzas, Automatizaciones)~~ — hecho 15/09/2026.
 4. ~~Constante compartida para umbral de stock bajo~~ — hecho 15/09/2026.
 5. ~~Feedback visible cuando falla la persistencia local~~ — hecho 15/09/2026.
-6. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
-7. Doble enlace a la tienda pública con distinto label — cosmético, baja prioridad.
-8. Desalineación de esquema `products.images` (array) vs `Producto.imagen` (string) — a resolver cuando se conecte Supabase.
+6. ~~Tests automatizados para la lógica de mayor riesgo (importación Excel, motor de descuentos del checkout)~~ — hecho 15/09/2026.
+7. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
+8. Doble enlace a la tienda pública con distinto label — cosmético, baja prioridad.
+9. Desalineación de esquema `products.images` (array) vs `Producto.imagen` (string) — a resolver cuando se conecte Supabase.
