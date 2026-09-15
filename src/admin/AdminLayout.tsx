@@ -98,7 +98,7 @@ export default function AdminLayout() {
       <>
         <div className={`flex min-h-[78px] items-center border-b border-white/15 ${iconOnly ? "justify-center px-2" : "justify-between px-4"}`}>
           <Link to="/admin" onClick={() => setOpen(false)} className="flex min-w-0 items-center gap-3 rounded-xl py-2" title="Ir al resumen">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cls-paper"><img src="/logo-cls-01.png" alt="Crazy Lady Seeds" width="4500" height="5625" className="h-full w-full object-contain p-1" /></span>
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cls-paper"><img src="/logo-cls-01.png" alt="Crazy Lady Seeds" width="4500" height="5625" className="h-full w-full object-contain p-0.5" /></span>
             {!iconOnly && <span className="min-w-0 text-sm font-black leading-tight text-cls-paper">Centro de<br />operaciones</span>}
           </Link>
           {!iconOnly && <button type="button" onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper hover:bg-white/10 lg:hidden" aria-label="Cerrar menú"><X className="h-5 w-5" /></button>}
