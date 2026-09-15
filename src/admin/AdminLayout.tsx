@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { Bell, ChevronLeft, Menu, Search, Store, X } from "lucide-react";
+import { Bell, ChevronsLeft, ChevronsRight, Menu, Search, Store, X } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useCommerceData } from "../context/CommerceDataContext";
 import { commerceDataMode } from "../lib/supabase";
 import { useAdminModules } from "./AdminModuleContext";
 import { ADMIN_MODULES } from "./moduleRegistry";
 
+const SIDEBAR_COLLAPSED_KEY = "cls_admin_sidebar_collapsed";
+
+function readCollapsed() {
+  try { return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1"; } catch { return false; }
+}
+
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(readCollapsed);
   const [query, setQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { isEnabled } = useAdminModules();
@@ -22,23 +29,43 @@ export default function AdminLayout() {
     { label: "Automatizaciones fallidas", count: automationRuns.filter((run) => run.status === "failed").length, to: "/admin/automatizaciones" },
   ].filter((item) => item.count > 0);
 
-  const sidebar = (
-    <>
-      <div className="flex min-h-[78px] items-center justify-between border-b border-white/15 px-4">
-        <Link to="/admin" onClick={() => setOpen(false)} className="flex min-w-0 items-center gap-3 rounded-xl py-2"><img src="/logo-cls-01.png" alt="" className="h-12 w-16 rounded-lg bg-cls-paper object-cover object-top" /><span className="min-w-0 text-sm font-black leading-tight text-cls-paper">Centro de<br />operaciones</span></Link>
-        <button type="button" onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper hover:bg-white/10 lg:hidden" aria-label="Cerrar menú"><X className="h-5 w-5" /></button>
-      </div>
-      <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Módulos del administrador">
-        {groups.map((group) => <div key={group} className="mb-5"><p className="mb-2 px-3 text-[9px] font-black uppercase tracking-[0.18em] text-cls-paper/45">{group}</p><div className="space-y-1">{visible.filter((module) => module.group === group).map(({ id, label, path, icon: Icon }) => <NavLink key={id} to={path} end={path === "/admin"} onClick={() => setOpen(false)} className={({ isActive }) => `flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs font-bold transition ${isActive ? "bg-cls-honey text-cls-primary-dark" : "text-cls-paper/75 hover:bg-white/10 hover:text-cls-paper"}`}><Icon className="h-4 w-4 shrink-0" />{label}</NavLink>)}</div></div>)}
-      </nav>
-      <div className="border-t border-white/15 p-3"><Link to="/" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs font-bold text-cls-paper/70 hover:bg-white/10"><ChevronLeft className="h-4 w-4" /> Ver tienda pública</Link></div>
-    </>
-  );
+  function toggleCollapsed() {
+    setCollapsed((current) => {
+      const next = !current;
+      try { localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0"); } catch { /* preferencia solo local; el panel sigue funcionando sin persistirla */ }
+      return next;
+    });
+  }
+
+  function renderSidebar(iconOnly: boolean) {
+    return (
+      <>
+        <div className={`flex min-h-[78px] items-center border-b border-white/15 ${iconOnly ? "justify-center px-2" : "justify-between px-4"}`}>
+          <Link to="/admin" onClick={() => setOpen(false)} className="flex min-w-0 items-center gap-3 rounded-xl py-2" title="Ir al resumen">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cls-paper"><img src="/logo-cls-01.png" alt="Crazy Lady Seeds" className="h-full w-full object-contain p-1" /></span>
+            {!iconOnly && <span className="min-w-0 text-sm font-black leading-tight text-cls-paper">Centro de<br />operaciones</span>}
+          </Link>
+          {!iconOnly && <button type="button" onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper hover:bg-white/10 lg:hidden" aria-label="Cerrar menú"><X className="h-5 w-5" /></button>}
+        </div>
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Módulos del administrador">
+          {groups.map((group) => <div key={group} className="mb-5">{!iconOnly && <p className="mb-2 px-3 text-[9px] font-black uppercase tracking-[0.18em] text-cls-paper/45">{group}</p>}<div className="space-y-1">{visible.filter((module) => module.group === group).map(({ id, label, path, icon: Icon }) => <NavLink key={id} to={path} end={path === "/admin"} onClick={() => setOpen(false)} title={iconOnly ? label : undefined} aria-label={label} className={({ isActive }) => `flex min-h-11 items-center gap-3 rounded-xl text-xs font-bold transition ${iconOnly ? "justify-center px-0" : "px-3"} ${isActive ? "bg-cls-honey text-cls-primary-dark" : "text-cls-paper/75 hover:bg-white/10 hover:text-cls-paper"}`}><Icon className="h-4 w-4 shrink-0" />{!iconOnly && label}</NavLink>)}</div></div>)}
+        </nav>
+        <div className="border-t border-white/15 p-3">
+          <button type="button" onClick={toggleCollapsed} title={iconOnly ? "Expandir menú" : "Colapsar menú"} aria-label={iconOnly ? "Expandir menú" : "Colapsar menú"} className={`hidden min-h-11 w-full items-center gap-3 rounded-xl text-xs font-bold text-cls-paper/70 transition hover:bg-white/10 hover:text-cls-paper lg:flex ${iconOnly ? "justify-center px-0" : "px-3"}`}>
+            {iconOnly ? <ChevronsRight className="h-4 w-4 shrink-0" /> : <><ChevronsLeft className="h-4 w-4 shrink-0" /> Colapsar menú</>}
+          </button>
+          <Link to="/" onClick={() => setOpen(false)} title={iconOnly ? "Ver tienda pública" : undefined} aria-label="Ver tienda pública" className={`flex min-h-11 w-full items-center gap-3 rounded-xl text-xs font-bold text-cls-paper/70 transition hover:bg-white/10 hover:text-cls-paper lg:hidden ${iconOnly ? "justify-center px-0" : "px-3"}`}>
+            <Store className="h-4 w-4 shrink-0" /> Ver tienda pública
+          </Link>
+        </div>
+      </>
+    );
+  }
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-cls-cream lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
-      <aside className="hidden min-h-screen bg-cls-primary-dark lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">{sidebar}</aside>
-      {open && <div className="fixed inset-0 z-50 lg:hidden"><button type="button" className="absolute inset-0 bg-cls-primary-dark/55" onClick={() => setOpen(false)} aria-label="Cerrar menú" /><aside className="relative flex h-full w-[min(86vw,300px)] flex-col bg-cls-primary-dark shadow-2xl">{sidebar}</aside></div>}
+    <div className={`min-h-screen overflow-x-clip bg-cls-cream lg:grid lg:transition-[grid-template-columns] lg:duration-300 ${collapsed ? "lg:grid-cols-[76px_minmax(0,1fr)]" : "lg:grid-cols-[250px_minmax(0,1fr)]"}`}>
+      <aside className="hidden min-h-screen overflow-hidden bg-cls-primary-dark lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">{renderSidebar(collapsed)}</aside>
+      {open && <div className="fixed inset-0 z-50 lg:hidden"><button type="button" className="absolute inset-0 bg-cls-primary-dark/55" onClick={() => setOpen(false)} aria-label="Cerrar menú" /><aside className="relative flex h-full w-[min(86vw,300px)] flex-col bg-cls-primary-dark shadow-2xl">{renderSidebar(false)}</aside></div>}
       <div className="min-w-0">
         <header className="sticky top-0 z-30 flex min-h-16 items-center gap-2 border-b border-cls-line bg-cls-paper/95 px-3 backdrop-blur sm:px-5">
           <button type="button" onClick={() => setOpen(true)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary lg:hidden" aria-label="Abrir menú"><Menu className="h-5 w-5" /></button>
