@@ -7,7 +7,7 @@
 
 ## Principios no negociables (agregado 15/09/2026, tras el bug de precio de checkout)
 
-1. El precio y el nombre de cada línea de pedido se resuelven **siempre** contra el catálogo vivo (`state.products`) en el momento de crear la orden — nunca contra la copia que trae el carrito, que puede tener horas o días.
+1. El precio y el nombre de cada línea de pedido se resuelven **siempre** contra el catálogo vivo (`state.products`) en el momento de crear la orden — nunca contra la copia que trae el carrito, que puede tener horas o días. Esta regla está en código, no solo en la spec: `src/context/orderEngine.ts` (`buildOrderQuote`) es una función pura probada con tests que hacen justamente esto — pasarle un producto "viejo" en el carrito y un catálogo "vivo" distinto, y verificar que gana el vivo.
 2. El carrito se resincroniza contra el catálogo vivo cada vez que cambia, no solo al pagar: lo que la persona ve siempre tiene que coincidir con lo que termina pagando. Un producto que se agota o se oculta mientras está en un carrito se quita solo.
 3. Ningún formulario copia un valor del store a `useState` sin un mecanismo que lo resincronice si el store cambia por otra vía (reset, otra pestaña, otra acción). Si un componente hace `useState(valorDelStore)`, tiene que existir un `useEffect` o un `key` que lo mantenga al día.
 4. Todo input nativo (`type="url"`, `type="email"`, etc.) tiene que aceptar los valores reales que el sistema produce — si el catálogo guarda rutas internas relativas, el campo no puede exigir una URL absoluta.

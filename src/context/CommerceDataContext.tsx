@@ -4,6 +4,7 @@ import { LOW_STOCK_THRESHOLD, PRODUCTOS, type Producto } from "../data/catalogo"
 import { NOTAS_INICIALES, type Nota } from "../data/notas";
 import { resolveCatalogImage } from "../data/productPhotography";
 import { quoteDiscount as computeDiscountQuote, type DiscountQuote } from "./discountEngine";
+import { buildOrderQuote } from "./orderEngine";
 import type {
   AbandonedCart,
   AdminCategory,
@@ -265,28 +266,14 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
   }
 
   function createOrder(input: NewOrderInput) {
-    // El carrito viaja en localStorage y puede quedar desactualizado por horas o días; el precio y el
-    // nombre del pedido SIEMPRE se resuelven contra el catálogo vivo (`state.products`), nunca contra la
-    // foto que trae el carrito — de lo contrario un cambio de precio posterior a "agregar al carrito"
-    // se cobraría (o descontaría) al valor viejo.
-    const resolved = input.items.map((line) => {
-      const product = state.products.find((item) => item.id === line.producto.id);
-      if (!product || product.visible_web === false || product.stock < line.cantidad) throw new Error(`No hay stock suficiente de ${line.producto.nombre}. Revisá el carrito antes de confirmar.`);
-      return { product, cantidad: line.cantidad };
-    });
+    const quote = buildOrderQuote({ items: input.items, products: state.products, discounts: state.discounts, settings: state.settings, paymentMethod: input.paymentMethod, discountCode: input.discountCode });
+    const { resolved, subtotal, promotion, promotionDiscount, transferDiscount, descuento, envio, total } = quote;
     const createdAt = now();
-    const subtotal = resolved.reduce((sum, item) => sum + item.product.precio * item.cantidad, 0);
-    const promotion = input.discountCode ? quoteDiscount(input.discountCode, subtotal) : null;
-    if (promotion && !promotion.valid) throw new Error(promotion.message);
-    const promotionDiscount = promotion?.amount ?? 0;
-    const transferDiscount = input.paymentMethod === "transferencia" ? Math.round((subtotal - promotionDiscount) * state.settings.descuentoTransferencia / 100) : 0;
-    const descuento = promotionDiscount + transferDiscount;
-    const envio = promotion?.freeShipping ? 0 : state.settings.envioBase;
     const order: AdminOrder = {
       id: uid("order"), publicNumber: `CLS-${new Date().getFullYear()}-${String(state.orders.length + 1).padStart(5, "0")}`,
       items: resolved.map(({ product, cantidad }) => ({ productId: product.id, nombre: product.nombre, sku: product.id, cantidad, precioUnitario: product.precio })),
       customer: input.customer, status: "pendiente", paymentStatus: "pendiente", paymentMethod: input.paymentMethod,
-      subtotal, descuento, discountCode: promotion?.code, promotionDiscount, transferDiscount, envio, total: subtotal - descuento + envio, notas: input.notas,
+      subtotal, descuento, discountCode: promotion?.code, promotionDiscount, transferDiscount, envio, total, notas: input.notas,
       fulfillmentStatus: "pendiente", carrier: "", trackingCode: "", internalNotes: "", timeline: [{ id: uid("event"), type: "order", label: "Pedido creado", createdAt }], createdAt, updatedAt: createdAt,
     };
     commit((current) => {
