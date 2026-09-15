@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Producto } from "../data/catalogo";
+import { useCommerceData } from "./CommerceDataContext";
 
 // Carrito de la maqueta: vive en localStorage, sin backend.
 // Cuando exista el Supabase del proyecto se sincroniza con `cart_sessions`
@@ -52,6 +53,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem(STORAGE_ITEMS, JSON.stringify(items));
   }, [items]);
+
+  const { products } = useCommerceData();
+
+  // El carrito persiste en localStorage y puede quedar abierto por días: sin esto, mostraría precio,
+  // stock o nombre viejos hasta el momento del checkout, y el total que ve la persona no coincidiría
+  // con el que finalmente se registra (createOrder ya revalida contra el catálogo vivo). Se sincroniza
+  // cada vez que cambia el catálogo real, no en cada render.
+  useEffect(() => {
+    setItems((prev) => {
+      let changed = false;
+      const next: CartItem[] = [];
+      for (const item of prev) {
+        const live = products.find((product) => product.id === item.producto.id);
+        if (!live || live.visible_web === false || live.stock <= 0) { changed = true; continue; }
+        const cantidad = Math.min(item.cantidad, live.stock);
+        if (live !== item.producto || cantidad !== item.cantidad) changed = true;
+        next.push({ producto: live, cantidad });
+      }
+      return changed ? next : prev;
+    });
+  }, [products]);
 
   function agregar(producto: Producto, cantidad = 1) {
     setItems((prev) => {

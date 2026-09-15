@@ -265,12 +265,17 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
   }
 
   function createOrder(input: NewOrderInput) {
-    for (const line of input.items) {
-      const currentProduct = state.products.find((product) => product.id === line.producto.id);
-      if (!currentProduct || currentProduct.visible_web === false || currentProduct.stock < line.cantidad) throw new Error(`No hay stock suficiente de ${line.producto.nombre}. Revisá el carrito antes de confirmar.`);
-    }
+    // El carrito viaja en localStorage y puede quedar desactualizado por horas o días; el precio y el
+    // nombre del pedido SIEMPRE se resuelven contra el catálogo vivo (`state.products`), nunca contra la
+    // foto que trae el carrito — de lo contrario un cambio de precio posterior a "agregar al carrito"
+    // se cobraría (o descontaría) al valor viejo.
+    const resolved = input.items.map((line) => {
+      const product = state.products.find((item) => item.id === line.producto.id);
+      if (!product || product.visible_web === false || product.stock < line.cantidad) throw new Error(`No hay stock suficiente de ${line.producto.nombre}. Revisá el carrito antes de confirmar.`);
+      return { product, cantidad: line.cantidad };
+    });
     const createdAt = now();
-    const subtotal = input.items.reduce((sum, item) => sum + item.producto.precio * item.cantidad, 0);
+    const subtotal = resolved.reduce((sum, item) => sum + item.product.precio * item.cantidad, 0);
     const promotion = input.discountCode ? quoteDiscount(input.discountCode, subtotal) : null;
     if (promotion && !promotion.valid) throw new Error(promotion.message);
     const promotionDiscount = promotion?.amount ?? 0;
@@ -279,7 +284,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
     const envio = promotion?.freeShipping ? 0 : state.settings.envioBase;
     const order: AdminOrder = {
       id: uid("order"), publicNumber: `CLS-${new Date().getFullYear()}-${String(state.orders.length + 1).padStart(5, "0")}`,
-      items: input.items.map(({ producto, cantidad }) => ({ productId: producto.id, nombre: producto.nombre, sku: producto.id, cantidad, precioUnitario: producto.precio })),
+      items: resolved.map(({ product, cantidad }) => ({ productId: product.id, nombre: product.nombre, sku: product.id, cantidad, precioUnitario: product.precio })),
       customer: input.customer, status: "pendiente", paymentStatus: "pendiente", paymentMethod: input.paymentMethod,
       subtotal, descuento, discountCode: promotion?.code, promotionDiscount, transferDiscount, envio, total: subtotal - descuento + envio, notas: input.notas,
       fulfillmentStatus: "pendiente", carrier: "", trackingCode: "", internalNotes: "", timeline: [{ id: uid("event"), type: "order", label: "Pedido creado", createdAt }], createdAt, updatedAt: createdAt,
@@ -287,11 +292,11 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
     commit((current) => {
       const existing = current.customers.find((customer) => customer.email.toLowerCase() === input.customer.email.toLowerCase());
       const customer: AdminCustomer = existing ? { ...existing, nombre: input.customer.nombre, telefono: input.customer.telefono, stage: "cliente" as CrmStage, totalPedidos: existing.totalPedidos + 1, gastoTotal: existing.gastoTotal + order.total, lastOrderAt: createdAt, updatedAt: createdAt } : { id: uid("customer"), nombre: input.customer.nombre, email: input.customer.email, telefono: input.customer.telefono, stage: "cliente", tags: ["checkout"], notas: "", totalPedidos: 1, gastoTotal: order.total, lastOrderAt: createdAt, createdAt, updatedAt: createdAt };
-      const movements = input.items.map(({ producto, cantidad }) => ({ id: uid("movement"), productId: producto.id, productName: producto.nombre, delta: -cantidad, reason: `Venta ${order.publicNumber}`, createdAt }));
-      return { ...current, orders: [order, ...current.orders], customers: existing ? current.customers.map((item) => item.id === existing.id ? customer : item) : [customer, ...current.customers], products: current.products.map((product) => { const line = input.items.find((item) => item.producto.id === product.id); return line ? { ...product, stock: Math.max(0, product.stock - line.cantidad) } : product; }), discounts: promotion?.ruleId ? current.discounts.map((discount) => discount.id === promotion.ruleId ? { ...discount, usageCount: discount.usageCount + 1, updatedAt: createdAt } : discount) : current.discounts, inventory: [...movements, ...current.inventory], audit: [audit("order", order.id, "created", `${order.publicNumber}${promotion ? ` · cupón ${promotion.code}` : ""}`), ...current.audit] };
+      const movements = resolved.map(({ product, cantidad }) => ({ id: uid("movement"), productId: product.id, productName: product.nombre, delta: -cantidad, reason: `Venta ${order.publicNumber}`, createdAt }));
+      return { ...current, orders: [order, ...current.orders], customers: existing ? current.customers.map((item) => item.id === existing.id ? customer : item) : [customer, ...current.customers], products: current.products.map((product) => { const line = resolved.find((item) => item.product.id === product.id); return line ? { ...product, stock: Math.max(0, product.stock - line.cantidad) } : product; }), discounts: promotion?.ruleId ? current.discounts.map((discount) => discount.id === promotion.ruleId ? { ...discount, usageCount: discount.usageCount + 1, updatedAt: createdAt } : discount) : current.discounts, inventory: [...movements, ...current.inventory], audit: [audit("order", order.id, "created", `${order.publicNumber}${promotion ? ` · cupón ${promotion.code}` : ""}`), ...current.audit] };
     });
     void dispatchEvent("order.created", { orderId: order.id, publicNumber: order.publicNumber, total: order.total });
-    input.items.forEach(({ producto, cantidad }) => { if (producto.stock - cantidad <= LOW_STOCK_THRESHOLD) void dispatchEvent("inventory.low", { productId: producto.id, productName: producto.nombre, stock: Math.max(0, producto.stock - cantidad) }); });
+    resolved.forEach(({ product, cantidad }) => { const nextStock = product.stock - cantidad; if (nextStock <= LOW_STOCK_THRESHOLD) void dispatchEvent("inventory.low", { productId: product.id, productName: product.nombre, stock: Math.max(0, nextStock) }); });
     return order;
   }
 
