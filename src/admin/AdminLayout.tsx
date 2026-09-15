@@ -83,8 +83,8 @@ export default function AdminLayout() {
           <button type="button" onClick={toggleCollapsed} title={iconOnly ? "Expandir menú" : "Colapsar menú"} aria-label={iconOnly ? "Expandir menú" : "Colapsar menú"} className={`hidden min-h-11 w-full items-center gap-3 rounded-xl text-xs font-bold text-cls-paper/70 transition hover:bg-white/10 hover:text-cls-paper lg:flex ${iconOnly ? "justify-center px-0" : "px-3"}`}>
             {iconOnly ? <ChevronsRight className="h-4 w-4 shrink-0" /> : <><ChevronsLeft className="h-4 w-4 shrink-0" /> Colapsar menú</>}
           </button>
-          <Link to="/" onClick={() => setOpen(false)} title={iconOnly ? "Ver tienda pública" : undefined} aria-label="Ver tienda pública" className={`flex min-h-11 w-full items-center gap-3 rounded-xl text-xs font-bold text-cls-paper/70 transition hover:bg-white/10 hover:text-cls-paper lg:hidden ${iconOnly ? "justify-center px-0" : "px-3"}`}>
-            <Store className="h-4 w-4 shrink-0" /> Ver tienda pública
+          <Link to="/" onClick={() => setOpen(false)} title={iconOnly ? "Tienda" : undefined} aria-label="Ver la tienda pública" className={`flex min-h-11 w-full items-center gap-3 rounded-xl text-xs font-bold text-cls-paper/70 transition hover:bg-white/10 hover:text-cls-paper lg:hidden ${iconOnly ? "justify-center px-0" : "px-3"}`}>
+            <Store className="h-4 w-4 shrink-0" /> Tienda
           </Link>
         </div>
       </>
