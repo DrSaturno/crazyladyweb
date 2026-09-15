@@ -109,6 +109,29 @@ La misión original nombraba explícitamente "stock negativo" y "devoluciones" c
 
 No se extrajo esta lógica a funciones puras con tests (a diferencia del motor de descuentos y de pedidos): son casos triviales (un `Math.max`, un booleano de dos condiciones) sin la complejidad de negocio que justificó la extracción anterior — se dejó la verificación en pruebas de navegador, que ya demostraron que el comportamiento es correcto.
 
+## 🟢 Implementado — continuación 11: navegación por teclado (admin + sitio público)
+
+La misión pedía explícitamente una pasada de accesibilidad más allá del contraste. Se auditaron todos los overlays con `fixed`/backdrop del proyecto (no hay ningún `role="dialog"` real, así que se revisó cada panel flotante a mano): el drawer móvil del admin, el buscador global del admin, el panel de notificaciones del admin, el menú móvil del sitio público, el desplegable "Semillas" del header y ambos buscadores (admin y sitio público). Ninguno tenía equivalente de teclado — todos dependían de click/mouse-only, y dos de ellos (`role="combobox"`/`role="listbox"` en ambos buscadores) declaraban semántica ARIA que prometía navegación por teclado sin implementarla, lo cual es peor que no declararla (un lector de pantalla anuncia un comportamiento que no existe).
+
+Se creó `src/hooks/useEscapeClose.ts` (Escape cierra cualquier overlay activo) y `src/hooks/useFocusTrap.ts` (atrapa el Tab dentro de un contenedor mientras está abierto, mueve el foco al primer elemento al abrir, y lo devuelve al disparador al cerrar). Aplicados en:
+
+- **[AdminLayout.tsx](../src/admin/AdminLayout.tsx)**: drawer móvil (foco atrapado + Escape + devuelve foco al botón "Abrir menú"), buscador global (flechas arriba/abajo navegan resultados, Enter navega al resaltado, Escape limpia la búsqueda, `aria-activedescendant` real), panel de notificaciones (Escape + devuelve foco al botón campana).
+- **[Header.tsx](../src/components/Header.tsx)**: menú móvil, desplegable "Semillas" y buscador del sitio (mismo patrón de flechas/Enter/Escape que el admin).
+- **[BotWidget.tsx](../src/components/BotWidget.tsx)**: Escape cierra el asistente y devuelve el foco al botón flotante.
+
+Verificado en navegador real (no solo lectura de código): drawer móvil atrapa el foco y lo devuelve al botón "Abrir menú" al presionar Escape; buscador global — dos `ArrowDown` resaltan visualmente el segundo resultado, `Enter` navega a `/admin/productos`, `Escape` limpia la query; desplegable "Semillas" — Escape lo cierra y el foco queda visible en el botón; buscador del sitio público — `ArrowDown` + `Enter` navega directo a la ficha de producto resaltada.
+
+## 🔵 Intentado y revertido — pase de performance
+
+Se probó envolver en `React.lazy()` las páginas públicas de menor tráfico (`Notas`, `NotaDetalle`, `Cuenta`, `Gracias`, `Politica`) para sacarlas del bundle principal, siguiendo el mismo patrón ya usado en el admin (`moduleRegistry.ts`). Medido con `npm run build` antes/después:
+
+- Antes: `index-*.js` 269.41 KB (79.29 KB gzip).
+- Después: `index-*.js` 295.00 KB (89.70 KB gzip) — **más pesado**, no más liviano.
+
+La causa es un efecto de las heurísticas automáticas de chunking de Rollup/Vite: al introducir más límites de `import()` dinámico, un chunk compartido de 52 KB (`search-*.js`, sin `manualChunks` configurado en `vite.config.ts` para controlar esto) que antes vivía separado del bundle principal terminó fusionado dentro de `index-*.js`, compensando de sobra el peso que se sacó de las 5 páginas. Confirmado aislando el cambio (revirtiendo solo `App.tsx` y dejando los hooks de teclado) para descartar que el aumento viniera de otra parte.
+
+**Decisión: revertido.** Forzar el resultado correcto requeriría configurar `build.rollupOptions.output.manualChunks` a mano y volver a medir cada ruta una por una — es una intervención más profunda que "técnicamente segura y claramente necesaria" para una ganancia que hoy es negativa. Queda documentado como próximo paso de performance si se retoma una pasada dedicada.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 
@@ -125,6 +148,8 @@ No se extrajo esta lógica a funciones puras con tests (a diferencia del motor d
 4. ~~Constante compartida para umbral de stock bajo~~ — hecho 15/09/2026.
 5. ~~Feedback visible cuando falla la persistencia local~~ — hecho 15/09/2026.
 6. ~~Tests automatizados para la lógica de mayor riesgo (importación Excel, motor de descuentos del checkout)~~ — hecho 15/09/2026.
-7. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
-8. Doble enlace a la tienda pública con distinto label — cosmético, baja prioridad.
+7. ~~Navegación por teclado en overlays (drawer admin, buscadores, desplegables, panel de notificaciones, asistente)~~ — hecho 15/09/2026.
+8. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
+9. Doble enlace a la tienda pública con distinto label — cosmético, baja prioridad.
+10. Performance: `manualChunks` para el bundle principal (269 KB / 79 KB gzip hoy) — se intentó lazy-loading de páginas públicas y empeoró el resultado por heurísticas de Rollup; requiere configuración explícita de chunking, no intentado a fondo.
 9. Desalineación de esquema `products.images` (array) vs `Producto.imagen` (string) — a resolver cuando se conecte Supabase.

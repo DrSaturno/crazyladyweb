@@ -3,6 +3,7 @@ import { MessageCircle, Send, Sprout, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useCommerceData } from "../context/CommerceDataContext";
 import { getBotResponse } from "../data/clsKnowledge";
+import { useEscapeClose } from "../hooks/useEscapeClose";
 
 interface Message {
   from: "bot" | "user";
@@ -21,6 +22,7 @@ export default function BotWidget() {
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
   const productSlug = location.pathname.startsWith("/producto/") ? location.pathname.replace("/producto/", "") : null;
   const viewedProduct = productSlug ? products.find((product) => product.slug === productSlug) : undefined;
@@ -42,6 +44,13 @@ export default function BotWidget() {
     if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, open, typing]);
 
+  function closeWidget() {
+    setOpen(false);
+    toggleButtonRef.current?.focus();
+  }
+
+  useEscapeClose(open, closeWidget);
+
   function send(text: string) {
     if (!text.trim() || typing) return;
     setMessages((current) => [...current, { from: "user", text: text.trim(), time: now() }]);
@@ -56,7 +65,7 @@ export default function BotWidget() {
   return (
     <>
       {!open && (
-        <button onClick={openWidget} className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-cls-paper bg-cls-orange text-cls-primary-dark shadow-lift transition hover:-translate-y-1 hover:bg-cls-honey" aria-label={`Hablar con ${bot.nombre}`}>
+        <button ref={toggleButtonRef} onClick={openWidget} className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-cls-paper bg-cls-orange text-cls-primary-dark shadow-lift transition hover:-translate-y-1 hover:bg-cls-honey" aria-label={`Hablar con ${bot.nombre}`}>
           <MessageCircle className="h-6 w-6" aria-hidden="true" />
         </button>
       )}
@@ -66,7 +75,7 @@ export default function BotWidget() {
           <header className="flex shrink-0 items-center gap-3 bg-cls-primary px-4 py-3 text-cls-paper">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark"><Sprout className="h-5 w-5" /></span>
             <div className="min-w-0 flex-1"><h2 className="font-sans text-sm font-bold text-cls-paper">{bot.nombre}</h2><p className="text-[11px] text-cls-paper/70">Asistente de cultivo · demo informativa</p></div>
-            <button onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper/80 hover:bg-white/10 hover:text-cls-paper" aria-label="Cerrar asistente"><X className="h-5 w-5" /></button>
+            <button onClick={closeWidget} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper/80 hover:bg-white/10 hover:text-cls-paper" aria-label="Cerrar asistente"><X className="h-5 w-5" /></button>
           </header>
 
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite">

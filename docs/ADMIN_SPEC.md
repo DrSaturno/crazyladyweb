@@ -127,6 +127,7 @@ La migración `commerce_core` modela productos, categorías, clientes, órdenes,
 - Checkboxes y radios usan el color de marca (`accent-color` global) en todo el sitio, admin y tienda pública.
 - Todo texto secundario (`text-cls-ink/NN`, `text-cls-paper/NN`) cumple el mínimo de contraste 4.5:1 de `WEB_SPEC.md` §9 en cualquier fondo de la paleta, incluida la insignia de notificaciones (`bg-cls-primary-dark`, 12.98:1) — verificado con medición real en el DOM, no solo cálculo teórico.
 - Si `localStorage.setItem` falla (cuota llena, modo privado), se muestra un aviso persistente en el admin en vez de perder el cambio en silencio.
+- Todo overlay (drawer móvil, buscadores, desplegables, panel de notificaciones, asistente) cierra con Escape y devuelve el foco al elemento que lo abrió (`src/hooks/useEscapeClose.ts`); el drawer móvil del admin además atrapa el Tab mientras está abierto (`src/hooks/useFocusTrap.ts`). Los buscadores con `role="combobox"`/`role="listbox"` soportan flechas arriba/abajo + Enter, no solo mouse.
 
 ## 8. Pendientes para producción
 

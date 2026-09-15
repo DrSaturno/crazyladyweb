@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown, Heart, Menu, Search, ShoppingCart, UserRound, X } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useCommerceData } from "../context/CommerceDataContext";
 import { BANCOS, GENETICA_LABEL, ORIGEN_LABEL, TIPO_LABEL } from "../data/catalogo";
+import { useEscapeClose } from "../hooks/useEscapeClose";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -29,6 +30,9 @@ export default function Header() {
   const [semillasAbierto, setSemillasAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [buscadorActivo, setBuscadorActivo] = useState(false);
+  const [activeSugerencia, setActiveSugerencia] = useState(-1);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const semillasButtonRef = useRef<HTMLButtonElement>(null);
 
   const sugerencias = useMemo(() => {
     const query = normalize(busqueda.trim());
@@ -45,6 +49,27 @@ export default function Header() {
     setBuscadorActivo(false);
     navigate(`/semillas?q=${encodeURIComponent(query)}`);
   }
+
+  function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!sugerencias.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveSugerencia((current) => (current + 1) % sugerencias.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveSugerencia((current) => (current - 1 + sugerencias.length) % sugerencias.length);
+    } else if (event.key === "Enter" && activeSugerencia >= 0) {
+      event.preventDefault();
+      const producto = sugerencias[activeSugerencia];
+      setBusqueda("");
+      setBuscadorActivo(false);
+      navigate(`/producto/${producto.slug}`);
+    }
+  }
+
+  useEscapeClose(menuAbierto, () => { setMenuAbierto(false); menuButtonRef.current?.focus(); });
+  useEscapeClose(semillasAbierto, () => { setSemillasAbierto(false); semillasButtonRef.current?.focus(); });
+  useEscapeClose(buscadorActivo, () => setBuscadorActivo(false));
 
   const utilityLinks = [
     { to: "/favoritos", label: "Favoritos", icon: Heart, count: totalFavoritos },
@@ -85,14 +110,18 @@ export default function Header() {
             <input
               id="site-search"
               value={busqueda}
-              onChange={(event) => setBusqueda(event.target.value)}
+              onChange={(event) => { setBusqueda(event.target.value); setActiveSugerencia(-1); }}
               onFocus={() => setBuscadorActivo(true)}
               onBlur={() => setBuscadorActivo(false)}
+              onKeyDown={handleSearchKeyDown}
               autoComplete="off"
               placeholder="Buscá tu variedad, banco o lo que necesites…"
               className="h-12 w-full rounded-full border border-cls-primary/55 bg-cls-paper pl-12 pr-14 text-base shadow-inner outline-none transition focus:border-cls-primary-dark focus:ring-2 focus:ring-cls-honey/60 md:text-sm"
+              role="combobox"
               aria-controls="search-suggestions"
               aria-expanded={buscadorActivo && sugerencias.length > 0}
+              aria-autocomplete="list"
+              aria-activedescendant={activeSugerencia >= 0 ? `sugerencia-${sugerencias[activeSugerencia]?.id}` : undefined}
             />
             <button type="submit" className="absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-cls-primary text-cls-paper transition hover:bg-cls-primary-dark" aria-label="Buscar">
               <Search className="h-4 w-4" aria-hidden="true" />
@@ -105,14 +134,16 @@ export default function Header() {
                 onMouseDown={(event) => event.preventDefault()}
                 className="absolute inset-x-0 top-[calc(100%+8px)] overflow-hidden rounded-2xl border border-cls-line bg-cls-paper shadow-lift"
               >
-                {sugerencias.length ? sugerencias.map((producto) => (
+                {sugerencias.length ? sugerencias.map((producto, index) => (
                   <Link
                     key={producto.id}
+                    id={`sugerencia-${producto.id}`}
                     to={`/producto/${producto.slug}`}
                     role="option"
-                    aria-selected="false"
+                    aria-selected={index === activeSugerencia}
+                    onMouseEnter={() => setActiveSugerencia(index)}
                     onClick={() => { setBusqueda(""); setBuscadorActivo(false); }}
-                    className="flex items-center justify-between gap-4 border-b border-cls-line/70 px-4 py-3 text-sm last:border-0 hover:bg-cls-cream"
+                    className={`flex items-center justify-between gap-4 border-b border-cls-line/70 px-4 py-3 text-sm last:border-0 hover:bg-cls-cream ${index === activeSugerencia ? "bg-cls-cream" : ""}`}
                   >
                     <span><strong className="block text-cls-primary-dark">{producto.nombre}</strong><span className="text-xs text-cls-ink/90">{producto.banco}</span></span>
                     <span className="shrink-0 text-xs font-bold text-cls-primary">Ver producto</span>
@@ -136,7 +167,7 @@ export default function Header() {
                 )}
               </Link>
             ))}
-            <button onClick={() => setMenuAbierto((open) => !open)} className="flex h-11 w-11 items-center justify-center rounded-xl text-cls-primary hover:bg-cls-paper lg:hidden" aria-expanded={menuAbierto} aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}>
+            <button ref={menuButtonRef} onClick={() => setMenuAbierto((open) => !open)} className="flex h-11 w-11 items-center justify-center rounded-xl text-cls-primary hover:bg-cls-paper lg:hidden" aria-expanded={menuAbierto} aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}>
               {menuAbierto ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </nav>
@@ -152,7 +183,7 @@ export default function Header() {
       <div className="hidden border-t border-cls-line bg-cls-paper lg:block">
         <nav className="site-container flex min-h-11 items-center justify-center gap-7 text-[13px] font-bold text-cls-primary-dark" aria-label="Navegación principal">
           <div className="relative">
-            <button onClick={() => setSemillasAbierto((open) => !open)} className="flex min-h-11 items-center gap-1 hover:text-cls-orange" aria-expanded={semillasAbierto} aria-haspopup="true">
+            <button ref={semillasButtonRef} onClick={() => setSemillasAbierto((open) => !open)} className="flex min-h-11 items-center gap-1 hover:text-cls-orange" aria-expanded={semillasAbierto} aria-haspopup="true">
               Semillas <ChevronDown className={`h-3.5 w-3.5 transition ${semillasAbierto ? "rotate-180" : ""}`} />
             </button>
             {semillasAbierto && (

@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AlertTriangle, Bell, ChevronsLeft, ChevronsRight, ClipboardList, Menu, PackageSearch, Search, Store, UsersRound, X, type LucideIcon } from "lucide-react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useCommerceData } from "../context/CommerceDataContext";
 import { LOW_STOCK_THRESHOLD, precioARS } from "../data/catalogo";
+import { useEscapeClose } from "../hooks/useEscapeClose";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import { commerceDataMode } from "../lib/supabase";
 import { useAdminModules } from "./AdminModuleContext";
 import { ADMIN_MODULES } from "./moduleRegistry";
@@ -33,10 +35,15 @@ function groupHits(hits: SearchHit[]) {
 }
 
 export default function AdminLayout() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [query, setQuery] = useState("");
+  const [activeHit, setActiveHit] = useState(-1);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationsButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useFocusTrap<HTMLDivElement>(open);
   const { isEnabled } = useAdminModules();
   const { products, orders, customers, abandonedCarts, automationRuns, persistenceError } = useCommerceData();
   const visible = ADMIN_MODULES.filter((module) => isEnabled(module.id));
@@ -57,6 +64,26 @@ export default function AdminLayout() {
     { label: "Carritos por recuperar", count: abandonedCarts.filter((cart) => ["open", "contacted"].includes(cart.status)).length, to: "/admin/carritos-abandonados" },
     { label: "Automatizaciones fallidas", count: automationRuns.filter((run) => run.status === "failed").length, to: "/admin/automatizaciones" },
   ].filter((item) => item.count > 0);
+
+  useEscapeClose(open, () => setOpen(false));
+  useEscapeClose(notificationsOpen, () => { setNotificationsOpen(false); notificationsButtonRef.current?.focus(); });
+  useEscapeClose(Boolean(query), () => setQuery(""));
+
+  function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!searchResults.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveHit((current) => (current + 1) % searchResults.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveHit((current) => (current - 1 + searchResults.length) % searchResults.length);
+    } else if (event.key === "Enter" && activeHit >= 0) {
+      event.preventDefault();
+      navigate(searchResults[activeHit].to);
+      setQuery("");
+      setActiveHit(-1);
+    }
+  }
 
   function toggleCollapsed() {
     setCollapsed((current) => {
@@ -94,10 +121,15 @@ export default function AdminLayout() {
   return (
     <div className={`min-h-screen overflow-x-clip bg-cls-cream lg:grid lg:transition-[grid-template-columns] lg:duration-300 ${collapsed ? "lg:grid-cols-[76px_minmax(0,1fr)]" : "lg:grid-cols-[250px_minmax(0,1fr)]"}`}>
       <aside className="hidden min-h-screen overflow-hidden bg-cls-primary-dark lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">{renderSidebar(collapsed)}</aside>
-      {open && <div className="fixed inset-0 z-50 lg:hidden"><button type="button" className="absolute inset-0 bg-cls-primary-dark/55" onClick={() => setOpen(false)} aria-label="Cerrar menú" /><aside className="relative flex h-full w-[min(86vw,300px)] flex-col bg-cls-primary-dark shadow-2xl">{renderSidebar(false)}</aside></div>}
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button type="button" className="absolute inset-0 bg-cls-primary-dark/55" onClick={() => setOpen(false)} aria-label="Cerrar menú" />
+          <aside ref={drawerRef} role="dialog" aria-modal="true" aria-label="Menú del administrador" className="relative flex h-full w-[min(86vw,300px)] flex-col bg-cls-primary-dark shadow-2xl">{renderSidebar(false)}</aside>
+        </div>
+      )}
       <div className="min-w-0">
         <header className="sticky top-0 z-30 flex min-h-16 items-center gap-2 border-b border-cls-line bg-cls-paper/95 px-3 backdrop-blur sm:px-5">
-          <button type="button" onClick={() => setOpen(true)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary lg:hidden" aria-label="Abrir menú"><Menu className="h-5 w-5" /></button>
+          <button ref={menuButtonRef} type="button" onClick={() => setOpen(true)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary lg:hidden" aria-label="Abrir menú"><Menu className="h-5 w-5" /></button>
           <div className="relative hidden max-w-md flex-1 sm:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/82" />
             <input
@@ -105,20 +137,22 @@ export default function AdminLayout() {
               placeholder="Buscar productos, pedidos, clientes o módulos…"
               aria-label="Buscar en el panel"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => { setQuery(event.target.value); setActiveHit(-1); }}
+              onKeyDown={handleSearchKeyDown}
               role="combobox"
               aria-expanded={Boolean(query)}
               aria-controls="admin-search-results"
               aria-autocomplete="list"
+              aria-activedescendant={activeHit >= 0 ? searchResults[activeHit]?.key : undefined}
             />
             {query && (
               <div id="admin-search-results" role="listbox" aria-label="Resultados de búsqueda" className="absolute inset-x-0 top-12 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-cls-line bg-cls-paper p-2 shadow-xl">
-                {searchResults.length ? groupHits(searchResults).map(({ group, hits }) => <div key={group} className="mb-1 last:mb-0"><p className="px-3 pb-1 pt-2 text-[9px] font-black uppercase tracking-[0.14em] text-cls-ink/82">{group}</p>{hits.map((hit) => <Link key={hit.key} to={hit.to} onClick={() => setQuery("")} role="option" aria-selected="false" className="flex min-h-12 items-center gap-3 rounded-xl px-3 hover:bg-cls-cream"><hit.icon className="h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0"><strong className="block truncate text-xs">{hit.label}</strong><small className="block truncate text-[10px] text-cls-ink/86">{hit.description}</small></span></Link>)}</div>) : <p role="status" className="px-3 py-4 text-xs text-cls-ink/88">Sin resultados para "{trimmedQuery}".</p>}
+                {searchResults.length ? groupHits(searchResults).map(({ group, hits }) => <div key={group} className="mb-1 last:mb-0"><p className="px-3 pb-1 pt-2 text-[9px] font-black uppercase tracking-[0.14em] text-cls-ink/82">{group}</p>{hits.map((hit) => { const index = searchResults.indexOf(hit); return <Link key={hit.key} id={hit.key} to={hit.to} onClick={() => setQuery("")} role="option" aria-selected={index === activeHit} onMouseEnter={() => setActiveHit(index)} className={`flex min-h-12 items-center gap-3 rounded-xl px-3 hover:bg-cls-cream ${index === activeHit ? "bg-cls-cream" : ""}`}><hit.icon className="h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0"><strong className="block truncate text-xs">{hit.label}</strong><small className="block truncate text-[10px] text-cls-ink/86">{hit.description}</small></span></Link>; })}</div>) : <p role="status" className="px-3 py-4 text-xs text-cls-ink/88">Sin resultados para "{trimmedQuery}".</p>}
               </div>
             )}
           </div>
           <span className={`ml-auto inline-flex min-h-8 items-center gap-1.5 rounded-full px-3 text-[10px] font-black ${commerceDataMode === "supabase" ? "bg-cls-sage text-cls-primary-dark" : "bg-cls-honey/50 text-cls-primary-dark"}`}><span className="h-2 w-2 rounded-full bg-current" />{commerceDataMode === "supabase" ? "Supabase conectado" : "Modo local"}</span>
-          <div className="relative"><button type="button" onClick={() => setNotificationsOpen((current) => !current)} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary" aria-label="Notificaciones" aria-expanded={notificationsOpen}><Bell className="h-4 w-4" />{notifications.length > 0 && <span className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-cls-primary-dark px-1 text-[9px] font-black text-white">{notifications.length}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-12 z-50 w-[min(320px,calc(100vw-24px))] rounded-2xl border border-cls-line bg-cls-paper p-3 shadow-xl"><div className="mb-2 flex items-center justify-between"><strong className="text-xs">Atención requerida</strong><button type="button" onClick={() => setNotificationsOpen(false)} className="text-[10px] font-black text-cls-primary">Cerrar</button></div>{notifications.length ? <div className="space-y-1">{notifications.map((item) => <Link key={item.to} to={item.to} onClick={() => setNotificationsOpen(false)} className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-cls-cream px-3 text-xs"><span>{item.label}</span><strong className="rounded-full bg-cls-honey px-2 py-1">{item.count}</strong></Link>)}</div> : <p className="rounded-xl bg-cls-sage/40 p-3 text-xs">No hay alertas activas.</p>}</div>}</div>
+          <div className="relative"><button ref={notificationsButtonRef} type="button" onClick={() => setNotificationsOpen((current) => !current)} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary" aria-label="Notificaciones" aria-expanded={notificationsOpen}><Bell className="h-4 w-4" />{notifications.length > 0 && <span className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-cls-primary-dark px-1 text-[9px] font-black text-white">{notifications.length}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-12 z-50 w-[min(320px,calc(100vw-24px))] rounded-2xl border border-cls-line bg-cls-paper p-3 shadow-xl"><div className="mb-2 flex items-center justify-between"><strong className="text-xs">Atención requerida</strong><button type="button" onClick={() => { setNotificationsOpen(false); notificationsButtonRef.current?.focus(); }} className="text-[10px] font-black text-cls-primary">Cerrar</button></div>{notifications.length ? <div className="space-y-1">{notifications.map((item) => <Link key={item.to} to={item.to} onClick={() => setNotificationsOpen(false)} className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-cls-cream px-3 text-xs"><span>{item.label}</span><strong className="rounded-full bg-cls-honey px-2 py-1">{item.count}</strong></Link>)}</div> : <p className="rounded-xl bg-cls-sage/40 p-3 text-xs">No hay alertas activas.</p>}</div>}</div>
           <Link to="/" className="hidden min-h-11 items-center gap-2 rounded-full bg-cls-primary px-4 text-xs font-bold text-cls-paper sm:flex"><Store className="h-4 w-4" /> Tienda</Link>
         </header>
         {persistenceError && <div role="alert" className="flex items-center gap-2 border-b border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-800 sm:px-5"><AlertTriangle className="h-4 w-4 shrink-0" /> No pudimos guardar el último cambio en este navegador (almacenamiento lleno o modo privado). Seguís viendo el cambio ahora, pero se puede perder si recargás la página.</div>}
