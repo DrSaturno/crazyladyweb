@@ -26,17 +26,17 @@ export default function NotaDetalle() {
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cls-primary text-cls-paper"><BookOpen className="h-6 w-6" /></span>
           <p className="eyebrow mt-6">{formatFechaNota(note.fecha)} · {note.minutos} min de lectura</p>
           <h1 className="display-title mt-3 text-4xl leading-[0.98] md:text-6xl">{note.titulo}</h1>
-          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-cls-ink/70">{note.bajada}</p>
+          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-cls-ink/94">{note.bajada}</p>
         </header>
 
-        {note.causa && <aside className="mt-5 rounded-2xl border-l-4 border-cls-orange bg-cls-paper p-5 shadow-paper"><p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-cls-orange"><AlertCircle className="h-4 w-4" /> Causa más probable</p><p className="mt-2 text-sm leading-relaxed text-cls-ink/75">{note.causa}</p></aside>}
+        {note.causa && <aside className="mt-5 rounded-2xl border-l-4 border-cls-orange bg-cls-paper p-5 shadow-paper"><p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-cls-orange"><AlertCircle className="h-4 w-4" /> Causa más probable</p><p className="mt-2 text-sm leading-relaxed text-cls-ink/96">{note.causa}</p></aside>}
 
         <div className="mx-auto mt-8 max-w-3xl space-y-6">{note.cuerpo.map((paragraph, index) => <NotaParagraph key={index} text={paragraph} />)}</div>
 
         {recommended && (
           <section className="mt-10 grid gap-5 overflow-hidden rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:grid-cols-[120px_minmax(0,1fr)_auto] sm:items-center sm:p-5">
             <div className="product-art flex aspect-square items-center justify-center overflow-hidden rounded-xl">{recommended.imagen ? <img src={recommended.imagen} alt={`Presentación de ${recommended.nombre}`} className="h-full w-full object-cover" /> : <Leaf className="h-12 w-12 text-cls-primary" strokeWidth={1.4} />}</div>
-            <div><p className="eyebrow">Producto relacionado</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-cls-ink/50">{recommended.banco}</p><Link to={`/producto/${recommended.slug}`} className="mt-1 block text-lg font-bold text-cls-primary-dark hover:text-cls-orange">{recommended.nombre}</Link><p className="mt-1 text-xl font-black text-cls-primary-dark">{precioARS(recommended.precio)}</p></div>
+            <div><p className="eyebrow">Producto relacionado</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-cls-ink/86">{recommended.banco}</p><Link to={`/producto/${recommended.slug}`} className="mt-1 block text-lg font-bold text-cls-primary-dark hover:text-cls-orange">{recommended.nombre}</Link><p className="mt-1 text-xl font-black text-cls-primary-dark">{precioARS(recommended.precio)}</p></div>
             <button onClick={() => agregar(recommended)} disabled={!recommended.stock} className="btn-primary sm:min-w-40">{recommended.stock ? "Sumar al carrito" : "Sin stock"}</button>
           </section>
         )}

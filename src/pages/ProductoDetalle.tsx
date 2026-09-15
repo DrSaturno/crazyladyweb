@@ -41,7 +41,7 @@ export default function ProductoDetalle() {
 
   return (
     <div className="site-container py-7 md:py-10">
-      <nav aria-label="Migas de pan" className="mb-5 flex flex-wrap items-center gap-2 text-xs font-bold text-cls-ink/60">
+      <nav aria-label="Migas de pan" className="mb-5 flex flex-wrap items-center gap-2 text-xs font-bold text-cls-ink/90">
         <Link to="/semillas" className="inline-flex min-h-9 items-center gap-1 hover:text-cls-orange"><ChevronLeft className="h-4 w-4" /> Semillas</Link>
         <span aria-hidden="true">/</span>
         {banco && <><Link to={`/semillas?banco=${banco.slug}`} className="hover:text-cls-orange">{banco.nombre}</Link><span aria-hidden="true">/</span></>}
@@ -71,7 +71,7 @@ export default function ProductoDetalle() {
             )}
             {sinStock && <div className="absolute inset-0 flex items-center justify-center bg-cls-primary-dark/80"><span className="rounded-full border border-cls-paper/40 px-5 py-2 text-sm font-bold text-cls-paper">Sin stock por el momento</span></div>}
           </div>
-          {studioPhoto && <p className="px-1 pt-3 text-xs leading-relaxed text-cls-ink/65">Imagen ilustrativa de la flor, generada digitalmente. El producto corresponde a {producto.categoria === "esqueje" ? "un esqueje" : "semillas"}.</p>}
+          {studioPhoto && <p className="px-1 pt-3 text-xs leading-relaxed text-cls-ink/92">Imagen ilustrativa de la flor, generada digitalmente. El producto corresponde a {producto.categoria === "esqueje" ? "un esqueje" : "semillas"}.</p>}
         </div>
 
         <div className="self-start lg:sticky lg:top-[175px]">
@@ -90,8 +90,8 @@ export default function ProductoDetalle() {
           </div>
 
           <p className="mt-5 text-3xl font-black text-cls-primary-dark">{precioARS(producto.precio)}</p>
-          <p className="mt-1 text-xs text-cls-ink/60">Presentación {producto.presentacion} · Precio final en pesos argentinos</p>
-          {producto.descripcion && <p className="mt-5 text-sm leading-relaxed text-cls-ink/70">{producto.descripcion}</p>}
+          <p className="mt-1 text-xs text-cls-ink/90">Presentación {producto.presentacion} · Precio final en pesos argentinos</p>
+          {producto.descripcion && <p className="mt-5 text-sm leading-relaxed text-cls-ink/94">{producto.descripcion}</p>}
 
           <dl className="mt-6 grid grid-cols-2 gap-2">
             {[
@@ -101,7 +101,7 @@ export default function ProductoDetalle() {
               ["Banco obtentor", producto.banco],
             ].map(([key, value]) => (
               <div key={key} className="rounded-xl border border-cls-line bg-cls-paper px-4 py-3">
-                <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-cls-ink/55">{key}</dt>
+                <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-cls-ink/88">{key}</dt>
                 <dd className="mt-1 text-sm font-bold text-cls-primary-dark">{value}</dd>
               </div>
             ))}
@@ -118,7 +118,7 @@ export default function ProductoDetalle() {
                 ["CBD", producto.cbd],
               ].filter((item): item is [string, string] => Boolean(item[1])).map(([key, value]) => (
                 <div key={key} className="rounded-xl border border-cls-line bg-cls-sage/45 px-4 py-3">
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-cls-ink/55">{key}</dt>
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-cls-ink/88">{key}</dt>
                   <dd className="mt-1 text-sm font-bold text-cls-primary-dark">{value}</dd>
                 </div>
               ))}
@@ -137,17 +137,17 @@ export default function ProductoDetalle() {
                   {agregado ? <><Check className="h-4 w-4" /> Agregado al carrito</> : "Sumar al carrito"}
                 </button>
               </div>
-              <p className="mt-3 text-center text-[11px] text-cls-ink/55">Máximo disponible para esta presentación: {producto.stock}</p>
+              <p className="mt-3 text-center text-[11px] text-cls-ink/88">Máximo disponible para esta presentación: {producto.stock}</p>
             </div>
           ) : (
-            <div className="mt-6 rounded-2xl border border-cls-line bg-cls-sage p-5"><p className="font-bold text-cls-primary-dark">Esta genética está pausada</p><p className="mt-1 text-sm text-cls-ink/70">Guardala en favoritos o consultanos por una alternativa de perfil similar.</p></div>
+            <div className="mt-6 rounded-2xl border border-cls-line bg-cls-sage p-5"><p className="font-bold text-cls-primary-dark">Esta genética está pausada</p><p className="mt-1 text-sm text-cls-ink/94">Guardala en favoritos o consultanos por una alternativa de perfil similar.</p></div>
           )}
 
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <p className="flex min-h-12 items-center gap-2 rounded-xl bg-cls-sage/65 px-3 text-xs font-bold text-cls-primary-dark"><Sprout className="h-4 w-4" /> Garantía de germinación</p>
             <p className="flex min-h-12 items-center gap-2 rounded-xl bg-cls-sage/65 px-3 text-xs font-bold text-cls-primary-dark"><Truck className="h-4 w-4" /> Envío discreto por Andreani</p>
           </div>
-          <p className="mt-4 text-xs leading-relaxed text-cls-ink/55">La clasificación genética incluida en esta maqueta debe validarse con Crazy Lady Seeds antes de la publicación productiva.</p>
+          <p className="mt-4 text-xs leading-relaxed text-cls-ink/88">La clasificación genética incluida en esta maqueta debe validarse con Crazy Lady Seeds antes de la publicación productiva.</p>
         </div>
       </article>
 

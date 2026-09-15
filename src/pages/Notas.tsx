@@ -26,14 +26,14 @@ export default function Notas() {
       <header className="rounded-[28px] border border-cls-line bg-cls-sage p-6 md:p-9">
         <p className="eyebrow">Aprender para cultivar mejor</p>
         <h1 className="display-title mt-2 text-4xl md:text-6xl">El diario de Crazy Lady</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-cls-ink/70 md:text-base">Lo que aprendimos cultivando y respondiendo consultas, escrito para que puedas tomar decisiones con más confianza.</p>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-cls-ink/94 md:text-base">Lo que aprendimos cultivando y respondiendo consultas, escrito para que puedas tomar decisiones con más confianza.</p>
       </header>
 
       <div className="my-6 flex flex-wrap gap-2" aria-label="Filtrar notas">
         {FILTERS.map((item) => <button key={item.key} onClick={() => setFilter(item.key)} aria-pressed={filter === item.key} className={`min-h-11 rounded-full border px-4 py-2 text-xs font-bold transition ${filter === item.key ? "border-cls-primary bg-cls-primary text-cls-paper" : "border-cls-line bg-cls-paper text-cls-primary hover:border-cls-primary"}`}>{item.label}</button>)}
       </div>
 
-      {!notes.length && <p className="rounded-2xl border border-cls-line bg-cls-paper p-8 text-center text-sm text-cls-ink/60">Todavía no hay notas publicadas en esta sección.</p>}
+      {!notes.length && <p className="rounded-2xl border border-cls-line bg-cls-paper p-8 text-center text-sm text-cls-ink/90">Todavía no hay notas publicadas en esta sección.</p>}
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" aria-label="Notas publicadas">
         {notes.map((note, index) => {
           const Icon = ICONS[index % ICONS.length];
@@ -44,9 +44,9 @@ export default function Notas() {
                 {note.tipo === "problema" && <span className="absolute left-3 top-3 rounded-full bg-cls-primary px-3 py-1 text-[10px] font-bold text-cls-paper">Problema → solución</span>}
               </div>
               <div className="flex flex-1 flex-col p-5">
-                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-cls-ink/50">{formatFechaNota(note.fecha)} · {note.minutos} min</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-cls-ink/86">{formatFechaNota(note.fecha)} · {note.minutos} min</p>
                 <h2 className="mt-2 font-sans text-lg font-bold leading-snug text-cls-primary-dark transition group-hover:text-cls-orange">{note.titulo}</h2>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-cls-ink/65">{note.bajada}</p>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-cls-ink/92">{note.bajada}</p>
                 <span className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-cls-primary">Leer nota <ArrowRight className="h-3.5 w-3.5" /></span>
               </div>
             </Link>

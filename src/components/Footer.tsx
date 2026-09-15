@@ -54,7 +54,7 @@ export default function Footer() {
               <span className="rounded-lg bg-cls-paper px-2 py-1 text-cls-primary">Transferencia</span>
               <span className="rounded-lg border border-cls-paper/30 px-2 py-1 text-cls-paper">Mercado Pago*</span>
             </div>
-            <p className="mt-2 text-[9px] text-cls-paper/55">*Sujeto a habilitación comercial.</p>
+            <p className="mt-2 text-[9px] text-cls-paper/67">*Sujeto a habilitación comercial.</p>
           </div>
         </div>
 
@@ -68,13 +68,13 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col justify-between gap-3 border-t border-cls-paper/15 pt-5 text-[10px] text-cls-paper/50 sm:flex-row">
+        <div className="mt-6 flex flex-col justify-between gap-3 border-t border-cls-paper/15 pt-5 text-[10px] text-cls-paper/66 sm:flex-row">
           <p>© {new Date().getFullYear()} Crazy Lady Seeds. Todos los derechos reservados.</p>
           <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> Argentina · Envíos discretos a todo el país <Truck className="ml-1 h-3 w-3" /></p>
           <p>Otra forma de ver el mundo. <span className="text-cls-honey" aria-hidden="true">✦</span></p>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-cls-paper/45">
+        <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-cls-paper/65">
           {BANCOS.slice(0, 6).map((bank) => <Link key={bank.slug} to={`/semillas?banco=${bank.slug}`} className="hover:text-cls-paper">{bank.nombre}</Link>)}
         </div>
       </div>

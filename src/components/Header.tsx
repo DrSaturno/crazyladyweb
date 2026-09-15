@@ -114,11 +114,11 @@ export default function Header() {
                     onClick={() => { setBusqueda(""); setBuscadorActivo(false); }}
                     className="flex items-center justify-between gap-4 border-b border-cls-line/70 px-4 py-3 text-sm last:border-0 hover:bg-cls-cream"
                   >
-                    <span><strong className="block text-cls-primary-dark">{producto.nombre}</strong><span className="text-xs text-cls-ink/60">{producto.banco}</span></span>
+                    <span><strong className="block text-cls-primary-dark">{producto.nombre}</strong><span className="text-xs text-cls-ink/90">{producto.banco}</span></span>
                     <span className="shrink-0 text-xs font-bold text-cls-primary">Ver producto</span>
                   </Link>
                 )) : (
-                  <div className="px-4 py-4 text-sm text-cls-ink/70">
+                  <div className="px-4 py-4 text-sm text-cls-ink/94">
                     No encontramos coincidencias. Probá por “CBD”, “automática” o el nombre del banco.
                   </div>
                 )}
@@ -163,7 +163,7 @@ export default function Header() {
                 <div className="col-span-3 border-t border-cls-line pt-4">
                   <p className="eyebrow mb-2">Bancos</p>
                   <div className="flex flex-wrap gap-x-5 gap-y-2">
-                    {BANCOS.map((bank) => <Link key={bank.slug} onClick={() => setSemillasAbierto(false)} to={`/semillas?banco=${bank.slug}`} className="text-xs text-cls-ink/70 hover:text-cls-orange">{bank.nombre}</Link>)}
+                    {BANCOS.map((bank) => <Link key={bank.slug} onClick={() => setSemillasAbierto(false)} to={`/semillas?banco=${bank.slug}`} className="text-xs text-cls-ink/94 hover:text-cls-orange">{bank.nombre}</Link>)}
                   </div>
                 </div>
               </div>
@@ -207,7 +207,7 @@ function MenuGroup({ title, values, close }: { title: string; values: { label: s
     <div>
       <p className="eyebrow mb-3">{title}</p>
       <ul className="space-y-2">
-        {values.map((item) => <li key={item.to}><Link onClick={close} to={item.to} className="text-sm text-cls-ink/75 hover:text-cls-orange">{item.label}</Link></li>)}
+        {values.map((item) => <li key={item.to}><Link onClick={close} to={item.to} className="text-sm text-cls-ink/96 hover:text-cls-orange">{item.label}</Link></li>)}
       </ul>
     </div>
   );

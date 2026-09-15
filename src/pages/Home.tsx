@@ -86,7 +86,7 @@ export default function Home() {
             </picture>
           </div>
           <div className="relative z-10 mx-3 -mt-5 flex flex-col gap-3 rounded-2xl border border-cls-line bg-cls-paper/95 p-3 shadow-lift backdrop-blur sm:mx-6 md:flex-row md:items-center md:justify-between md:px-4">
-            <p className="hidden max-w-xl text-xs leading-relaxed text-cls-ink/65 lg:block">{heroBanner?.contenido ?? "Genéticas nacionales e importadas con origen claro. Te acompañamos desde la elección hasta la cosecha."}</p>
+            <p className="hidden max-w-xl text-xs leading-relaxed text-cls-ink/92 lg:block">{heroBanner?.contenido ?? "Genéticas nacionales e importadas con origen claro. Te acompañamos desde la elección hasta la cosecha."}</p>
             <div className="flex flex-col gap-2 sm:flex-row md:ml-auto">
               <Link to="/semillas" className="btn-primary">Ver el catálogo <ArrowRight className="h-4 w-4" /></Link>
               <Link to="/notas/primer-cultivo-por-donde-arrancar" className="btn-outline">¿Primera vez cultivando?</Link>
@@ -100,7 +100,7 @@ export default function Home() {
           {BENEFICIOS.map(({ icon: Icon, title, text }) => (
             <div key={title} className="flex min-w-0 items-center gap-2.5 border-cls-line px-2 lg:border-r lg:last:border-r-0">
               <Icon className="h-7 w-7 shrink-0 text-cls-primary" strokeWidth={1.7} aria-hidden="true" />
-              <p className="text-[11px] leading-tight text-cls-ink/75"><strong className="block text-cls-primary-dark">{title}</strong>{text}</p>
+              <p className="text-[11px] leading-tight text-cls-ink/96"><strong className="block text-cls-primary-dark">{title}</strong>{text}</p>
             </div>
           ))}
         </div>
@@ -130,7 +130,7 @@ export default function Home() {
           <div className="mb-3 flex items-end justify-between gap-4">
             <div>
               <h2 className="section-heading flex items-center gap-2"><BookOpen className="h-6 w-6" aria-hidden="true" /> Para principiantes</h2>
-              <p className="mt-1 text-xs text-cls-ink/65">Todo lo que necesitás para empezar con confianza.</p>
+              <p className="mt-1 text-xs text-cls-ink/92">Todo lo que necesitás para empezar con confianza.</p>
             </div>
             <Link to="/notas" className="text-xs font-bold text-cls-primary hover:text-cls-orange">Ver todas →</Link>
           </div>
@@ -174,7 +174,7 @@ export default function Home() {
           <div className="mb-3 flex items-end justify-between">
             <div>
               <h2 className="section-heading">El diario de Crazy Lady</h2>
-              <p className="mt-1 text-xs text-cls-ink/65">Historias, guías y novedades del cultivo.</p>
+              <p className="mt-1 text-xs text-cls-ink/92">Historias, guías y novedades del cultivo.</p>
             </div>
             <Link to="/notas" className="text-xs font-bold text-cls-primary hover:text-cls-orange">Ver todas →</Link>
           </div>
@@ -189,7 +189,7 @@ export default function Home() {
                   </picture>
                   <div className="p-2.5">
                     <h3 className="line-clamp-3 font-sans text-xs font-bold leading-snug">{nota.titulo}</h3>
-                    <p className="mt-2 text-[10px] text-cls-ink/55">{nota.minutos} min de lectura</p>
+                    <p className="mt-2 text-[10px] text-cls-ink/88">{nota.minutos} min de lectura</p>
                   </div>
                 </Link>
               );
@@ -212,7 +212,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <p className="mt-4 text-xs text-cls-ink/60">Las reseñas se publicarán únicamente cuando existan testimonios reales y autorizados.</p>
+          <p className="mt-4 text-xs text-cls-ink/90">Las reseñas se publicarán únicamente cuando existan testimonios reales y autorizados.</p>
         </div>
       </section>
 
@@ -220,7 +220,7 @@ export default function Home() {
         <div id="faq" className="section-shell p-4 md:p-5">
           <div className="mb-4 flex items-center gap-3">
             <CircleHelp className="h-7 w-7 text-cls-primary" aria-hidden="true" />
-            <div><h2 className="section-heading">Preguntas frecuentes</h2><p className="mt-1 text-xs text-cls-ink/60">Resolvemos tus dudas.</p></div>
+            <div><h2 className="section-heading">Preguntas frecuentes</h2><p className="mt-1 text-xs text-cls-ink/90">Resolvemos tus dudas.</p></div>
           </div>
           <div className="divide-y divide-cls-line border-y border-cls-line">
             {faqs.map((item, index) => {
@@ -230,7 +230,7 @@ export default function Home() {
                   <button onClick={() => setFaqAbierta(open ? null : index)} className="flex min-h-11 w-full items-center justify-between gap-4 py-2.5 text-left text-sm font-bold text-cls-primary-dark" aria-expanded={open}>
                     {item.q}<span className="text-xl font-normal" aria-hidden="true">{open ? "−" : "+"}</span>
                   </button>
-                  {open && <p className="pb-4 pr-8 text-sm leading-relaxed text-cls-ink/70">{item.a}</p>}
+                  {open && <p className="pb-4 pr-8 text-sm leading-relaxed text-cls-ink/94">{item.a}</p>}
                 </div>
               );
             })}
@@ -241,7 +241,7 @@ export default function Home() {
           <div className="relative z-10 max-w-lg">
             <Mail className="h-8 w-8 text-cls-primary" aria-hidden="true" />
             <h2 className="mt-3 text-3xl font-black leading-none">Sumate a nuestra comunidad y recibí novedades.</h2>
-            <p className="mt-2 text-sm text-cls-ink/70">Stock nuevo, guías y beneficios, sin llenar tu bandeja.</p>
+            <p className="mt-2 text-sm text-cls-ink/94">Stock nuevo, guías y beneficios, sin llenar tu bandeja.</p>
             {suscripto ? (
               <p role="status" className="mt-5 rounded-xl bg-cls-primary px-4 py-3 text-sm font-bold text-cls-paper">El formulario está validado. La suscripción se activará al conectar el backend.</p>
             ) : (
@@ -250,7 +250,7 @@ export default function Home() {
                   <div className="flex-1"><label htmlFor="newsletter-email" className="sr-only">Correo electrónico</label><input id="newsletter-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Tu email…" className="h-11 w-full rounded-full border border-cls-primary bg-cls-paper px-4 text-sm outline-none focus:ring-2 focus:ring-cls-honey" /></div>
                   <button className="btn-primary" type="submit">Suscribirme</button>
                 </div>
-                <label className="mt-3 flex items-start gap-2 text-[11px] text-cls-ink/65"><input required type="checkbox" className="mt-0.5 h-4 w-4 accent-cls-primary" /> Acepto recibir comunicaciones de Crazy Lady Seeds. Puedo cancelar cuando quiera.</label>
+                <label className="mt-3 flex items-start gap-2 text-[11px] text-cls-ink/92"><input required type="checkbox" className="mt-0.5 h-4 w-4 accent-cls-primary" /> Acepto recibir comunicaciones de Crazy Lady Seeds. Puedo cancelar cuando quiera.</label>
               </form>
             )}
           </div>
@@ -260,7 +260,7 @@ export default function Home() {
       <section className="site-container mt-3">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cls-line bg-cls-sage px-5 py-4 text-sm">
           <p className="font-bold text-cls-primary-dark"><Scissors className="mr-2 inline h-5 w-5" aria-hidden="true" /> También trabajamos con esquejes seleccionados.</p>
-          <p className="text-cls-ink/70">{esquejes.filter((item) => item.stock > 0).length} variedad disponible · {inaseCount} genéticas INASE con stock</p>
+          <p className="text-cls-ink/94">{esquejes.filter((item) => item.stock > 0).length} variedad disponible · {inaseCount} genéticas INASE con stock</p>
         </div>
       </section>
     </div>
@@ -273,7 +273,7 @@ function ProductShelf({ title, subtitle, icon: Icon, products, href, accent = fa
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <h2 className="section-heading flex items-center gap-2"><Icon className={`h-6 w-6 ${accent ? "text-cls-orange" : "text-cls-honey"}`} fill="currentColor" aria-hidden="true" />{title}</h2>
-          <p className="mt-1 text-xs text-cls-ink/65">{subtitle}</p>
+          <p className="mt-1 text-xs text-cls-ink/92">{subtitle}</p>
         </div>
         <Link to={href} className="shrink-0 text-xs font-bold text-cls-primary hover:text-cls-orange">Ver todas →</Link>
       </div>

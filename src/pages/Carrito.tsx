@@ -12,7 +12,7 @@ export default function Carrito() {
         <section className="section-shell mx-auto flex max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-cls-sage text-cls-primary"><ShoppingCart className="h-7 w-7" /></span>
           <h1 className="display-title mt-5 text-4xl">Tu carrito está listo para empezar</h1>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-cls-ink/65">Explorá el catálogo, compará genéticas y sumá las que mejor se adapten a tu cultivo.</p>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-cls-ink/92">Explorá el catálogo, compará genéticas y sumá las que mejor se adapten a tu cultivo.</p>
           <Link to="/semillas" className="btn-primary mt-7">Ver el catálogo <ArrowRight className="h-4 w-4" /></Link>
         </section>
       </div>
@@ -24,7 +24,7 @@ export default function Carrito() {
       <header className="mb-7">
         <p className="eyebrow">Tu selección</p>
         <h1 className="display-title mt-2 text-4xl md:text-5xl">Carrito</h1>
-        <p className="mt-2 text-sm text-cls-ink/65">{totalItems} {totalItems === 1 ? "unidad" : "unidades"}. Revisá cantidades antes de continuar.</p>
+        <p className="mt-2 text-sm text-cls-ink/92">{totalItems} {totalItems === 1 ? "unidad" : "unidades"}. Revisá cantidades antes de continuar.</p>
       </header>
 
       <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -35,9 +35,9 @@ export default function Carrito() {
                 {producto.imagen ? <img src={producto.imagen} alt={`Presentación de ${producto.nombre}`} className="h-full w-full object-cover" /> : <Leaf className="h-10 w-10 text-cls-primary/70" strokeWidth={1.4} />}
               </Link>
               <div className="min-w-0">
-                <p className="truncate text-[10px] font-bold uppercase tracking-[0.1em] text-cls-ink/50">{producto.banco}</p>
+                <p className="truncate text-[10px] font-bold uppercase tracking-[0.1em] text-cls-ink/86">{producto.banco}</p>
                 <Link to={`/producto/${producto.slug}`} className="mt-1 block font-bold text-cls-primary-dark hover:text-cls-orange">{producto.nombre}</Link>
-                <p className="mt-1 text-xs text-cls-ink/55">{producto.presentacion} · {precioARS(producto.precio)} c/u</p>
+                <p className="mt-1 text-xs text-cls-ink/88">{producto.presentacion} · {precioARS(producto.precio)} c/u</p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 sm:hidden">
                   <Quantity value={cantidad} max={producto.stock} onChange={(value) => cambiarCantidad(producto.id, value)} />
                   <button onClick={() => quitar(producto.id)} className="flex h-11 w-11 items-center justify-center rounded-full text-[#9C332B] hover:bg-[#F7D4CF]" aria-label={`Quitar ${producto.nombre}`}><Trash2 className="h-4 w-4" /></button>
@@ -58,17 +58,17 @@ export default function Carrito() {
           <div className="section-shell p-5 md:p-6">
             <h2 className="text-2xl font-black">Resumen</h2>
             <dl className="mt-5 space-y-3 text-sm">
-              <div className="flex justify-between gap-3"><dt className="text-cls-ink/65">Subtotal</dt><dd className="font-bold text-cls-primary-dark">{precioARS(total)}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-cls-ink/65">Envío</dt><dd className="text-right text-xs font-semibold text-cls-ink/55">Se calcula con tu código postal</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-cls-ink/92">Subtotal</dt><dd className="font-bold text-cls-primary-dark">{precioARS(total)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-cls-ink/92">Envío</dt><dd className="text-right text-xs font-semibold text-cls-ink/88">Se calcula con tu código postal</dd></div>
             </dl>
             <div className="mt-5 flex items-end justify-between border-t border-cls-line pt-5"><span className="font-bold">Total parcial</span><strong className="text-2xl text-cls-primary-dark">{precioARS(total)}</strong></div>
             <Link to="/checkout" className="btn-primary mt-6 w-full">Continuar la compra <ArrowRight className="h-4 w-4" /></Link>
-            <p className="mt-3 text-center text-[10px] leading-relaxed text-cls-ink/50">El total final se confirma después de calcular el envío y validar disponibilidad.</p>
+            <p className="mt-3 text-center text-[10px] leading-relaxed text-cls-ink/86">El total final se confirma después de calcular el envío y validar disponibilidad.</p>
           </div>
 
           <div className="mt-3 grid gap-2">
-            <div className="flex gap-3 rounded-2xl border border-cls-line bg-cls-sage/70 p-4"><ShieldCheck className="h-5 w-5 shrink-0 text-cls-primary" /><div><p className="text-xs font-bold text-cls-primary-dark">Compra protegida</p><p className="mt-1 text-[11px] leading-relaxed text-cls-ink/65">Precio y stock se volverán a validar en servidor antes de crear la orden.</p></div></div>
-            <div className="flex gap-3 rounded-2xl border border-cls-line bg-cls-paper p-4"><Truck className="h-5 w-5 shrink-0 text-cls-primary" /><div><p className="text-xs font-bold text-cls-primary-dark">Envío discreto</p><p className="mt-1 text-[11px] leading-relaxed text-cls-ink/65">Despacho por Andreani y seguimiento desde la confirmación.</p></div></div>
+            <div className="flex gap-3 rounded-2xl border border-cls-line bg-cls-sage/70 p-4"><ShieldCheck className="h-5 w-5 shrink-0 text-cls-primary" /><div><p className="text-xs font-bold text-cls-primary-dark">Compra protegida</p><p className="mt-1 text-[11px] leading-relaxed text-cls-ink/92">Precio y stock se volverán a validar en servidor antes de crear la orden.</p></div></div>
+            <div className="flex gap-3 rounded-2xl border border-cls-line bg-cls-paper p-4"><Truck className="h-5 w-5 shrink-0 text-cls-primary" /><div><p className="text-xs font-bold text-cls-primary-dark">Envío discreto</p><p className="mt-1 text-[11px] leading-relaxed text-cls-ink/92">Despacho por Andreani y seguimiento desde la confirmación.</p></div></div>
           </div>
         </aside>
       </div>

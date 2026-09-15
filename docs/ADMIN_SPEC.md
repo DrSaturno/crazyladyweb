@@ -125,6 +125,7 @@ La migración `commerce_core` modela productos, categorías, clientes, órdenes,
 - No existe scroll horizontal de página desde 320 px.
 - Controles esenciales de 44 px, foco visible, labels persistentes y estados vacíos explícitos.
 - Checkboxes y radios usan el color de marca (`accent-color` global) en todo el sitio, admin y tienda pública.
+- Todo texto secundario (`text-cls-ink/NN`, `text-cls-paper/NN`) cumple el mínimo de contraste 4.5:1 de `WEB_SPEC.md` §9 en cualquier fondo de la paleta — verificado con medición real en el DOM, no solo cálculo teórico. Pendiente aparte: la insignia numérica de notificaciones (blanco sobre naranja) no llega a 4.5:1 con ningún color oscuro de marca; necesita una decisión de diseño, no es un ajuste de opacidad.
 - Si `localStorage.setItem` falla (cuota llena, modo privado), se muestra un aviso persistente en el admin en vez de perder el cambio en silencio.
 
 ## 8. Pendientes para producción

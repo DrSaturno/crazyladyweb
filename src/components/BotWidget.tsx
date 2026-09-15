@@ -62,7 +62,7 @@ export default function BotWidget() {
       )}
 
       {open && (
-        <section aria-label={`Asistente virtual ${bot.nombre}`}className="fixed bottom-3 right-3 z-50 flex h-[560px] max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[22px] border border-cls-line bg-cls-cream shadow-2xl sm:bottom-5 sm:right-5 sm:w-[390px]">
+        <section aria-label={`Asistente virtual ${bot.nombre}`} className="fixed bottom-3 right-3 z-50 flex h-[560px] max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[22px] border border-cls-line bg-cls-cream shadow-2xl sm:bottom-5 sm:right-5 sm:w-[390px]">
           <header className="flex shrink-0 items-center gap-3 bg-cls-primary px-4 py-3 text-cls-paper">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark"><Sprout className="h-5 w-5" /></span>
             <div className="min-w-0 flex-1"><h2 className="font-sans text-sm font-bold text-cls-paper">{bot.nombre}</h2><p className="text-[11px] text-cls-paper/70">Asistente de cultivo · demo informativa</p></div>
@@ -74,7 +74,7 @@ export default function BotWidget() {
               <div key={`${message.time}-${index}`} className={`flex ${message.from === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[86%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${message.from === "user" ? "rounded-br-sm bg-cls-primary text-cls-paper" : "rounded-bl-sm border border-cls-line bg-cls-paper text-cls-ink"}`}>
                   <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
-                  <p className={`mt-1 text-right text-[9px] ${message.from === "user" ? "text-cls-paper/60" : "text-cls-ink/45"}`}>{message.time}</p>
+                  <p className={`mt-1 text-right text-[9px] ${message.from === "user" ? "text-cls-paper/68" : "text-cls-ink/84"}`}>{message.time}</p>
                 </div>
               </div>
             ))}
@@ -88,7 +88,7 @@ export default function BotWidget() {
               <input id="bot-message" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Escribí tu consulta…" className="h-11 min-w-0 flex-1 rounded-full border border-cls-line bg-cls-cream px-4 text-sm outline-none focus:border-cls-primary focus:ring-2 focus:ring-cls-honey/50" />
               <button type="submit" disabled={!input.trim() || typing} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark transition hover:bg-[#F7C85E] disabled:opacity-40" aria-label="Enviar mensaje"><Send className="h-4 w-4" /></button>
             </div>
-            <p className="mt-2 text-center text-[9px] text-cls-ink/45">Las respuestas actuales son locales; no se envían datos a terceros.</p>
+            <p className="mt-2 text-center text-[9px] text-cls-ink/84">Las respuestas actuales son locales; no se envían datos a terceros.</p>
           </form>
         </section>
       )}

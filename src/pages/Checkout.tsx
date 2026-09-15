@@ -83,7 +83,7 @@ export default function Checkout() {
       <div className="site-container py-16 text-center">
         <div className="section-shell mx-auto max-w-2xl p-10">
           <h1 className="display-title text-4xl">No hay productos para confirmar</h1>
-          <p className="mt-3 text-sm text-cls-ink/65">Volvé al catálogo y armá tu selección.</p>
+          <p className="mt-3 text-sm text-cls-ink/92">Volvé al catálogo y armá tu selección.</p>
           <Link to="/semillas" className="btn-primary mt-6">Ver semillas</Link>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function Checkout() {
           </CheckoutSection>
 
           <CheckoutSection number="2" title="Entrega">
-            <div className="mb-4 flex gap-3 rounded-xl bg-cls-sage/60 p-4 text-sm text-cls-ink/70"><Truck className="h-5 w-5 shrink-0 text-cls-primary" /><p>El costo final se calcula con el código postal. Antes de cobrar, el servidor validará cobertura, precio y stock.</p></div>
+            <div className="mb-4 flex gap-3 rounded-xl bg-cls-sage/60 p-4 text-sm text-cls-ink/94"><Truck className="h-5 w-5 shrink-0 text-cls-primary" /><p>El costo final se calcula con el código postal. Antes de cobrar, el servidor validará cobertura, precio y stock.</p></div>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id="codigoPostal" label="Código postal"><input id="codigoPostal" required inputMode="numeric" autoComplete="postal-code" value={form.codigoPostal} onChange={(event) => update("codigoPostal", event.target.value)} /></Field>
               <Field id="provincia" label="Provincia"><input id="provincia" required autoComplete="address-level1" value={form.provincia} onChange={(event) => update("provincia", event.target.value)} /></Field>
@@ -123,11 +123,11 @@ export default function Checkout() {
             <div className="grid gap-3 sm:grid-cols-2">
               <label className={`flex min-h-24 cursor-pointer gap-3 rounded-2xl border p-4 transition ${form.payment === "transferencia" ? "border-cls-primary bg-cls-sage/55" : "border-cls-line bg-cls-paper"}`}>
                 <input type="radio" name="payment" checked={form.payment === "transferencia"} onChange={() => update("payment", "transferencia")} className="mt-1 accent-cls-primary" />
-                <span><strong className="block text-sm text-cls-primary-dark">Transferencia bancaria</strong><span className="mt-1 block text-xs text-cls-ink/65">10% de descuento. El pedido se confirma al validar el comprobante.</span></span>
+                <span><strong className="block text-sm text-cls-primary-dark">Transferencia bancaria</strong><span className="mt-1 block text-xs text-cls-ink/92">10% de descuento. El pedido se confirma al validar el comprobante.</span></span>
               </label>
               <label className="flex min-h-24 cursor-not-allowed gap-3 rounded-2xl border border-cls-line bg-cls-cream p-4 opacity-65">
                 <input type="radio" name="payment" value="mercado_pago" disabled className="mt-1" />
-                <span><strong className="block text-sm text-cls-primary-dark">Mercado Pago</strong><span className="mt-1 block text-xs text-cls-ink/65">Se habilita después de la aprobación comercial del rubro.</span></span>
+                <span><strong className="block text-sm text-cls-primary-dark">Mercado Pago</strong><span className="mt-1 block text-xs text-cls-ink/92">Se habilita después de la aprobación comercial del rubro.</span></span>
               </label>
             </div>
           </CheckoutSection>
@@ -146,18 +146,18 @@ export default function Checkout() {
           <div className="section-shell p-5 md:p-6">
             <h2 className="text-2xl font-black">Tu pedido</h2>
             <ul className="mt-4 max-h-64 space-y-3 overflow-y-auto pr-1">
-              {items.map(({ producto, cantidad }) => <li key={producto.id} className="flex justify-between gap-3 border-b border-cls-line pb-3 text-xs"><span className="min-w-0"><strong className="block truncate text-cls-primary-dark">{producto.nombre}</strong><span className="text-cls-ink/55">{cantidad} × {precioARS(producto.precio)}</span></span><strong className="shrink-0 text-cls-primary-dark">{precioARS(producto.precio * cantidad)}</strong></li>)}
+              {items.map(({ producto, cantidad }) => <li key={producto.id} className="flex justify-between gap-3 border-b border-cls-line pb-3 text-xs"><span className="min-w-0"><strong className="block truncate text-cls-primary-dark">{producto.nombre}</strong><span className="text-cls-ink/88">{cantidad} × {precioARS(producto.precio)}</span></span><strong className="shrink-0 text-cls-primary-dark">{precioARS(producto.precio * cantidad)}</strong></li>)}
             </ul>
             <dl className="mt-5 space-y-3 text-sm">
               <div className="flex justify-between"><dt>Subtotal</dt><dd className="font-bold">{precioARS(total)}</dd></div>
               {promotion?.valid && <div className="flex justify-between gap-3 text-cls-primary"><dt>Promoción {promotion.code}</dt><dd className="shrink-0 font-bold">{promotion.freeShipping ? "Envío gratis" : `− ${precioARS(promotionDiscount)}`}</dd></div>}
               {transferDiscount > 0 && <div className="flex justify-between text-cls-primary"><dt>Descuento transferencia</dt><dd className="font-bold">− {precioARS(transferDiscount)}</dd></div>}
-              <div className="flex justify-between"><dt>Envío</dt><dd className="text-xs font-bold text-cls-ink/65">{shipping > 0 ? precioARS(shipping) : "Gratis"}</dd></div>
+              <div className="flex justify-between"><dt>Envío</dt><dd className="text-xs font-bold text-cls-ink/92">{shipping > 0 ? precioARS(shipping) : "Gratis"}</dd></div>
               <div className="flex justify-between border-t border-cls-line pt-4 text-lg"><dt className="font-bold">Total</dt><dd className="font-black text-cls-primary-dark">{precioARS(total - totalDiscount + shipping)}</dd></div>
             </dl>
-            <label className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-cls-ink/65"><input required type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-4 w-4 accent-cls-primary" /> Confirmo que soy mayor de 18 años y acepto las condiciones de compra que se publicarán antes del lanzamiento.</label>
+            <label className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-cls-ink/92"><input required type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-4 w-4 accent-cls-primary" /> Confirmo que soy mayor de 18 años y acepto las condiciones de compra que se publicarán antes del lanzamiento.</label>
             <button type="submit" disabled={submitting} className="btn-primary mt-5 w-full">{submitting ? "Creando pedido…" : "Confirmar pedido"}</button>
-            <p className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-cls-ink/55"><ShieldCheck className="h-4 w-4 shrink-0" /> El pedido queda registrado y pendiente de validación. Ningún pago se procesa dentro de esta pantalla.</p>
+            <p className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-cls-ink/88"><ShieldCheck className="h-4 w-4 shrink-0" /> El pedido queda registrado y pendiente de validación. Ningún pago se procesa dentro de esta pantalla.</p>
             {error && <p role="alert" className="mt-3 rounded-xl bg-red-100 p-3 text-xs font-bold text-red-800">{error}</p>}
           </div>
         </aside>
@@ -173,7 +173,7 @@ function CheckoutSection({ number, title, children }: { number: string; title: s
 function Field({ id, label, optional = false, children }: { id: string; label: string; optional?: boolean; children: React.ReactElement }) {
   return (
     <div className="sm:has-[textarea]:col-span-2">
-      <label htmlFor={id} className="mb-1.5 block text-xs font-bold text-cls-primary-dark">{label}{optional && <span className="ml-1 font-normal text-cls-ink/45">(opcional)</span>}</label>
+      <label htmlFor={id} className="mb-1.5 block text-xs font-bold text-cls-primary-dark">{label}{optional && <span className="ml-1 font-normal text-cls-ink/84">(opcional)</span>}</label>
       <div className="[&_input]:min-h-11 [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-cls-line [&_input]:bg-cls-paper [&_input]:px-3 [&_input]:outline-none [&_input]:focus:border-cls-primary [&_input]:focus:ring-2 [&_input]:focus:ring-cls-honey/50 [&_textarea]:w-full [&_textarea]:rounded-xl [&_textarea]:border [&_textarea]:border-cls-line [&_textarea]:bg-cls-paper [&_textarea]:px-3 [&_textarea]:py-2.5 [&_textarea]:outline-none [&_textarea]:focus:border-cls-primary [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-cls-honey/50">{children}</div>
     </div>
   );

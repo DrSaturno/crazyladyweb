@@ -177,11 +177,11 @@
   }
 
   .admin-table th {
-    @apply border-b border-cls-line px-3 py-2 text-[10px] font-black uppercase tracking-wider text-cls-ink/45;
+    @apply border-b border-cls-line px-3 py-2 text-[10px] font-black uppercase tracking-wider text-cls-ink/85;
   }
 
   .admin-table td {
-    @apply border-b border-cls-line px-3 py-3 align-middle text-cls-ink/70;
+    @apply border-b border-cls-line px-3 py-3 align-middle text-cls-ink/95;
   }
 
   .admin-table td strong,
@@ -194,7 +194,7 @@
   }
 
   .admin-table td small {
-    @apply mt-0.5 text-[10px] text-cls-ink/45;
+    @apply mt-0.5 text-[10px] text-cls-ink/85;
   }
 }
 

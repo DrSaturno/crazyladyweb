@@ -19,7 +19,7 @@ export default function Esquejes() {
         <div className="relative max-w-3xl">
           <p className="eyebrow flex items-center gap-2"><Scissors className="h-4 w-4" /> Esquejes</p>
           <h1 className="display-title mt-3 text-4xl md:text-6xl">Genéticas seleccionadas, listas para arrancar.</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-cls-ink/75 md:text-base">Un esqueje es un clon de una planta madre elegida por sus características. Te salteás la germinación y empezás con una base conocida, siempre con acompañamiento para la adaptación.</p>
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-cls-ink/96 md:text-base">Un esqueje es un clon de una planta madre elegida por sus características. Te salteás la germinación y empezás con una base conocida, siempre con acompañamiento para la adaptación.</p>
         </div>
       </header>
 
@@ -28,7 +28,7 @@ export default function Esquejes() {
           <article key={title} className={`rounded-2xl border border-cls-line p-5 ${index === 1 ? "bg-cls-paper" : "bg-cls-sage/70"}`}>
             <Icon className="h-6 w-6 text-cls-primary" aria-hidden="true" />
             <h2 className="mt-3 font-sans text-sm font-bold text-cls-primary-dark">{title}</h2>
-            <p className="mt-2 text-xs leading-relaxed text-cls-ink/65">{text}</p>
+            <p className="mt-2 text-xs leading-relaxed text-cls-ink/92">{text}</p>
           </article>
         ))}
       </section>
@@ -38,7 +38,7 @@ export default function Esquejes() {
         {disponibles.length ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{disponibles.map((item) => <ProductCard key={item.id} producto={item} />)}</div>
         ) : (
-          <div className="section-shell flex min-h-64 flex-col items-center justify-center px-6 text-center"><Scissors className="h-10 w-10 text-cls-primary/40" /><h3 className="mt-4 text-2xl font-black">Los esquejes salen por tandas</h3><p className="mt-2 max-w-md text-sm text-cls-ink/65">Consultanos qué madres están en producción y cuándo ingresa la próxima tanda.</p></div>
+          <div className="section-shell flex min-h-64 flex-col items-center justify-center px-6 text-center"><Scissors className="h-10 w-10 text-cls-primary/40" /><h3 className="mt-4 text-2xl font-black">Los esquejes salen por tandas</h3><p className="mt-2 max-w-md text-sm text-cls-ink/92">Consultanos qué madres están en producción y cuándo ingresa la próxima tanda.</p></div>
         )}
       </section>
 

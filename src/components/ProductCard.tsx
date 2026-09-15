@@ -82,14 +82,14 @@ export default function ProductCard({ producto, compact = false }: { producto: P
       </div>
 
       <div className={`${compact ? "p-3" : "p-3.5 sm:p-4"} flex flex-1 flex-col`}>
-        <p className="truncate text-[10px] font-bold uppercase tracking-[0.08em] text-cls-ink/55">{producto.banco}</p>
+        <p className="truncate text-[10px] font-bold uppercase tracking-[0.08em] text-cls-ink/88">{producto.banco}</p>
         <Link to={`/producto/${producto.slug}`} className="mt-1">
           <h3 className="line-clamp-2 min-h-10 font-sans text-sm font-bold leading-snug text-cls-primary-dark transition group-hover:text-cls-orange">
             {producto.nombre}
           </h3>
         </Link>
 
-        <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-semibold text-cls-ink/65">
+        <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] font-semibold text-cls-ink/92">
           <span className="rounded-full bg-cls-cream px-2 py-1">{GENETICA_LABEL[producto.genetica]}</span>
           <span className="rounded-full bg-cls-cream px-2 py-1">{producto.presentacion}</span>
         </div>

@@ -81,7 +81,7 @@ export default function Semillas() {
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="display-title text-4xl md:text-5xl">{title}</h1>
-            <p className="mt-3 text-sm text-cls-ink/70">
+            <p className="mt-3 text-sm text-cls-ink/94">
               {resultados.length} {resultados.length === 1 ? "genética disponible" : "genéticas disponibles"} con origen declarado.
             </p>
           </div>
@@ -130,7 +130,7 @@ export default function Semillas() {
             <div className="section-shell flex min-h-[360px] flex-col items-center justify-center px-6 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cls-sage text-cls-primary"><Search className="h-6 w-6" /></span>
               <h2 className="mt-4 text-2xl font-black">No encontramos esa combinación</h2>
-              <p className="mt-2 max-w-md text-sm leading-relaxed text-cls-ink/65">
+              <p className="mt-2 max-w-md text-sm leading-relaxed text-cls-ink/92">
                 Probá con menos filtros, el nombre del banco o términos como “CBD”, “automática” o “nacional”.
               </p>
               <button onClick={limpiarTodo} className="btn-primary mt-6">Ver todo el catálogo</button>
@@ -183,7 +183,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`min-h-9 rounded-full border px-3 py-1.5 text-left text-xs font-bold transition ${active ? "border-cls-primary bg-cls-primary text-cls-paper" : "border-cls-line bg-cls-paper text-cls-ink/70 hover:border-cls-primary hover:text-cls-primary"}`}
+      className={`min-h-9 rounded-full border px-3 py-1.5 text-left text-xs font-bold transition ${active ? "border-cls-primary bg-cls-primary text-cls-paper" : "border-cls-line bg-cls-paper text-cls-ink/94 hover:border-cls-primary hover:text-cls-primary"}`}
     >
       {children}
     </button>

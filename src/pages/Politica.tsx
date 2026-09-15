@@ -59,11 +59,11 @@ export default function Politica({ kind }: { kind: PolicyKind }) {
         <div className="relative max-w-3xl">
           <p className="eyebrow">{policy.eyebrow}</p>
           <h1 className="display-title mt-3 text-4xl md:text-6xl">{policy.title}</h1>
-          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-cls-ink/75 md:text-base">{policy.intro}</p>
+          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-cls-ink/96 md:text-base">{policy.intro}</p>
         </div>
       </header>
 
-      <div className="mt-4 flex gap-3 rounded-2xl border-l-4 border-cls-orange bg-cls-paper p-4 text-sm leading-relaxed text-cls-ink/70">
+      <div className="mt-4 flex gap-3 rounded-2xl border-l-4 border-cls-orange bg-cls-paper p-4 text-sm leading-relaxed text-cls-ink/94">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-cls-orange" aria-hidden="true" />
         <p><strong className="text-cls-primary-dark">Borrador para validación.</strong> No reemplaza el texto legal ni comercial que debe aprobarse antes de habilitar cobros reales.</p>
       </div>
@@ -74,7 +74,7 @@ export default function Politica({ kind }: { kind: PolicyKind }) {
             <section key={section.title} className="section-shell p-5 md:p-6">
               <span className="eyebrow">0{index + 1}</span>
               <h2 className="mt-2 text-2xl font-black">{section.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-cls-ink/70">{section.body}</p>
+              <p className="mt-3 text-sm leading-7 text-cls-ink/94">{section.body}</p>
             </section>
           ))}
         </div>

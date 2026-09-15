@@ -153,9 +153,9 @@ export function AdminBlog() {
                 <article className="rounded-2xl border border-cls-line bg-cls-cream p-4 sm:p-6 lg:col-span-2" aria-label="Vista previa de la nota">
                   <p className="eyebrow">{formatFechaNota(draft.fecha)} · {draft.minutos || estimated} min de lectura</p>
                   <h2 className="display-title mt-2 text-3xl leading-tight">{draft.titulo || "Sin título"}</h2>
-                  <p className="mt-3 text-sm text-cls-ink/70">{draft.bajada}</p>
-                  {draft.tipo === "problema" && draft.causa.trim() && <p className="mt-4 rounded-xl border-l-4 border-cls-orange bg-cls-paper p-3 text-sm text-cls-ink/75"><strong className="block text-[10px] font-black uppercase tracking-[0.14em] text-cls-orange">Causa más probable</strong>{draft.causa}</p>}
-                  <div className="mt-5 space-y-4">{paragraphs.length ? paragraphs.map((paragraph, index) => <NotaParagraph key={index} text={paragraph} compact />) : <p className="text-sm text-cls-ink/45">El cuerpo todavía está vacío.</p>}</div>
+                  <p className="mt-3 text-sm text-cls-ink/94">{draft.bajada}</p>
+                  {draft.tipo === "problema" && draft.causa.trim() && <p className="mt-4 rounded-xl border-l-4 border-cls-orange bg-cls-paper p-3 text-sm text-cls-ink/96"><strong className="block text-[10px] font-black uppercase tracking-[0.14em] text-cls-orange">Causa más probable</strong>{draft.causa}</p>}
+                  <div className="mt-5 space-y-4">{paragraphs.length ? paragraphs.map((paragraph, index) => <NotaParagraph key={index} text={paragraph} compact />) : <p className="text-sm text-cls-ink/84">El cuerpo todavía está vacío.</p>}</div>
                 </article>
               )}
 
@@ -176,7 +176,7 @@ export function AdminBlog() {
 
       <Panel title="Todas las notas" description={`${filtered.length} de ${posts.length} notas`} className="mt-4">
         <div className="mb-4 grid gap-2 sm:grid-cols-[1fr_200px]">
-          <label className="relative"><span className="sr-only">Buscar nota</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/40" /><input className={`${fieldClass} pl-9`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por título, slug o bajada" /></label>
+          <label className="relative"><span className="sr-only">Buscar nota</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/82" /><input className={`${fieldClass} pl-9`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por título, slug o bajada" /></label>
           <label><span className="sr-only">Filtrar por estado</span><select className={fieldClass} value={status} onChange={(event) => setStatus(event.target.value as StatusFilter)}><option value="todas">Todos los estados</option><option value="publicadas">Publicadas</option><option value="borradores">Borradores</option></select></label>
         </div>
         {filtered.length ? (
@@ -206,7 +206,7 @@ export function AdminBlog() {
 }
 
 function Field({ label, hint, warn = false, className = "", children }: { label: string; hint?: string; warn?: boolean; className?: string; children: React.ReactNode }) {
-  return <label className={className}><span className={labelClass}>{label}</span>{children}{hint && <span className={`mt-1 block text-[10px] ${warn ? "font-bold text-cls-orange" : "text-cls-ink/50"}`}>{hint}</span>}</label>;
+  return <label className={className}><span className={labelClass}>{label}</span>{children}{hint && <span className={`mt-1 block text-[10px] ${warn ? "font-bold text-cls-orange" : "text-cls-ink/86"}`}>{hint}</span>}</label>;
 }
 
 function IconButton({ label, onClick, icon: Icon, danger = false }: { label: string; onClick: () => void; icon: typeof Pencil; danger?: boolean }) {

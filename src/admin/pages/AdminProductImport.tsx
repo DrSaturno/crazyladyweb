@@ -77,7 +77,7 @@ export function ProductImportPanel({ onClose }: { onClose: () => void }) {
                 <FileSpreadsheet className="h-8 w-8 shrink-0 text-cls-primary" />
                 <div>
                   <p className="text-sm font-black text-cls-primary-dark">Subí un archivo .xlsx o .csv</p>
-                  <p className="mt-0.5 text-xs text-cls-ink/55">Usá la plantilla para respetar las columnas: id, nombre, banco, categoría, precio, stock y el resto de los campos del producto.</p>
+                  <p className="mt-0.5 text-xs text-cls-ink/88">Usá la plantilla para respetar las columnas: id, nombre, banco, categoría, precio, stock y el resto de los campos del producto.</p>
                 </div>
               </div>
               <div className="flex shrink-0 gap-2">
@@ -102,7 +102,7 @@ export function ProductImportPanel({ onClose }: { onClose: () => void }) {
             <fieldset>
               <legend className={labelClass}>¿Qué hacer con las filas válidas?</legend>
               <div className="grid gap-2 sm:grid-cols-3">
-                {MODE_LABELS.map((item) => <label key={item.value} className={`flex min-h-16 cursor-pointer flex-col justify-center rounded-xl border px-3 py-2 transition ${mode === item.value ? "border-cls-primary bg-cls-sage/45" : "border-cls-line bg-cls-cream hover:border-cls-primary"}`}><input type="radio" name="import-mode" className="sr-only" checked={mode === item.value} onChange={() => setMode(item.value)} /><span className="text-xs font-black text-cls-primary-dark">{item.label}</span><span className="mt-0.5 text-[10px] text-cls-ink/55">{item.hint}</span></label>)}
+                {MODE_LABELS.map((item) => <label key={item.value} className={`flex min-h-16 cursor-pointer flex-col justify-center rounded-xl border px-3 py-2 transition ${mode === item.value ? "border-cls-primary bg-cls-sage/45" : "border-cls-line bg-cls-cream hover:border-cls-primary"}`}><input type="radio" name="import-mode" className="sr-only" checked={mode === item.value} onChange={() => setMode(item.value)} /><span className="text-xs font-black text-cls-primary-dark">{item.label}</span><span className="mt-0.5 text-[10px] text-cls-ink/88">{item.hint}</span></label>)}
               </div>
             </fieldset>
 
@@ -112,7 +112,7 @@ export function ProductImportPanel({ onClose }: { onClose: () => void }) {
                   <p className="flex items-center gap-2 text-xs font-black text-cls-orange"><CircleAlert className="h-4 w-4" /> {result.errors.length} error(es) — esas filas no se van a importar</p>
                   <button type="button" className="btn-outline min-h-9 px-3 py-1 text-xs" onClick={downloadErrors}><Download className="h-3.5 w-3.5" /> Descargar reporte</button>
                 </div>
-                <div className="max-h-56 overflow-y-auto"><table className="admin-table"><thead><tr><th>Fila</th><th>Campo</th><th>Valor</th><th>Problema</th></tr></thead><tbody>{result.errors.slice(0, 100).map((error, index) => <tr key={index}><td data-label="Fila">{error.row}</td><td data-label="Campo">{error.field}</td><td data-label="Valor">{error.value || "—"}</td><td data-label="Problema">{error.problem}</td></tr>)}</tbody></table>{result.errors.length > 100 && <p className="p-3 text-center text-[11px] text-cls-ink/50">Mostrando los primeros 100 de {result.errors.length}. Descargá el reporte para verlos todos.</p>}</div>
+                <div className="max-h-56 overflow-y-auto"><table className="admin-table"><thead><tr><th>Fila</th><th>Campo</th><th>Valor</th><th>Problema</th></tr></thead><tbody>{result.errors.slice(0, 100).map((error, index) => <tr key={index}><td data-label="Fila">{error.row}</td><td data-label="Campo">{error.field}</td><td data-label="Valor">{error.value || "—"}</td><td data-label="Problema">{error.problem}</td></tr>)}</tbody></table>{result.errors.length > 100 && <p className="p-3 text-center text-[11px] text-cls-ink/86">Mostrando los primeros 100 de {result.errors.length}. Descargá el reporte para verlos todos.</p>}</div>
               </div>
             )}
 
@@ -120,7 +120,7 @@ export function ProductImportPanel({ onClose }: { onClose: () => void }) {
               <button type="button" className="btn-outline" onClick={() => { setResult(null); setFileName(""); }}>Cancelar</button>
               <button type="button" className="btn-secondary" disabled={!applicable.length} onClick={confirmImport}><Upload className="h-4 w-4" /> Importar {applicable.length} producto(s)</button>
             </div>
-            <p className="text-center text-[10px] text-cls-ink/45">Archivo: {fileName}</p>
+            <p className="text-center text-[10px] text-cls-ink/84">Archivo: {fileName}</p>
           </>
         )}
 
@@ -128,13 +128,13 @@ export function ProductImportPanel({ onClose }: { onClose: () => void }) {
           <div className="flex flex-col items-center gap-3 rounded-xl bg-cls-sage/40 p-6 text-center">
             <CheckCircle2 className="h-10 w-10 text-cls-primary" />
             <p className="text-sm font-black text-cls-primary-dark">Importación completa</p>
-            <p className="text-xs text-cls-ink/65">{summary.created} producto(s) creado(s) · {summary.updated} actualizado(s){summary.skipped ? ` · ${summary.skipped} omitido(s) por el modo elegido` : ""}.</p>
+            <p className="text-xs text-cls-ink/92">{summary.created} producto(s) creado(s) · {summary.updated} actualizado(s){summary.skipped ? ` · ${summary.skipped} omitido(s) por el modo elegido` : ""}.</p>
             <div className="flex gap-2"><button type="button" className="btn-outline" onClick={() => setSummary(null)}>Importar otro archivo</button><button type="button" className="btn-secondary" onClick={onClose}>Cerrar</button></div>
           </div>
         )}
 
         {!result && !summary && !parsing && (
-          <button type="button" className="self-start text-xs font-bold text-cls-ink/50 hover:text-cls-primary" onClick={onClose}><X className="mr-1 inline h-3.5 w-3.5" />Cerrar sin importar</button>
+          <button type="button" className="self-start text-xs font-bold text-cls-ink/86 hover:text-cls-primary" onClick={onClose}><X className="mr-1 inline h-3.5 w-3.5" />Cerrar sin importar</button>
         )}
       </div>
     </Panel>
@@ -142,5 +142,5 @@ export function ProductImportPanel({ onClose }: { onClose: () => void }) {
 }
 
 function MiniStat({ label, value, tone = "neutral" }: { label: string; value: number; tone?: "good" | "bad" | "honey" | "neutral" }) {
-  return <div className="rounded-xl bg-cls-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-cls-ink/50">{label}</p><div className="mt-1 flex items-center gap-2"><strong className="text-xl text-cls-primary-dark">{value}</strong>{tone !== "neutral" && <StatusBadge tone={tone === "good" ? "good" : tone === "bad" ? "bad" : "warn"}>{tone === "good" ? "OK" : tone === "bad" ? "Revisar" : "Aplica"}</StatusBadge>}</div></div>;
+  return <div className="rounded-xl bg-cls-cream p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-cls-ink/86">{label}</p><div className="mt-1 flex items-center gap-2"><strong className="text-xl text-cls-primary-dark">{value}</strong>{tone !== "neutral" && <StatusBadge tone={tone === "good" ? "good" : tone === "bad" ? "bad" : "warn"}>{tone === "good" ? "OK" : tone === "bad" ? "Revisar" : "Aplica"}</StatusBadge>}</div></div>;
 }

@@ -16,10 +16,10 @@ export default function Cuenta() {
         <section className="p-7 md:p-10">
           <p className="eyebrow">Acceso de clientes</p>
           <h2 className="mt-2 text-3xl font-black">Estamos preparando este espacio</h2>
-          <p className="mt-3 text-sm leading-relaxed text-cls-ink/70">
+          <p className="mt-3 text-sm leading-relaxed text-cls-ink/94">
             La interfaz está definida, pero no habilitamos un inicio de sesión de demostración: primero conectaremos Auth, recuperación de cuenta y trazabilidad de pedidos de forma segura.
           </p>
-          <div className="mt-7 rounded-2xl border border-cls-line bg-cls-cream p-5 text-sm text-cls-ink/75">
+          <div className="mt-7 rounded-2xl border border-cls-line bg-cls-cream p-5 text-sm text-cls-ink/96">
             Mientras tanto, podés comprar como invitado cuando el checkout quede habilitado.
           </div>
         </section>

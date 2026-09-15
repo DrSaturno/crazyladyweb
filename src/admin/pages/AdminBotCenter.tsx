@@ -174,7 +174,7 @@ function BotStatus() {
 }
 
 function TabButton({ id, controls, active, icon: Icon, onClick, children }: { id: string; controls: string; active: boolean; icon: LucideIcon; onClick: () => void; children: ReactNode }) {
-  return <button id={id} type="button" role="tab" aria-controls={controls} aria-selected={active} tabIndex={active ? 0 : -1} onClick={onClick} className={`flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-2 text-[11px] font-black transition sm:px-4 sm:text-xs ${active ? "bg-cls-primary text-cls-paper shadow-sm" : "text-cls-ink/55 hover:bg-cls-cream hover:text-cls-primary-dark"}`}><Icon className="hidden h-4 w-4 shrink-0 sm:block" /><span className="truncate">{children}</span></button>;
+  return <button id={id} type="button" role="tab" aria-controls={controls} aria-selected={active} tabIndex={active ? 0 : -1} onClick={onClick} className={`flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-2 text-[11px] font-black transition sm:px-4 sm:text-xs ${active ? "bg-cls-primary text-cls-paper shadow-sm" : "text-cls-ink/88 hover:bg-cls-cream hover:text-cls-primary-dark"}`}><Icon className="hidden h-4 w-4 shrink-0 sm:block" /><span className="truncate">{children}</span></button>;
 }
 
 const dateTime = (value: string) => new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
@@ -223,25 +223,25 @@ function PersonalizationView() {
             <fieldset className="sm:col-span-2">
               <legend className={labelClass}>Tono del asistente</legend>
               <div className="grid gap-2 sm:grid-cols-3">
-                {BOT_TONES.map((tone) => <label key={tone.value} className={`flex min-h-16 cursor-pointer flex-col justify-center rounded-xl border px-3 py-2 transition focus-within:ring-2 focus-within:ring-cls-honey/60 ${draft.tono === tone.value ? "border-cls-primary bg-cls-sage/45" : "border-cls-line bg-cls-cream hover:border-cls-primary"}`}><input type="radio" name="bot-tone" value={tone.value} checked={draft.tono === tone.value} onChange={() => update({ tono: tone.value })} className="sr-only" /><span className="text-xs font-black text-cls-primary-dark">{tone.label}</span><span className="mt-0.5 text-[10px] text-cls-ink/55">{tone.description}</span></label>)}
+                {BOT_TONES.map((tone) => <label key={tone.value} className={`flex min-h-16 cursor-pointer flex-col justify-center rounded-xl border px-3 py-2 transition focus-within:ring-2 focus-within:ring-cls-honey/60 ${draft.tono === tone.value ? "border-cls-primary bg-cls-sage/45" : "border-cls-line bg-cls-cream hover:border-cls-primary"}`}><input type="radio" name="bot-tone" value={tone.value} checked={draft.tono === tone.value} onChange={() => update({ tono: tone.value })} className="sr-only" /><span className="text-xs font-black text-cls-primary-dark">{tone.label}</span><span className="mt-0.5 text-[10px] text-cls-ink/88">{tone.description}</span></label>)}
               </div>
             </fieldset>
-            <label className="sm:col-span-2"><span className={labelClass}>Saludo inicial</span><textarea required rows={3} maxLength={BOT_LIMITS.saludo} className={`${fieldClass} resize-y py-3`} value={draft.saludo} onChange={(event) => update({ saludo: event.target.value })} /><span className="mt-1 block text-right text-[10px] text-cls-ink/45">{draft.saludo.length} / {BOT_LIMITS.saludo}</span></label>
+            <label className="sm:col-span-2"><span className={labelClass}>Saludo inicial</span><textarea required rows={3} maxLength={BOT_LIMITS.saludo} className={`${fieldClass} resize-y py-3`} value={draft.saludo} onChange={(event) => update({ saludo: event.target.value })} /><span className="mt-1 block text-right text-[10px] text-cls-ink/84">{draft.saludo.length} / {BOT_LIMITS.saludo}</span></label>
           </div>
         </Panel>
 
         <Panel title="Prompt del sistema" description={`Instrucciones que guían todas las respuestas de ${draft.nombre.trim() || "el bot"}: reglas, límites, derivaciones y forma de hablar.`}>
           <label className="block"><span className="sr-only">Prompt del sistema</span><textarea required spellCheck={false} maxLength={BOT_LIMITS.promptMax} className={`${fieldClass} min-h-[420px] resize-y py-3 font-mono text-xs leading-relaxed sm:text-xs`} value={draft.prompt} onChange={(event) => update({ prompt: event.target.value })} /></label>
           <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[10px] text-cls-ink/50">{draft.prompt.length.toLocaleString("es-AR")} / {BOT_LIMITS.promptMax.toLocaleString("es-AR")} caracteres · {words.toLocaleString("es-AR")} palabras</p>
+            <p className="text-[10px] text-cls-ink/86">{draft.prompt.length.toLocaleString("es-AR")} / {BOT_LIMITS.promptMax.toLocaleString("es-AR")} caracteres · {words.toLocaleString("es-AR")} palabras</p>
             <button type="button" className="btn-outline min-h-10 px-3 py-1 text-xs" disabled={draft.prompt === DEFAULT_BOT_PROMPT.prompt} onClick={() => update({ prompt: DEFAULT_BOT_PROMPT.prompt })}><RotateCcw className="h-3.5 w-3.5" /> Restaurar prompt original</button>
           </div>
-          <p className="mt-3 rounded-xl bg-cls-cream p-3 text-[11px] leading-relaxed text-cls-ink/60">En la tienda ya se usan el nombre y el saludo. El prompt completo y el tono se envían al modelo cuando se conecte el cerebro real del bot.</p>
+          <p className="mt-3 rounded-xl bg-cls-cream p-3 text-[11px] leading-relaxed text-cls-ink/90">En la tienda ya se usan el nombre y el saludo. El prompt completo y el tono se envían al modelo cuando se conecte el cerebro real del bot.</p>
         </Panel>
 
         <div className="sticky bottom-3 z-10 flex flex-col gap-3 rounded-2xl border border-cls-line bg-cls-paper/95 p-3 shadow-lift backdrop-blur sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 text-xs" aria-live="polite">
-            {errors.length && dirty ? <ul className="space-y-0.5 font-bold text-red-800">{errors.map((error) => <li key={error}>{error}</li>)}</ul> : saved ? <span className="flex items-center gap-2 font-black text-cls-primary"><CheckCircle2 className="h-4 w-4" />Cambios guardados</span> : dirty ? <span className="font-black text-cls-orange">Tenés cambios sin guardar</span> : <span className="text-cls-ink/55">Última actualización: {dateTime(bot.updatedAt)}</span>}
+            {errors.length && dirty ? <ul className="space-y-0.5 font-bold text-red-800">{errors.map((error) => <li key={error}>{error}</li>)}</ul> : saved ? <span className="flex items-center gap-2 font-black text-cls-primary"><CheckCircle2 className="h-4 w-4" />Cambios guardados</span> : dirty ? <span className="font-black text-cls-orange">Tenés cambios sin guardar</span> : <span className="text-cls-ink/88">Última actualización: {dateTime(bot.updatedAt)}</span>}
           </div>
           <div className="flex shrink-0 gap-2">
             <button type="button" className="btn-outline min-w-0 flex-1 whitespace-nowrap px-4 sm:flex-none" disabled={!dirty} onClick={() => { setDraft(snapshotOf(bot)); setSaved(false); }}>Descartar</button>
@@ -268,7 +268,7 @@ function PersonalizationView() {
         </Panel>
 
         <Panel title="Historial de versiones" description={`Se guardan las últimas ${BOT_LIMITS.historial}. Cargar una versión la trae al editor; se aplica al guardar.`}>
-          {bot.history.length ? <ol className="space-y-2">{bot.history.map((version) => <li key={version.id} className="flex items-center gap-3 rounded-xl border border-cls-line bg-cls-cream p-3"><History className="h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0 flex-1"><strong className="block truncate text-xs text-cls-primary-dark">{dateTime(version.savedAt)}</strong><span className="block truncate text-[10px] text-cls-ink/50">{version.nombre} · {version.prompt.length.toLocaleString("es-AR")} caracteres</span></span><button type="button" className="btn-outline min-h-10 shrink-0 px-3 py-1 text-xs" disabled={sameSnapshot(draft, version)} onClick={() => { setDraft(snapshotOf(version)); setSaved(false); }}>Cargar</button></li>)}</ol> : <EmptyState title="Sin versiones anteriores" text="Cada vez que guardes, la versión previa queda acá para poder volver." />}
+          {bot.history.length ? <ol className="space-y-2">{bot.history.map((version) => <li key={version.id} className="flex items-center gap-3 rounded-xl border border-cls-line bg-cls-cream p-3"><History className="h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0 flex-1"><strong className="block truncate text-xs text-cls-primary-dark">{dateTime(version.savedAt)}</strong><span className="block truncate text-[10px] text-cls-ink/86">{version.nombre} · {version.prompt.length.toLocaleString("es-AR")} caracteres</span></span><button type="button" className="btn-outline min-h-10 shrink-0 px-3 py-1 text-xs" disabled={sameSnapshot(draft, version)} onClick={() => { setDraft(snapshotOf(version)); setSaved(false); }}>Cargar</button></li>)}</ol> : <EmptyState title="Sin versiones anteriores" text="Cada vez que guardes, la versión previa queda acá para poder volver." />}
         </Panel>
       </aside>
     </div>
@@ -276,7 +276,7 @@ function PersonalizationView() {
 }
 
 function ContextItem({ label, detail }: { label: string; detail: string }) {
-  return <li className="flex items-start gap-2 rounded-xl bg-cls-cream p-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0"><strong className="block text-cls-primary-dark">{label}</strong><span className="text-[11px] text-cls-ink/55">{detail}</span></span></li>;
+  return <li className="flex items-start gap-2 rounded-xl bg-cls-cream p-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0"><strong className="block text-cls-primary-dark">{label}</strong><span className="text-[11px] text-cls-ink/88">{detail}</span></span></li>;
 }
 
 function ConversationsView() {
@@ -323,7 +323,7 @@ function ConversationsView() {
       <div className="grid min-h-[640px] min-w-0 xl:grid-cols-12">
         <aside className="min-w-0 border-b border-cls-line xl:col-span-4 xl:border-b-0 xl:border-r">
           <div className="border-b border-cls-line p-3">
-            <label className="relative block"><span className="sr-only">Buscar contacto o tema</span><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/35" /><input className={`${fieldClass} pl-9`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar contacto o tema…" /></label>
+            <label className="relative block"><span className="sr-only">Buscar contacto o tema</span><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/80" /><input className={`${fieldClass} pl-9`} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar contacto o tema…" /></label>
           </div>
           {visible.length ? <div className="max-h-[560px] overflow-y-auto">{visible.map((conversation) => <ConversationRow key={conversation.id} conversation={conversation} selected={selected?.id === conversation.id} onClick={() => setSelectedId(conversation.id)} />)}</div> : <EmptyState title="Sin conversaciones" text="No encontramos charlas para ese canal o búsqueda." />}
         </aside>
@@ -334,7 +334,7 @@ function ConversationsView() {
 }
 
 function ChannelFilter({ active, onClick, label, count, icon: Icon }: { active: boolean; onClick: () => void; label: string; count: number; icon?: LucideIcon }) {
-  return <button type="button" aria-pressed={active} onClick={onClick} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-[11px] font-black transition ${active ? "border-cls-primary bg-cls-primary text-cls-paper" : "border-cls-line bg-cls-cream text-cls-ink/60 hover:border-cls-primary"}`}>{Icon ? <Icon className="h-3.5 w-3.5" /> : null}{label} <span className={active ? "text-cls-paper/75" : "text-cls-ink/40"}>({count})</span></button>;
+  return <button type="button" aria-pressed={active} onClick={onClick} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-[11px] font-black transition ${active ? "border-cls-primary bg-cls-primary text-cls-paper" : "border-cls-line bg-cls-cream text-cls-ink/90 hover:border-cls-primary"}`}>{Icon ? <Icon className="h-3.5 w-3.5" /> : null}{label} <span className={active ? "text-cls-paper/75" : "text-cls-ink/82"}>({count})</span></button>;
 }
 
 function ConversationRow({ conversation, selected, onClick }: { conversation: BotConversation; selected: boolean; onClick: () => void }) {
@@ -343,9 +343,9 @@ function ConversationRow({ conversation, selected, onClick }: { conversation: Bo
       <span className="flex items-start gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cls-primary-dark text-xs font-black text-cls-paper">{conversation.name.charAt(0)}</span>
         <span className="min-w-0 flex-1">
-          <span className="flex items-center justify-between gap-2"><strong className="truncate text-sm text-cls-primary-dark">{conversation.name}</strong><small className="shrink-0 text-[9px] text-cls-ink/40">{conversation.ago}</small></span>
-          <span className="mt-0.5 block truncate text-[11px] text-cls-ink/60">{conversation.lastMessage}</span>
-          <span className="mt-2 flex flex-wrap gap-1"><ConversationStatusBadge status={conversation.status} /><ChannelBadge channel={conversation.channel} compact /><span className="rounded-full bg-cls-cream px-2 py-1 text-[9px] font-bold text-cls-ink/50">{conversation.topic}</span></span>
+          <span className="flex items-center justify-between gap-2"><strong className="truncate text-sm text-cls-primary-dark">{conversation.name}</strong><small className="shrink-0 text-[9px] text-cls-ink/82">{conversation.ago}</small></span>
+          <span className="mt-0.5 block truncate text-[11px] text-cls-ink/90">{conversation.lastMessage}</span>
+          <span className="mt-2 flex flex-wrap gap-1"><ConversationStatusBadge status={conversation.status} /><ChannelBadge channel={conversation.channel} compact /><span className="rounded-full bg-cls-cream px-2 py-1 text-[9px] font-bold text-cls-ink/86">{conversation.topic}</span></span>
         </span>
       </span>
     </button>
@@ -356,16 +356,16 @@ function ConversationDetail({ conversation, reply, setReply, onReply, onInterven
   return (
     <article className="flex min-h-[640px] min-w-0 flex-col xl:col-span-8">
       <header className="flex flex-col gap-3 border-b border-cls-line p-4 sm:flex-row sm:items-center">
-        <div className="flex min-w-0 items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cls-orange text-sm font-black text-white">{conversation.name.charAt(0)}</span><div className="min-w-0"><h2 className="truncate font-sans text-sm font-black">{conversation.name}</h2><p className="truncate text-[11px] text-cls-ink/50">{conversation.contact}</p></div></div>
+        <div className="flex min-w-0 items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cls-orange text-sm font-black text-white">{conversation.name.charAt(0)}</span><div className="min-w-0"><h2 className="truncate font-sans text-sm font-black">{conversation.name}</h2><p className="truncate text-[11px] text-cls-ink/86">{conversation.contact}</p></div></div>
         <div className="flex flex-wrap gap-2 sm:ml-auto"><ChannelBadge channel={conversation.channel} /><ConversationStatusBadge status={conversation.status} /></div>
       </header>
       <div className="flex-1 space-y-4 bg-cls-cream/45 p-4 sm:p-5">
-        <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-cls-line bg-cls-paper px-3 py-1.5 text-[10px] font-bold text-cls-ink/50"><Bot className="h-3.5 w-3.5 text-cls-primary" />Tema detectado: {conversation.topic}</div>
+        <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-cls-line bg-cls-paper px-3 py-1.5 text-[10px] font-bold text-cls-ink/86"><Bot className="h-3.5 w-3.5 text-cls-primary" />Tema detectado: {conversation.topic}</div>
         {conversation.messages.map((message) => <MessageBubble key={message.id} message={message} />)}
       </div>
       <footer className="border-t border-cls-line bg-cls-paper p-3 sm:p-4">
         {conversation.status === "human" ? <form onSubmit={onReply} className="flex flex-col gap-2 sm:flex-row"><label className="min-w-0 flex-1"><span className="sr-only">Respuesta del agente</span><input className={fieldClass} value={reply} onChange={(event) => setReply(event.target.value)} placeholder="Escribí una respuesta como agente…" /></label><button className="btn-secondary shrink-0" disabled={!reply.trim()}><Send className="h-4 w-4" />Responder</button><button type="button" className="btn-outline shrink-0" onClick={onRelease}>Devolver a Emma</button></form> : conversation.status === "resolved" ? <div className="flex flex-col items-center justify-between gap-3 rounded-xl bg-cls-sage/35 p-3 text-xs sm:flex-row"><span className="flex items-center gap-2 font-bold text-cls-primary-dark"><CheckCircle2 className="h-4 w-4" />Conversación resuelta</span><button type="button" className="btn-outline min-h-10 px-4 py-1 text-xs" onClick={onIntervene}>Reabrir e intervenir</button></div> : <button type="button" onClick={onIntervene} className="btn-secondary w-full"><Share2 className="h-4 w-4" />Intervenir en esta conversación</button>}
-        <p className="mt-2 text-center text-[9px] text-cls-ink/40">Los mensajes externos se habilitan al conectar las credenciales de cada canal.</p>
+        <p className="mt-2 text-center text-[9px] text-cls-ink/82">Los mensajes externos se habilitan al conectar las credenciales de cada canal.</p>
       </footer>
     </article>
   );
@@ -393,7 +393,7 @@ function BotMetrics() {
   const updatedAt = new Intl.DateTimeFormat("es-AR", { dateStyle: "full", timeStyle: "short" }).format(new Date());
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2 rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-sans text-sm font-black">Panel de control de Emma</h2><p className="mt-1 text-[11px] text-cls-ink/50">Actualizado {updatedAt}</p></div><BotStatus /></div>
+      <div className="flex flex-col gap-2 rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-sans text-sm font-black">Panel de control de Emma</h2><p className="mt-1 text-[11px] text-cls-ink/86">Actualizado {updatedAt}</p></div><BotStatus /></div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <MetricCard label="Conversaciones hoy" value="86" detail="9% vs. ayer" icon={MessageCircle} positive />
         <MetricCard label="Tasa de resolución" value="84%" detail="2% vs. ayer" icon={CheckCircle2} positive />
@@ -403,17 +403,17 @@ function BotMetrics() {
         <MetricCard label="Ventas cerradas" value="5" detail="0% vs. ayer" icon={DollarSign} positive />
       </div>
       <div className="grid gap-4 xl:grid-cols-2">
-        <section className="rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:p-5"><h2 className="font-sans text-sm font-black">Actividad del día</h2><p className="mt-1 text-[11px] text-cls-ink/50">Conversaciones iniciadas por franja horaria</p><ActivityChart /></section>
-        <section className="rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:p-5"><h2 className="font-sans text-sm font-black">Temas más consultados</h2><p className="mt-1 text-[11px] text-cls-ink/50">Clasificación automática de las últimas conversaciones</p><div className="mt-6 space-y-3">{TOPICS.map((topic) => <div key={topic.label} className="flex items-center gap-2 text-[10px]"><strong className="w-[88px] shrink-0 truncate text-right text-cls-primary-dark sm:w-[125px]">{topic.label}</strong><div className="h-5 min-w-0 flex-1 overflow-hidden rounded-r-full bg-cls-cream"><div className={`h-full rounded-r-full ${topic.color}`} style={{ width: `${Math.max(8, topic.value / 50 * 100)}%` }} /></div><span className="w-6 shrink-0 font-black text-cls-ink/45 sm:w-8">{topic.value}</span></div>)}</div></section>
+        <section className="rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:p-5"><h2 className="font-sans text-sm font-black">Actividad del día</h2><p className="mt-1 text-[11px] text-cls-ink/86">Conversaciones iniciadas por franja horaria</p><ActivityChart /></section>
+        <section className="rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:p-5"><h2 className="font-sans text-sm font-black">Temas más consultados</h2><p className="mt-1 text-[11px] text-cls-ink/86">Clasificación automática de las últimas conversaciones</p><div className="mt-6 space-y-3">{TOPICS.map((topic) => <div key={topic.label} className="flex items-center gap-2 text-[10px]"><strong className="w-[88px] shrink-0 truncate text-right text-cls-primary-dark sm:w-[125px]">{topic.label}</strong><div className="h-5 min-w-0 flex-1 overflow-hidden rounded-r-full bg-cls-cream"><div className={`h-full rounded-r-full ${topic.color}`} style={{ width: `${Math.max(8, topic.value / 50 * 100)}%` }} /></div><span className="w-6 shrink-0 font-black text-cls-ink/84 sm:w-8">{topic.value}</span></div>)}</div></section>
       </div>
-      <section className="rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:p-5"><div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="font-sans text-sm font-black">Rendimiento por canal</h2><p className="mt-1 text-[11px] text-cls-ink/50">Distribución de la bandeja importada</p></div><span className="text-[10px] font-black uppercase tracking-widest text-cls-primary">Un cerebro · cuatro entradas</span></div><div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">{CHANNELS.map((channel) => { const count = INITIAL_CONVERSATIONS.filter((conversation) => conversation.channel === channel.id).length; const resolved = INITIAL_CONVERSATIONS.filter((conversation) => conversation.channel === channel.id && conversation.status === "resolved").length; return <article key={channel.id} className="rounded-xl border border-cls-line bg-cls-cream p-3"><ChannelBadge channel={channel.id} /><p className="mt-3 text-2xl font-black text-cls-primary-dark">{count}</p><p className="text-[10px] text-cls-ink/50">conversaciones visibles · {resolved} resueltas</p></article>; })}</div></section>
+      <section className="rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:p-5"><div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="font-sans text-sm font-black">Rendimiento por canal</h2><p className="mt-1 text-[11px] text-cls-ink/86">Distribución de la bandeja importada</p></div><span className="text-[10px] font-black uppercase tracking-widest text-cls-primary">Un cerebro · cuatro entradas</span></div><div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">{CHANNELS.map((channel) => { const count = INITIAL_CONVERSATIONS.filter((conversation) => conversation.channel === channel.id).length; const resolved = INITIAL_CONVERSATIONS.filter((conversation) => conversation.channel === channel.id && conversation.status === "resolved").length; return <article key={channel.id} className="rounded-xl border border-cls-line bg-cls-cream p-3"><ChannelBadge channel={channel.id} /><p className="mt-3 text-2xl font-black text-cls-primary-dark">{count}</p><p className="text-[10px] text-cls-ink/86">conversaciones visibles · {resolved} resueltas</p></article>; })}</div></section>
     </div>
   );
 }
 
 function MetricCard({ label, value, detail, icon: Icon, positive = false }: { label: string; value: string; detail: string; icon: LucideIcon; positive?: boolean }) {
   const TrendIcon = positive ? TrendingUp : TrendingDown;
-  return <article className="min-w-0 rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper"><div className="flex items-start justify-between gap-2"><p className="max-w-[9rem] text-[10px] font-black uppercase tracking-[0.12em] text-cls-ink/55">{label}</p><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cls-sage/55 text-cls-primary"><Icon className="h-4 w-4" /></span></div><p className="mt-4 truncate text-2xl font-black text-cls-primary-dark sm:text-3xl">{value}</p><p className={`mt-1 flex items-center gap-1 text-[10px] font-black ${positive ? "text-cls-primary" : "text-cls-orange"}`}><TrendIcon className="h-3.5 w-3.5" />{detail}</p></article>;
+  return <article className="min-w-0 rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper"><div className="flex items-start justify-between gap-2"><p className="max-w-[9rem] text-[10px] font-black uppercase tracking-[0.12em] text-cls-ink/88">{label}</p><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cls-sage/55 text-cls-primary"><Icon className="h-4 w-4" /></span></div><p className="mt-4 truncate text-2xl font-black text-cls-primary-dark sm:text-3xl">{value}</p><p className={`mt-1 flex items-center gap-1 text-[10px] font-black ${positive ? "text-cls-primary" : "text-cls-orange"}`}><TrendIcon className="h-3.5 w-3.5" />{detail}</p></article>;
 }
 
 function ActivityChart() {

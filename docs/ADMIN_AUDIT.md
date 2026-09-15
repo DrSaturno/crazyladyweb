@@ -88,6 +88,18 @@ Dos hallazgos reales, ambos corregidos:
 1. **El widget del bot mostraba el nombre/banco viejo del producto en pantalla.** El mensaje "Veo que estás mirando…" resolvía el producto con `getProducto()` de `src/data/catalogo.ts` (la fixture estática de desarrollo), no contra `useCommerceData().products` (el catálogo vivo). Si se renombraba un producto desde el admin, el bot seguía usando el nombre viejo — y para cualquier producto dado de alta desde el admin (no en la fixture original), la función devolvía `undefined` y el mensaje ni aparecía. Probado: renombrado "Amnesia x4" a "Amnesia RENOMBRADA" desde el admin, el widget mostró el nombre nuevo correctamente tras el fix.
 2. **Favoritos "parpadeaba" a 0 en cada carga de página.** `WishlistProvider` leía `localStorage` dentro de un `useEffect` (después del primer render) en vez de en el inicializador de `useState`, a diferencia de `CartContext` que sí lo hace bien. Se corrigió para que sea consistente: lectura síncrona, sin parpadeo.
 
+## 🔴 Crítico — continuación 9: contraste de texto en todo el sitio (decisión del cliente)
+
+El propio `docs/WEB_SPEC.md` (§9) exige contraste mínimo 4.5:1 para texto normal. Medí el contraste **real** (color + opacidad efectiva, no solo el color base) de los textos secundarios que usan `text-cls-ink/NN` y `text-cls-paper/NN` en todo el sitio (admin y tienda pública) — ninguno llegaba al mínimo: `ink/65` (el más oscuro en uso) daba 4.36:1, `ink/45` daba 2.56:1; en fondo miel (el peor caso del sitio) se necesita ≥80% de opacidad para pasar.
+
+**Decisión del cliente (15/09/2026): oscurecer los tokens de opacidad en todo el sitio.** Se hizo con un reemplazo global, no archivo por archivo:
+
+- `text-cls-ink/NN` (texto oscuro sobre fondos claros): mapeado 35→80, 40→82, 45→84, 50→86, 55→88, 60→90, 65→92, 70→94, 75→96 — todos ahora ≥80%, que pasa 4.5:1 incluso sobre el fondo miel (el más exigente de la paleta).
+- `text-cls-paper/NN` (texto claro sobre fondos oscuros como `bg-cls-primary`): mapeado 45→65, 50→66, 55→67, 60→68 — 65% es el piso que pasa 4.5:1 sobre `bg-cls-primary` (el fondo oscuro más claro de la paleta, el caso más exigente). Los que ya estaban en 70/75/80 se dejaron igual.
+- `text-cls-primary/NN` se dejó sin tocar: se verificó que **todos** sus usos son íconos decorativos (`aria-hidden` o ilustrativos en estados vacíos), exentos de la regla de contraste de texto.
+- Dos usos dentro de `@apply` en `index.css` no podían llevar el valor arbitrario resultante (Tailwind solo resuelve opacidades múltiplo de 5 dentro de `@apply`, a diferencia de las clases en JSX que sí aceptan cualquier valor); se ajustaron a 85/95, los múltiplos de 5 más cercanos que siguen pasando 4.5:1.
+- Verificado con una medición real en el DOM renderizado (no solo el cálculo teórico): de 39 elementos de texto revisados en el Resumen del admin, solo 1 seguía fallando — y no es un token de opacidad, es la insignia numérica de notificaciones (blanco sobre `bg-cls-orange`, 2.98:1). Ningún color oscuro de la marca llega a 4.5:1 contra ese naranja específico (el mejor, tinta oscura, da 4.45:1 — todavía corto). Queda pendiente como hallazgo aparte: requiere una decisión de diseño (cambiar el color del badge, agregarle un borde, etc.), no un ajuste de opacidad.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 

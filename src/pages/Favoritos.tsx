@@ -14,7 +14,7 @@ export default function Favoritos() {
       <header className="mb-8">
         <p className="eyebrow">Tu selección</p>
         <h1 className="display-title mt-2 text-4xl md:text-5xl">Favoritos</h1>
-        <p className="mt-3 max-w-2xl text-sm text-cls-ink/70">
+        <p className="mt-3 max-w-2xl text-sm text-cls-ink/94">
           Guardá genéticas para compararlas con calma. La lista queda en este dispositivo.
         </p>
       </header>
@@ -27,7 +27,7 @@ export default function Favoritos() {
         <section className="section-shell flex min-h-72 flex-col items-center justify-center px-6 text-center">
           <Heart className="h-10 w-10 text-cls-primary/35" aria-hidden="true" />
           <h2 className="mt-4 text-2xl font-black">Todavía no guardaste ninguna genética</h2>
-          <p className="mt-2 max-w-md text-sm text-cls-ink/65">
+          <p className="mt-2 max-w-md text-sm text-cls-ink/92">
             Tocá el corazón de una tarjeta para encontrarla de nuevo acá.
           </p>
           <Link className="btn-primary mt-6" to="/semillas">Explorar semillas</Link>
