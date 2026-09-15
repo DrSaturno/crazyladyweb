@@ -132,6 +132,8 @@ La causa es un efecto de las heurísticas automáticas de chunking de Rollup/Vit
 
 **Decisión: revertido.** Forzar el resultado correcto requeriría configurar `build.rollupOptions.output.manualChunks` a mano y volver a medir cada ruta una por una — es una intervención más profunda que "técnicamente segura y claramente necesaria" para una ganancia que hoy es negativa. Queda documentado como próximo paso de performance si se retoma una pasada dedicada.
 
+Lo que sí se aplicó (sin el riesgo del chunking automático): las miniaturas de producto que todavía no tenían `loading="lazy"` ([Carrito.tsx](../src/pages/Carrito.tsx), [NotaDetalle.tsx](../src/pages/NotaDetalle.tsx) — la imagen del artículo relacionado) ahora lo tienen, en línea con `ProductCard.tsx` y `Home.tsx`, que ya lo usaban. La imagen principal de `ProductoDetalle.tsx` se deja sin `lazy` a propósito (es la imagen más importante de la página, siempre arriba del pliegue).
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 

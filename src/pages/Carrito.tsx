@@ -32,7 +32,7 @@ export default function Carrito() {
           {items.map(({ producto, cantidad }) => (
             <article key={producto.id} className="section-shell grid grid-cols-[76px_minmax(0,1fr)] gap-4 p-3 sm:grid-cols-[100px_minmax(0,1fr)_auto] sm:items-center sm:p-4">
               <Link to={`/producto/${producto.slug}`} className="product-art flex aspect-square items-center justify-center overflow-hidden rounded-xl">
-                {producto.imagen ? <img src={producto.imagen} alt={`Presentación de ${producto.nombre}`} className="h-full w-full object-cover" /> : <Leaf className="h-10 w-10 text-cls-primary/70" strokeWidth={1.4} />}
+                {producto.imagen ? <img src={producto.imagen} alt={`Presentación de ${producto.nombre}`} loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <Leaf className="h-10 w-10 text-cls-primary/70" strokeWidth={1.4} />}
               </Link>
               <div className="min-w-0">
                 <p className="truncate text-[10px] font-bold uppercase tracking-[0.1em] text-cls-ink/86">{producto.banco}</p>

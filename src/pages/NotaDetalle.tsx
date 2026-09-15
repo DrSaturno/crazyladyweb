@@ -35,7 +35,7 @@ export default function NotaDetalle() {
 
         {recommended && (
           <section className="mt-10 grid gap-5 overflow-hidden rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:grid-cols-[120px_minmax(0,1fr)_auto] sm:items-center sm:p-5">
-            <div className="product-art flex aspect-square items-center justify-center overflow-hidden rounded-xl">{recommended.imagen ? <img src={recommended.imagen} alt={`Presentación de ${recommended.nombre}`} className="h-full w-full object-cover" /> : <Leaf className="h-12 w-12 text-cls-primary" strokeWidth={1.4} />}</div>
+            <div className="product-art flex aspect-square items-center justify-center overflow-hidden rounded-xl">{recommended.imagen ? <img src={recommended.imagen} alt={`Presentación de ${recommended.nombre}`} loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <Leaf className="h-12 w-12 text-cls-primary" strokeWidth={1.4} />}</div>
             <div><p className="eyebrow">Producto relacionado</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-cls-ink/86">{recommended.banco}</p><Link to={`/producto/${recommended.slug}`} className="mt-1 block text-lg font-bold text-cls-primary-dark hover:text-cls-orange">{recommended.nombre}</Link><p className="mt-1 text-xl font-black text-cls-primary-dark">{precioARS(recommended.precio)}</p></div>
             <button onClick={() => agregar(recommended)} disabled={!recommended.stock} className="btn-primary sm:min-w-40">{recommended.stock ? "Sumar al carrito" : "Sin stock"}</button>
           </section>
