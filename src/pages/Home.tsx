@@ -19,7 +19,7 @@ import BancosRow from "../components/BancosRow";
 import ProductCard from "../components/ProductCard";
 import { esInase, type Producto } from "../data/catalogo";
 import { useCommerceData } from "../context/CommerceDataContext";
-import { NOTAS } from "../data/notas";
+import { notasPublicadas } from "../data/notas";
 
 const BENEFICIOS = [
   { icon: Truck, title: "Envíos discretos", text: "a todo el país" },
@@ -59,7 +59,7 @@ const DIARIO_IMAGES = [
 ];
 
 export default function Home() {
-  const { products, content, settings } = useCommerceData();
+  const { products, content, settings, posts } = useCommerceData();
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [email, setEmail] = useState("");
   const [suscripto, setSuscripto] = useState(false);
@@ -69,7 +69,7 @@ export default function Home() {
   const masVendidas = conStock.slice(0, 5);
   const seleccion = conStock.slice(5, 10);
   const inaseCount = semillas.filter((product) => product.stock > 0 && esInase(product.banco)).length;
-  const notas = NOTAS.filter((nota) => nota.tipo === "guia").slice(0, 4);
+  const notas = notasPublicadas(posts).filter((nota) => nota.tipo === "guia").slice(0, 4);
   const cmsFaqs = content.filter((entry) => entry.tipo === "faq" && entry.publicado).map((entry) => ({ q: entry.titulo, a: entry.contenido }));
   const faqs = cmsFaqs.length ? cmsFaqs : FAQS;
   const heroBanner = content.find((entry) => entry.id === "banner-home" && entry.publicado);

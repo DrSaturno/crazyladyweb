@@ -1,5 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "react";
+import { BOT_LIMITS, DEFAULT_BOT_PROMPT } from "../data/botDefaults";
 import { PRODUCTOS, type Producto } from "../data/catalogo";
+import { NOTAS_INICIALES, type Nota } from "../data/notas";
 import { resolveCatalogImage } from "../data/productPhotography";
 import type {
   AbandonedCart,
@@ -9,6 +11,7 @@ import type {
   AutomationEvent,
   AutomationRun,
   AutomationWorkflow,
+  BotPromptSnapshot,
   CommerceState,
   ContentEntry,
   CrmStage,
@@ -75,6 +78,8 @@ function initialState(): CommerceState {
     automations: workflowTemplates.map((workflow) => ({ ...workflow, updatedAt: timestamp })),
     automationRuns: [],
     staff: [{ id: "local-owner", name: "Administrador local", email: "", role: "owner", status: "active", modules: ["*"], createdAt: timestamp, updatedAt: timestamp }],
+    bot: { ...DEFAULT_BOT_PROMPT, updatedAt: timestamp, history: [] },
+    posts: NOTAS_INICIALES.map((nota) => ({ ...nota, id: nota.slug, publicado: true, updatedAt: timestamp })),
   };
 }
 
@@ -110,6 +115,8 @@ function readState(): CommerceState {
       automations: [...savedWorkflows, ...seed.automations.filter((workflow) => !savedWorkflows.some((saved) => saved.id === workflow.id))],
       automationRuns: Array.isArray(parsed.automationRuns) ? parsed.automationRuns : [],
       staff: Array.isArray(parsed.staff) && parsed.staff.length ? parsed.staff : seed.staff,
+      bot: parsed.bot ? { ...seed.bot, ...parsed.bot, history: Array.isArray(parsed.bot.history) ? parsed.bot.history : [] } : seed.bot,
+      posts: Array.isArray(parsed.posts) ? parsed.posts : seed.posts,
     };
   } catch {
     return initialState();
@@ -161,6 +168,9 @@ interface CommerceValue extends CommerceState {
   triggerAutomation: (event: AutomationEvent, payload: Record<string, unknown>) => Promise<void>;
   saveStaff: (member: StaffMember) => void;
   updateStaffStatus: (id: string, status: StaffMember["status"]) => void;
+  saveBotSettings: (snapshot: BotPromptSnapshot) => void;
+  savePost: (post: Nota) => void;
+  removePost: (id: string) => void;
   resetDemoData: () => void;
 }
 
@@ -340,9 +350,33 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
   function saveStaff(member: StaffMember) { commit((current) => { const exists = current.staff.some((item) => item.id === member.id); return { ...current, staff: exists ? current.staff.map((item) => item.id === member.id ? { ...member, updatedAt: now() } : item) : [{ ...member, updatedAt: now() }, ...current.staff], audit: [audit("staff", member.id, exists ? "updated" : "invited", member.email || member.name), ...current.audit] }; }); }
   function updateStaffStatus(id: string, status: StaffMember["status"]) { if (id === "local-owner") return; commit((current) => ({ ...current, staff: current.staff.map((item) => item.id === id ? { ...item, status, updatedAt: now() } : item), audit: [audit("staff", id, "status_updated", status), ...current.audit] })); }
 
+  function saveBotSettings(snapshot: BotPromptSnapshot) {
+    commit((current) => {
+      const { history, updatedAt, ...previous } = current.bot;
+      const version = { ...previous, id: uid("prompt"), savedAt: updatedAt };
+      return { ...current, bot: { ...snapshot, updatedAt: now(), history: [version, ...history].slice(0, BOT_LIMITS.historial) }, audit: [audit("bot", "emma", "prompt_updated", `${snapshot.nombre} · ${snapshot.prompt.length} caracteres`), ...current.audit] };
+    });
+  }
+
+  function savePost(post: Nota) {
+    commit((current) => {
+      const exists = current.posts.some((item) => item.id === post.id);
+      const saved = { ...post, updatedAt: now() };
+      return { ...current, posts: exists ? current.posts.map((item) => item.id === post.id ? saved : item) : [saved, ...current.posts], audit: [audit("blog_post", post.id, exists ? "updated" : "created", `${post.titulo} · ${post.publicado ? "publicada" : "borrador"}`), ...current.audit] };
+    });
+  }
+
+  function removePost(id: string) {
+    commit((current) => {
+      const post = current.posts.find((item) => item.id === id);
+      if (!post) return current;
+      return { ...current, posts: current.posts.filter((item) => item.id !== id), audit: [audit("blog_post", id, "deleted", post.titulo), ...current.audit] };
+    });
+  }
+
   function resetDemoData() { const fresh = initialState(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); localStorage.removeItem(LEGACY_STORAGE_KEY); } catch { /* Conservamos el reinicio en memoria. */ } setState(fresh); }
 
-  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, triggerAutomation: dispatchEvent, saveStaff, updateStaffStatus, resetDemoData }), [state]);
+  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, triggerAutomation: dispatchEvent, saveStaff, updateStaffStatus, saveBotSettings, savePost, removePost, resetDemoData }), [state]);
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }
 

@@ -1,4 +1,5 @@
 import type { Producto } from "../data/catalogo";
+import type { Nota } from "../data/notas";
 
 export interface AdminCategory {
   id: string;
@@ -206,6 +207,25 @@ export interface StaffMember {
   updatedAt: string;
 }
 
+export type BotTone = "profesional" | "cercano_humor" | "dinamico";
+
+export interface BotPromptSnapshot {
+  nombre: string;
+  tono: BotTone;
+  saludo: string;
+  prompt: string;
+}
+
+export interface BotPromptVersion extends BotPromptSnapshot {
+  id: string;
+  savedAt: string;
+}
+
+export interface BotSettings extends BotPromptSnapshot {
+  updatedAt: string;
+  history: BotPromptVersion[];
+}
+
 export interface CommerceState {
   version: 2;
   products: Producto[];
@@ -223,4 +243,6 @@ export interface CommerceState {
   automations: AutomationWorkflow[];
   automationRuns: AutomationRun[];
   staff: StaffMember[];
+  bot: BotSettings;
+  posts: Nota[];
 }

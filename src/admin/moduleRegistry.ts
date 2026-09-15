@@ -10,6 +10,7 @@ import {
   FolderTree,
   LayoutDashboard,
   Megaphone,
+  NotebookPen,
   PackageSearch,
   RotateCcw,
   Settings,
@@ -31,6 +32,9 @@ const loadOperations = <T extends keyof typeof import("./pages/AdminOperations")
 
 const loadBot = <T extends keyof typeof import("./pages/AdminBotCenter")>(name: T) =>
   lazy(() => import("./pages/AdminBotCenter").then((module) => ({ default: module[name] as ComponentType })));
+
+const loadBlog = <T extends keyof typeof import("./pages/AdminBlog")>(name: T) =>
+  lazy(() => import("./pages/AdminBlog").then((module) => ({ default: module[name] as ComponentType })));
 
 export interface AdminModuleDefinition {
   id: string;
@@ -56,6 +60,7 @@ export const ADMIN_MODULES: AdminModuleDefinition[] = [
   { id: "abandoned-carts", label: "Carritos abandonados", description: "Recuperación, contacto y conversión.", path: "/admin/carritos-abandonados", group: "Relación", icon: ShoppingCart, component: loadOperations("AdminAbandonedCarts"), defaultEnabled: true },
   { id: "bot", label: "Bot y conversaciones", description: "Bandeja omnicanal, intervención y métricas de Emma.", path: "/admin/bot", group: "Relación", icon: Bot, component: loadBot("AdminBot"), defaultEnabled: true },
   { id: "content", label: "Contenidos", description: "FAQ, banners y páginas informativas.", path: "/admin/contenidos", group: "Relación", icon: FileText, component: load("AdminContent"), defaultEnabled: true },
+  { id: "blog", label: "Diario / Blog", description: "Alta, edición, publicación y baja de notas del diario.", path: "/admin/diario", group: "Relación", icon: NotebookPen, component: loadBlog("AdminBlog"), defaultEnabled: true },
   { id: "discounts", label: "Descuentos", description: "Códigos, vigencia, reglas y límites.", path: "/admin/descuentos", group: "Crecimiento", icon: BadgePercent, component: loadOperations("AdminDiscounts"), defaultEnabled: true },
   { id: "marketing", label: "Marketing", description: "Campañas, audiencias, canales y calendario.", path: "/admin/marketing", group: "Crecimiento", icon: Megaphone, component: loadOperations("AdminMarketing"), defaultEnabled: true },
   { id: "metrics", label: "Métricas", description: "Ventas, conversión y productos.", path: "/admin/metricas", group: "Análisis", icon: BarChart3, component: load("AdminMetrics"), defaultEnabled: true },

@@ -1,26 +1,21 @@
 import { AlertCircle, ArrowRight, BookOpen, ChevronLeft, Leaf, MessageCircle } from "lucide-react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import NotaParagraph from "../components/NotaParagraph";
 import { useCart } from "../context/CartContext";
-import { getProducto, precioARS } from "../data/catalogo";
-import { getNota, NOTAS } from "../data/notas";
-
-function Paragraph({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return (
-    <p className="text-[15px] leading-[1.85] text-cls-ink/75 md:text-base">
-      {parts.map((part, index) => part.startsWith("**") && part.endsWith("**") ? <strong key={index} className="font-bold text-cls-primary-dark">{part.slice(2, -2)}</strong> : <span key={index}>{part}</span>)}
-    </p>
-  );
-}
+import { useCommerceData } from "../context/CommerceDataContext";
+import { precioARS } from "../data/catalogo";
+import { formatFechaNota, notasPublicadas } from "../data/notas";
 
 export default function NotaDetalle() {
   const { slug } = useParams();
-  const note = slug ? getNota(slug) : undefined;
+  const { posts, products } = useCommerceData();
   const { agregar } = useCart();
+  const published = notasPublicadas(posts);
+  const note = published.find((item) => item.slug === slug);
   if (!note) return <Navigate to="/notas" replace />;
 
-  const recommended = note.productoRecomendado ? getProducto(note.productoRecomendado) : undefined;
-  const others = NOTAS.filter((item) => item.slug !== note.slug).slice(0, 3);
+  const recommended = note.productoRecomendado ? products.find((product) => product.slug === note.productoRecomendado && product.visible_web !== false) : undefined;
+  const others = published.filter((item) => item.slug !== note.slug).slice(0, 3);
 
   return (
     <div className="site-container py-8 md:py-12">
@@ -29,14 +24,14 @@ export default function NotaDetalle() {
       <article className="mx-auto mt-3 max-w-4xl">
         <header className="overflow-hidden rounded-[28px] border border-cls-line bg-cls-sage p-6 md:p-10">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cls-primary text-cls-paper"><BookOpen className="h-6 w-6" /></span>
-          <p className="eyebrow mt-6">{note.fecha} · {note.minutos} min de lectura</p>
+          <p className="eyebrow mt-6">{formatFechaNota(note.fecha)} · {note.minutos} min de lectura</p>
           <h1 className="display-title mt-3 text-4xl leading-[0.98] md:text-6xl">{note.titulo}</h1>
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-cls-ink/70">{note.bajada}</p>
         </header>
 
         {note.causa && <aside className="mt-5 rounded-2xl border-l-4 border-cls-orange bg-cls-paper p-5 shadow-paper"><p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-cls-orange"><AlertCircle className="h-4 w-4" /> Causa más probable</p><p className="mt-2 text-sm leading-relaxed text-cls-ink/75">{note.causa}</p></aside>}
 
-        <div className="mx-auto mt-8 max-w-3xl space-y-6">{note.cuerpo.map((paragraph, index) => <Paragraph key={index} text={paragraph} />)}</div>
+        <div className="mx-auto mt-8 max-w-3xl space-y-6">{note.cuerpo.map((paragraph, index) => <NotaParagraph key={index} text={paragraph} />)}</div>
 
         {recommended && (
           <section className="mt-10 grid gap-5 overflow-hidden rounded-2xl border border-cls-line bg-cls-paper p-4 shadow-paper sm:grid-cols-[120px_minmax(0,1fr)_auto] sm:items-center sm:p-5">

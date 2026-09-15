@@ -21,8 +21,9 @@ Centralizar la operación del ecommerce en un tablero de marca que permita admin
 | Devoluciones | solicitud, aprobación, recepción, resolución y reintegro enlazado | pedidos/pagos |
 | Clientes / CRM | alta, etapa, etiquetas, notas, pedidos y gasto | checkout/manual |
 | Carritos abandonados | captura, contacto, descarte y recuperación | checkout/n8n |
-| Bot | bandeja única filtrable, etiquetas por canal, intervención humana y métricas para WhatsApp, Instagram, Telegram y Web | conversaciones/analítica |
+| Bot | bandeja única filtrable, etiquetas por canal, intervención humana, métricas y personalización del prompt para WhatsApp, Instagram, Telegram y Web | conversaciones/analítica/prompt |
 | Contenidos | FAQ, banner y página; borrador/publicado | contenido compartido |
+| Diario / Blog | alta, edición, vista previa, publicación y baja de notas del diario | notas compartidas |
 | Descuentos | códigos, condiciones, vigencia, límites y activación | promociones |
 | Marketing | campañas por canal, audiencia, presupuesto y ciclo de publicación | CRM/n8n |
 | Métricas | ingresos, ticket, conversión, recurrencia y ranking | ventas reales |
@@ -73,17 +74,29 @@ Centralizar la operación del ecommerce en un tablero de marca que permita admin
 
 ### Bot omnicanal
 
-1. El módulo contiene dos vistas internas: `Conversaciones` y `Métricas`.
+1. El módulo contiene tres vistas internas: `Conversaciones`, `Métricas` y `Personalización`.
 2. La bandeja reúne todas las charlas, permite buscar y filtrar por WhatsApp, Instagram, Telegram o Widget web y mantiene visible el canal, estado y tema de cada conversación.
 3. La ficha muestra el historial completo; intervenir cambia el estado a atención humana y emite `conversation.handoff` hacia n8n cuando el flujo está habilitado.
 4. Las métricas concentran volumen, resolución, tiempo promedio, contactos nuevos, derivaciones, ventas, actividad horaria, temas y rendimiento por canal.
 5. En modo local se utilizan conversaciones y métricas demostrativas; la fuente productiva será `conversations`, `messages` y eventos analíticos de Supabase.
+6. `Personalización` edita nombre, tono, saludo inicial y prompt del sistema (parte del prompt v0.1 de Emma). Guardar exige nombre de 2 a 40 caracteres, saludo y un prompt de 50 a 20.000 caracteres; descartar vuelve a la versión vigente.
+7. Cada guardado conserva la versión anterior (últimas 10) y deja un evento `prompt_updated` en auditoría. Cargar una versión la lleva al editor y se aplica recién al guardar.
+8. El widget de la tienda usa el nombre y el saludo guardados. El prompt y el tono se envían al modelo cuando se conecte el cerebro real; en producción viven en `bot_prompts` (una versión activa por bot, lectura solo para administradores).
+
+### Diario / Blog
+
+1. Las notas son de tipo `guia` o `problema`; las de problema exigen causa más probable. Todas admiten un producto recomendado con botón de compra.
+2. Alta y edición validan título, slug único con formato URL, bajada, fecha, minutos de lectura (1 a 120, o estimación automática) y cuerpo. El slug se genera desde el título mientras no se edite a mano; cambiar el slug de una nota publicada muestra una advertencia.
+3. El cuerpo se escribe en párrafos separados por una línea en blanco y admite `**negrita**`; la vista previa muestra la nota antes de guardarla.
+4. El editor avisa si el texto usa palabras vetadas por el cliente (flor/flores, hash, edibles, vapers), sin bloquear el guardado.
+5. Solo las notas publicadas aparecen en `/notas`, en su URL de detalle y en el home; un borrador redirige al listado. Altas, cambios y bajas quedan en auditoría.
+6. La fuente productiva es `blog_posts`: lectura anónima limitada a notas publicadas y escritura solo para administradores.
 
 ## 5. Fuente de datos y transición
 
 En validación, `CommerceDataContext` ofrece una fuente única versionada en `localStorage`; los cambios del panel impactan inmediatamente en tienda, stock, carrito y checkout. Al conectar Supabase, el contrato se conserva y el almacenamiento local pasa a ser caché/fallback, no una base de producción.
 
-La migración `commerce_core` modela productos, categorías, clientes, órdenes, ítems, pagos, inventario, conversaciones, mensajes, contenido, configuración, módulos, analítica y auditoría.
+La migración `commerce_core` modela productos, categorías, clientes, órdenes, ítems, pagos, inventario, conversaciones, mensajes, contenido, configuración, módulos, analítica y auditoría. La migración `blog_posts_bot_prompts` suma las notas del diario y las versiones del prompt del bot.
 
 ## 6. Seguridad y trazabilidad productiva
 

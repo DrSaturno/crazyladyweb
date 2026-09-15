@@ -7,20 +7,25 @@ import {
   Clock3,
   DollarSign,
   Globe2,
+  History,
   MessageCircle,
+  RotateCcw,
+  Save,
   Search,
   Send,
   Share2,
+  Sparkles,
   TrendingDown,
   TrendingUp,
   UserRoundPlus,
-  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { useCommerceData } from "../../context/CommerceDataContext";
-import { AdminPage, EmptyState, StatusBadge, fieldClass } from "../components/AdminUI";
+import { BOT_LIMITS, BOT_TONES, DEFAULT_BOT_PROMPT } from "../../data/botDefaults";
+import type { BotPromptSnapshot } from "../../types/commerce";
+import { AdminPage, EmptyState, Panel, StatusBadge, fieldClass, labelClass } from "../components/AdminUI";
 
-type BotTab = "conversations" | "metrics";
+type BotTab = "conversations" | "metrics" | "personalization";
 type Channel = "whatsapp" | "instagram" | "telegram" | "web";
 type ConversationStatus = "active" | "human" | "resolved";
 type Sender = "customer" | "bot" | "agent";
@@ -142,30 +147,136 @@ const TOPICS = [
 ];
 
 export function AdminBot() {
+  const { bot } = useCommerceData();
   const [tab, setTab] = useState<BotTab>("conversations");
   return (
     <AdminPage
-      eyebrow="Emma · centro omnicanal"
+      eyebrow={`${bot.nombre} · centro omnicanal`}
       title="Bot y conversaciones"
-      description="Revisá las consultas de todos los canales en una bandeja única y seguí el rendimiento del bot sin salir del módulo."
+      description="Revisá las consultas de todos los canales en una bandeja única, seguí el rendimiento y personalizá cómo responde el bot sin salir del módulo."
       action={<BotStatus />}
     >
-      <div className="mb-4 inline-flex w-full rounded-2xl border border-cls-line bg-cls-paper p-1 shadow-paper sm:w-auto" role="tablist" aria-label="Vistas del módulo del bot">
+      <div className="mb-4 grid w-full grid-cols-3 rounded-2xl border border-cls-line bg-cls-paper p-1 shadow-paper sm:inline-flex sm:w-auto" role="tablist" aria-label="Vistas del módulo del bot">
         <TabButton id="bot-tab-conversations" controls="bot-panel-conversations" active={tab === "conversations"} icon={MessageCircle} onClick={() => setTab("conversations")}>Conversaciones</TabButton>
         <TabButton id="bot-tab-metrics" controls="bot-panel-metrics" active={tab === "metrics"} icon={BarChart3} onClick={() => setTab("metrics")}>Métricas</TabButton>
+        <TabButton id="bot-tab-personalization" controls="bot-panel-personalization" active={tab === "personalization"} icon={Sparkles} onClick={() => setTab("personalization")}>Personalización</TabButton>
       </div>
       <div id="bot-panel-conversations" role="tabpanel" aria-labelledby="bot-tab-conversations" hidden={tab !== "conversations"}><ConversationsView /></div>
       <div id="bot-panel-metrics" role="tabpanel" aria-labelledby="bot-tab-metrics" hidden={tab !== "metrics"}><BotMetrics /></div>
+      <div id="bot-panel-personalization" role="tabpanel" aria-labelledby="bot-tab-personalization" hidden={tab !== "personalization"}><PersonalizationView /></div>
     </AdminPage>
   );
 }
 
 function BotStatus() {
-  return <div className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cls-primary/25 bg-cls-sage/45 px-4 text-xs font-black text-cls-primary-dark"><span className="h-2 w-2 rounded-full bg-cls-primary" />Emma activa · 4 canales</div>;
+  const { bot } = useCommerceData();
+  return <div className="inline-flex min-h-11 items-center gap-2 rounded-full border border-cls-primary/25 bg-cls-sage/45 px-4 text-xs font-black text-cls-primary-dark"><span className="h-2 w-2 rounded-full bg-cls-primary" />{bot.nombre} en línea · 4 canales</div>;
 }
 
 function TabButton({ id, controls, active, icon: Icon, onClick, children }: { id: string; controls: string; active: boolean; icon: LucideIcon; onClick: () => void; children: ReactNode }) {
-  return <button id={id} type="button" role="tab" aria-controls={controls} aria-selected={active} tabIndex={active ? 0 : -1} onClick={onClick} className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-xs font-black transition sm:flex-none ${active ? "bg-cls-primary text-cls-paper shadow-sm" : "text-cls-ink/55 hover:bg-cls-cream hover:text-cls-primary-dark"}`}><Icon className="h-4 w-4" />{children}</button>;
+  return <button id={id} type="button" role="tab" aria-controls={controls} aria-selected={active} tabIndex={active ? 0 : -1} onClick={onClick} className={`flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-2 text-[11px] font-black transition sm:px-4 sm:text-xs ${active ? "bg-cls-primary text-cls-paper shadow-sm" : "text-cls-ink/55 hover:bg-cls-cream hover:text-cls-primary-dark"}`}><Icon className="hidden h-4 w-4 shrink-0 sm:block" /><span className="truncate">{children}</span></button>;
+}
+
+const dateTime = (value: string) => new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+const snapshotOf = ({ nombre, tono, saludo, prompt }: BotPromptSnapshot): BotPromptSnapshot => ({ nombre, tono, saludo, prompt });
+const sameSnapshot = (a: BotPromptSnapshot, b: BotPromptSnapshot) => a.nombre === b.nombre && a.tono === b.tono && a.saludo === b.saludo && a.prompt === b.prompt;
+
+function validateBot(draft: BotPromptSnapshot) {
+  const errors: string[] = [];
+  if (draft.nombre.trim().length < 2) errors.push("El nombre del bot necesita al menos 2 caracteres.");
+  if (!draft.saludo.trim()) errors.push("Escribí el saludo inicial.");
+  if (draft.prompt.trim().length < BOT_LIMITS.promptMin) errors.push(`El prompt necesita al menos ${BOT_LIMITS.promptMin} caracteres.`);
+  return errors;
+}
+
+function PersonalizationView() {
+  const { bot, products, content, saveBotSettings } = useCommerceData();
+  const [draft, setDraft] = useState<BotPromptSnapshot>(() => snapshotOf(bot));
+  const [saved, setSaved] = useState(false);
+  const dirty = !sameSnapshot(draft, snapshotOf(bot));
+  const errors = validateBot(draft);
+  const words = draft.prompt.trim() ? draft.prompt.trim().split(/\s+/).length : 0;
+  const liveProducts = products.filter((product) => product.visible_web !== false && product.stock > 0).length;
+  const publishedFaqs = content.filter((entry) => entry.tipo === "faq" && entry.publicado).length;
+
+  function update(patch: Partial<BotPromptSnapshot>) {
+    setDraft((current) => ({ ...current, ...patch }));
+    setSaved(false);
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!dirty || errors.length) return;
+    const next = { ...draft, nombre: draft.nombre.trim(), saludo: draft.saludo.trim(), prompt: draft.prompt.trim() };
+    saveBotSettings(next);
+    setDraft(next);
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2200);
+  }
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <form onSubmit={submit} className="min-w-0 space-y-4">
+        <Panel title="Identidad y tono" description="Cómo se presenta el bot en WhatsApp, Instagram, Telegram y el widget de la tienda.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="sm:col-span-2"><span className={labelClass}>Nombre del bot</span><input required maxLength={BOT_LIMITS.nombre} className={fieldClass} value={draft.nombre} onChange={(event) => update({ nombre: event.target.value })} placeholder="Ej. Emma" /></label>
+            <fieldset className="sm:col-span-2">
+              <legend className={labelClass}>Tono del asistente</legend>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {BOT_TONES.map((tone) => <label key={tone.value} className={`flex min-h-16 cursor-pointer flex-col justify-center rounded-xl border px-3 py-2 transition focus-within:ring-2 focus-within:ring-cls-honey/60 ${draft.tono === tone.value ? "border-cls-primary bg-cls-sage/45" : "border-cls-line bg-cls-cream hover:border-cls-primary"}`}><input type="radio" name="bot-tone" value={tone.value} checked={draft.tono === tone.value} onChange={() => update({ tono: tone.value })} className="sr-only" /><span className="text-xs font-black text-cls-primary-dark">{tone.label}</span><span className="mt-0.5 text-[10px] text-cls-ink/55">{tone.description}</span></label>)}
+              </div>
+            </fieldset>
+            <label className="sm:col-span-2"><span className={labelClass}>Saludo inicial</span><textarea required rows={3} maxLength={BOT_LIMITS.saludo} className={`${fieldClass} resize-y py-3`} value={draft.saludo} onChange={(event) => update({ saludo: event.target.value })} /><span className="mt-1 block text-right text-[10px] text-cls-ink/45">{draft.saludo.length} / {BOT_LIMITS.saludo}</span></label>
+          </div>
+        </Panel>
+
+        <Panel title="Prompt del sistema" description={`Instrucciones que guían todas las respuestas de ${draft.nombre.trim() || "el bot"}: reglas, límites, derivaciones y forma de hablar.`}>
+          <label className="block"><span className="sr-only">Prompt del sistema</span><textarea required spellCheck={false} maxLength={BOT_LIMITS.promptMax} className={`${fieldClass} min-h-[420px] resize-y py-3 font-mono text-xs leading-relaxed sm:text-xs`} value={draft.prompt} onChange={(event) => update({ prompt: event.target.value })} /></label>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[10px] text-cls-ink/50">{draft.prompt.length.toLocaleString("es-AR")} / {BOT_LIMITS.promptMax.toLocaleString("es-AR")} caracteres · {words.toLocaleString("es-AR")} palabras</p>
+            <button type="button" className="btn-outline min-h-10 px-3 py-1 text-xs" disabled={draft.prompt === DEFAULT_BOT_PROMPT.prompt} onClick={() => update({ prompt: DEFAULT_BOT_PROMPT.prompt })}><RotateCcw className="h-3.5 w-3.5" /> Restaurar prompt original</button>
+          </div>
+          <p className="mt-3 rounded-xl bg-cls-cream p-3 text-[11px] leading-relaxed text-cls-ink/60">En la tienda ya se usan el nombre y el saludo. El prompt completo y el tono se envían al modelo cuando se conecte el cerebro real del bot.</p>
+        </Panel>
+
+        <div className="sticky bottom-3 z-10 flex flex-col gap-3 rounded-2xl border border-cls-line bg-cls-paper/95 p-3 shadow-lift backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 text-xs" aria-live="polite">
+            {errors.length && dirty ? <ul className="space-y-0.5 font-bold text-red-800">{errors.map((error) => <li key={error}>{error}</li>)}</ul> : saved ? <span className="flex items-center gap-2 font-black text-cls-primary"><CheckCircle2 className="h-4 w-4" />Cambios guardados</span> : dirty ? <span className="font-black text-cls-orange">Tenés cambios sin guardar</span> : <span className="text-cls-ink/55">Última actualización: {dateTime(bot.updatedAt)}</span>}
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <button type="button" className="btn-outline min-w-0 flex-1 whitespace-nowrap px-4 sm:flex-none" disabled={!dirty} onClick={() => { setDraft(snapshotOf(bot)); setSaved(false); }}>Descartar</button>
+            <button type="submit" className="btn-secondary min-w-0 flex-1 whitespace-nowrap px-4 sm:flex-none" disabled={!dirty || errors.length > 0}><Save className="h-4 w-4 shrink-0" />Guardar<span className="hidden sm:inline"> cambios</span></button>
+          </div>
+        </div>
+      </form>
+
+      <aside className="min-w-0 space-y-4">
+        <Panel title="Vista previa" description="Así arranca cada conversación nueva.">
+          <div className="overflow-hidden rounded-xl border border-cls-line bg-cls-cream">
+            <div className="flex items-center gap-2 bg-cls-primary px-3 py-2 text-cls-paper"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark"><Bot className="h-4 w-4" /></span><strong className="truncate text-xs">{draft.nombre.trim() || "Sin nombre"}</strong></div>
+            <div className="p-3"><p className="max-w-[92%] whitespace-pre-wrap break-words rounded-2xl rounded-bl-sm border border-cls-line bg-cls-paper px-3 py-2 text-xs leading-relaxed">{draft.saludo.trim() || "Escribí un saludo inicial."}</p></div>
+          </div>
+        </Panel>
+
+        <Panel title="Contexto que se suma solo" description="No hace falta escribirlo en el prompt: se inyecta en cada conversación.">
+          <ul className="space-y-2 text-xs">
+            <ContextItem label="Catálogo en vivo" detail={`${liveProducts} productos publicados con stock`} />
+            <ContextItem label="Preguntas frecuentes" detail={`${publishedFaqs} publicadas en Contenidos`} />
+            <ContextItem label="Canal de origen" detail="WhatsApp, Instagram, Telegram o widget web" />
+            <ContextItem label="Producto en pantalla" detail="Solo en el widget web" />
+          </ul>
+        </Panel>
+
+        <Panel title="Historial de versiones" description={`Se guardan las últimas ${BOT_LIMITS.historial}. Cargar una versión la trae al editor; se aplica al guardar.`}>
+          {bot.history.length ? <ol className="space-y-2">{bot.history.map((version) => <li key={version.id} className="flex items-center gap-3 rounded-xl border border-cls-line bg-cls-cream p-3"><History className="h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0 flex-1"><strong className="block truncate text-xs text-cls-primary-dark">{dateTime(version.savedAt)}</strong><span className="block truncate text-[10px] text-cls-ink/50">{version.nombre} · {version.prompt.length.toLocaleString("es-AR")} caracteres</span></span><button type="button" className="btn-outline min-h-10 shrink-0 px-3 py-1 text-xs" disabled={sameSnapshot(draft, version)} onClick={() => { setDraft(snapshotOf(version)); setSaved(false); }}>Cargar</button></li>)}</ol> : <EmptyState title="Sin versiones anteriores" text="Cada vez que guardes, la versión previa queda acá para poder volver." />}
+        </Panel>
+      </aside>
+    </div>
+  );
+}
+
+function ContextItem({ label, detail }: { label: string; detail: string }) {
+  return <li className="flex items-start gap-2 rounded-xl bg-cls-cream p-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0"><strong className="block text-cls-primary-dark">{label}</strong><span className="text-[11px] text-cls-ink/55">{detail}</span></span></li>;
 }
 
 function ConversationsView() {
@@ -261,9 +372,10 @@ function ConversationDetail({ conversation, reply, setReply, onReply, onInterven
 }
 
 function MessageBubble({ message }: { message: ConversationMessage }) {
+  const { bot } = useCommerceData();
   const customer = message.sender === "customer";
   const agent = message.sender === "agent";
-  return <div className={`flex ${customer ? "justify-start" : "justify-end"}`}><div className={`max-w-[88%] rounded-2xl px-4 py-3 text-xs leading-relaxed sm:max-w-[72%] ${customer ? "rounded-bl-sm bg-cls-orange text-white" : agent ? "rounded-br-sm bg-cls-honey text-cls-primary-dark" : "rounded-br-sm bg-cls-primary-dark text-cls-paper"}`}><span className="mb-1 block text-[9px] font-black uppercase tracking-wider opacity-65">{customer ? "Cliente" : agent ? "Equipo" : "Emma"}</span><p className="whitespace-pre-wrap break-words">{message.text}</p><time className="mt-1 block text-right text-[9px] opacity-55">{message.time}</time></div></div>;
+  return <div className={`flex ${customer ? "justify-start" : "justify-end"}`}><div className={`max-w-[88%] rounded-2xl px-4 py-3 text-xs leading-relaxed sm:max-w-[72%] ${customer ? "rounded-bl-sm bg-cls-orange text-white" : agent ? "rounded-br-sm bg-cls-honey text-cls-primary-dark" : "rounded-br-sm bg-cls-primary-dark text-cls-paper"}`}><span className="mb-1 block text-[9px] font-black uppercase tracking-wider opacity-65">{customer ? "Cliente" : agent ? "Equipo" : bot.nombre}</span><p className="whitespace-pre-wrap break-words">{message.text}</p><time className="mt-1 block text-right text-[9px] opacity-55">{message.time}</time></div></div>;
 }
 
 function ChannelBadge({ channel, compact = false }: { channel: Channel; compact?: boolean }) {

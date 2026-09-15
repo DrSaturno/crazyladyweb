@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, Sprout, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { useCommerceData } from "../context/CommerceDataContext";
 import { getProducto } from "../data/catalogo";
-import { CLS_INFO, getBotResponse } from "../data/clsKnowledge";
+import { getBotResponse } from "../data/clsKnowledge";
 
 interface Message {
   from: "bot" | "user";
@@ -15,8 +16,9 @@ function now() {
 }
 
 export default function BotWidget() {
+  const { bot } = useCommerceData();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([{ from: "bot", text: CLS_INFO.saludo, time: now() }]);
+  const [messages, setMessages] = useState<Message[]>([{ from: "bot", text: bot.saludo, time: now() }]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -55,16 +57,16 @@ export default function BotWidget() {
   return (
     <>
       {!open && (
-        <button onClick={openWidget} className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-cls-paper bg-cls-orange text-cls-primary-dark shadow-lift transition hover:-translate-y-1 hover:bg-cls-honey" aria-label="Hablar con Emma">
+        <button onClick={openWidget} className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border-2 border-cls-paper bg-cls-orange text-cls-primary-dark shadow-lift transition hover:-translate-y-1 hover:bg-cls-honey" aria-label={`Hablar con ${bot.nombre}`}>
           <MessageCircle className="h-6 w-6" aria-hidden="true" />
         </button>
       )}
 
       {open && (
-        <section aria-label="Asistente virtual Emma" className="fixed bottom-3 right-3 z-50 flex h-[560px] max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[22px] border border-cls-line bg-cls-cream shadow-2xl sm:bottom-5 sm:right-5 sm:w-[390px]">
+        <section aria-label={`Asistente virtual ${bot.nombre}`}className="fixed bottom-3 right-3 z-50 flex h-[560px] max-h-[calc(100vh-1.5rem)] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[22px] border border-cls-line bg-cls-cream shadow-2xl sm:bottom-5 sm:right-5 sm:w-[390px]">
           <header className="flex shrink-0 items-center gap-3 bg-cls-primary px-4 py-3 text-cls-paper">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cls-honey text-cls-primary-dark"><Sprout className="h-5 w-5" /></span>
-            <div className="min-w-0 flex-1"><h2 className="font-sans text-sm font-bold text-cls-paper">Emma</h2><p className="text-[11px] text-cls-paper/70">Asistente de cultivo · demo informativa</p></div>
+            <div className="min-w-0 flex-1"><h2 className="font-sans text-sm font-bold text-cls-paper">{bot.nombre}</h2><p className="text-[11px] text-cls-paper/70">Asistente de cultivo · demo informativa</p></div>
             <button onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-cls-paper/80 hover:bg-white/10 hover:text-cls-paper" aria-label="Cerrar asistente"><X className="h-5 w-5" /></button>
           </header>
 
@@ -77,7 +79,7 @@ export default function BotWidget() {
                 </div>
               </div>
             ))}
-            {typing && <div className="flex justify-start"><div className="flex gap-1 rounded-2xl rounded-bl-sm border border-cls-line bg-cls-paper px-4 py-3" aria-label="Emma está escribiendo">{[0, 1, 2].map((item) => <span key={item} className="h-1.5 w-1.5 animate-bounce rounded-full bg-cls-primary/55" style={{ animationDelay: `${item * 120}ms` }} />)}</div></div>}
+            {typing && <div className="flex justify-start"><div className="flex gap-1 rounded-2xl rounded-bl-sm border border-cls-line bg-cls-paper px-4 py-3" aria-label={`${bot.nombre} está escribiendo`}>{[0, 1, 2].map((item) => <span key={item} className="h-1.5 w-1.5 animate-bounce rounded-full bg-cls-primary/55" style={{ animationDelay: `${item * 120}ms` }} />)}</div></div>}
             <div ref={bottomRef} />
           </div>
 

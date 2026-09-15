@@ -4,7 +4,7 @@ Frontend de ecommerce para Crazy Lady Seeds, construido con React, TypeScript, V
 
 ## Estado
 
-La interfaz pública y el centro de operaciones modular están implementados. La tienda incluye catálogo, búsqueda, producto, carrito, checkout con códigos promocionales, creación de pedidos, confirmación, favoritos, contenidos y políticas. El panel `/admin` incluye catálogo, ventas, preparación y envíos, devoluciones, inventario, CRM, carritos abandonados, descuentos, marketing, métricas, finanzas, automatizaciones n8n, equipo y permisos, contenidos, auditoría, configuración y un centro omnicanal de Emma con bandeja unificada y métricas propias.
+La interfaz pública y el centro de operaciones modular están implementados. La tienda incluye catálogo, búsqueda, producto, carrito, checkout con códigos promocionales, creación de pedidos, confirmación, favoritos, contenidos y políticas. El panel `/admin` incluye catálogo, ventas, preparación y envíos, devoluciones, inventario, CRM, carritos abandonados, descuentos, marketing, métricas, finanzas, automatizaciones n8n, equipo y permisos, contenidos, diario/blog administrable, auditoría, configuración y un centro omnicanal de Emma con bandeja unificada, métricas propias y personalización versionada del prompt.
 
 Sin credenciales de Supabase, la aplicación funciona en modo local persistente para validación. Los flujos de n8n aceptan una URL HTTPS por evento, permiten pruebas controladas y conservan las últimas ejecuciones; los secretos deben vivir en n8n o en servidor. La migración productiva con RLS está preparada; pagos, envíos, autenticación administrativa y canales reales del bot quedan condicionados a proveedores y credenciales aprobados.
 
