@@ -172,6 +172,57 @@
     @apply h-[52px] w-[80px] sm:h-[62px] sm:w-[96px] md:h-[78px] md:w-[122px];
   }
 
+  .banco-logo-stage {
+    @apply relative flex h-14 w-full max-w-[132px] items-center justify-center overflow-hidden transition-transform duration-200 group-hover:scale-[1.035];
+  }
+
+  .banco-logo {
+    @apply block max-h-full max-w-full select-none object-contain;
+  }
+
+  .banco-logo[data-logo="crazy-lady-seeds"],
+  .banco-logo[data-logo="silver-river-seeds"],
+  .banco-logo[data-logo="cannabis-conicet"],
+  .banco-logo[data-logo="buddha-seeds"] {
+    @apply absolute left-1/2 top-1/2 max-h-none max-w-none;
+  }
+
+  .banco-logo[data-logo="crazy-lady-seeds"] {
+    width: 108px;
+    transform: translate(-52%, -46%);
+  }
+
+  .banco-logo[data-logo="silver-river-seeds"] {
+    width: 124px;
+    transform: translate(-50%, -49%);
+  }
+
+  .banco-logo[data-logo="cannabis-conicet"] {
+    width: 136px;
+    transform: translate(-50%, -47%);
+  }
+
+  .banco-logo[data-logo="chita-seeds"] {
+    @apply h-[54px] w-[54px];
+  }
+
+  .banco-logo[data-logo="sensi-seeds"] {
+    @apply h-[54px] w-[58px];
+  }
+
+  .banco-logo[data-logo="buddha-seeds"] {
+    width: 138px;
+    transform: translate(-50%, -52%);
+  }
+
+  .banco-logo[data-logo="royal-queen-seeds"] {
+    @apply max-h-[50px] w-[126px];
+  }
+
+  .banco-logo[data-logo="delicious-seeds"] {
+    @apply max-h-[44px] w-[128px];
+  }
+
   .admin-table {
     @apply w-full border-collapse text-left text-xs;
   }
