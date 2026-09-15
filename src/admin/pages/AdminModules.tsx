@@ -32,7 +32,7 @@ import { BulkActionsBar, EmptyState, AdminPage, Pagination, Panel, StatCard, Sta
 import { ProductImportPanel } from "./AdminProductImport";
 import { downloadProductsWorkbook } from "../productImport";
 import { FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, useCommerceData } from "../../context/CommerceDataContext";
-import { precioARS, type Producto } from "../../data/catalogo";
+import { LOW_STOCK_THRESHOLD, precioARS, type Producto } from "../../data/catalogo";
 import type { AdminCategory, AdminCustomer, ContentEntry, CrmStage } from "../../types/commerce";
 
 const PAGE_SIZE = 20;
@@ -45,7 +45,7 @@ export function AdminDashboard() {
   const { products, orders, customers, inventory, abandonedCarts, returns, automations, automationRuns } = useCommerceData();
   const revenue = orders.filter((order) => order.paymentStatus === "pagado").reduce((sum, order) => sum + order.total, 0);
   const openOrders = orders.filter((order) => !["completado", "cancelado"].includes(order.status));
-  const lowStock = products.filter((product) => product.visible_web !== false && product.stock <= 3);
+  const lowStock = products.filter((product) => product.visible_web !== false && product.stock <= LOW_STOCK_THRESHOLD);
   const stockUnits = products.reduce((sum, product) => sum + product.stock, 0);
   return <AdminPage eyebrow="Operación" title="Resumen del negocio" description="Una vista real de ventas, catálogo, clientes y alertas. Los indicadores parten de los datos cargados en esta instalación.">
     <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -94,7 +94,7 @@ export function AdminProducts() {
   const filtered = products.filter((product) => {
     const matchesQuery = `${product.nombre} ${product.banco} ${product.id}`.toLowerCase().includes(query.toLowerCase());
     const matchesCategory = categoryFilter === "todas" || product.categoria === categoryFilter;
-    const matchesStock = stockFilter === "todos" || (stockFilter === "con_stock" && product.stock > 3) || (stockFilter === "stock_bajo" && product.stock > 0 && product.stock <= 3) || (stockFilter === "sin_stock" && product.stock === 0);
+    const matchesStock = stockFilter === "todos" || (stockFilter === "con_stock" && product.stock > LOW_STOCK_THRESHOLD) || (stockFilter === "stock_bajo" && product.stock > 0 && product.stock <= LOW_STOCK_THRESHOLD) || (stockFilter === "sin_stock" && product.stock === 0);
     const matchesPublish = publishFilter === "todos" || (publishFilter === "publicado" && product.visible_web !== false) || (publishFilter === "oculto" && product.visible_web === false);
     return matchesQuery && matchesCategory && matchesStock && matchesPublish;
   });
@@ -164,7 +164,7 @@ export function AdminProducts() {
         <label className="relative block"><span className="sr-only">Buscar</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/40" /><input className={`${fieldClass} pl-9`} value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Buscar por producto, banco o SKU" /></label>
         <div className="flex flex-wrap gap-2">
           <label className="min-w-[160px] flex-1"><span className="sr-only">Categoría</span><select className={fieldClass} value={categoryFilter} onChange={(event) => { setCategoryFilter(event.target.value); setPage(1); }}><option value="todas">Todas las categorías</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.nombre}</option>)}</select></label>
-          <label className="min-w-[150px] flex-1"><span className="sr-only">Stock</span><select className={fieldClass} value={stockFilter} onChange={(event) => { setStockFilter(event.target.value as StockFilter); setPage(1); }}><option value="todos">Cualquier stock</option><option value="con_stock">Con stock</option><option value="stock_bajo">Stock bajo (≤3)</option><option value="sin_stock">Sin stock</option></select></label>
+          <label className="min-w-[150px] flex-1"><span className="sr-only">Stock</span><select className={fieldClass} value={stockFilter} onChange={(event) => { setStockFilter(event.target.value as StockFilter); setPage(1); }}><option value="todos">Cualquier stock</option><option value="con_stock">Con stock</option><option value="stock_bajo">{`Stock bajo (≤${LOW_STOCK_THRESHOLD})`}</option><option value="sin_stock">Sin stock</option></select></label>
           <label className="min-w-[170px] flex-1"><span className="sr-only">Publicación</span><select className={fieldClass} value={publishFilter} onChange={(event) => { setPublishFilter(event.target.value as PublishFilter); setPage(1); }}><option value="todos">Publicado y oculto</option><option value="publicado">Solo publicados</option><option value="oculto">Solo ocultos</option></select></label>
           <button type="button" className="btn-outline min-h-11 shrink-0" onClick={resetFilters}>Limpiar filtros</button>
         </div>
@@ -180,7 +180,7 @@ export function AdminProducts() {
 
       {paged.length ? <>
       <button type="button" className="mb-2 text-xs font-bold text-cls-primary hover:text-cls-orange sm:hidden" onClick={toggleSelectPage}>{paged.every((product) => selected.has(product.id)) ? "Deseleccionar todos los de esta página" : "Seleccionar todos los de esta página"}</button>
-      <table className="admin-table"><thead><tr><th className="w-10"><input type="checkbox" aria-label="Seleccionar todos los de esta página" checked={paged.length > 0 && paged.every((product) => selected.has(product.id))} onChange={toggleSelectPage} /></th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Web</th><th>Acciones</th></tr></thead><tbody>{paged.map((product) => <tr key={product.id}><td data-label="Sel."><input type="checkbox" aria-label={`Seleccionar ${product.nombre}`} checked={selected.has(product.id)} onChange={() => toggleSelected(product.id)} /></td><td data-label="Producto"><strong>{product.nombre}</strong><small>{product.banco} · {product.presentacion}</small></td><td data-label="Categoría">{categoryName(product.categoria)}</td><td data-label="Precio">{precioARS(product.precio)}</td><td data-label="Stock"><StatusBadge tone={product.stock === 0 ? "bad" : product.stock <= 3 ? "warn" : "good"}>{product.stock} u.</StatusBadge></td><td data-label="Web">{product.visible_web !== false ? <Eye className="h-4 w-4 text-cls-primary" aria-label="Publicado" /> : <EyeOff className="h-4 w-4 text-cls-ink/35" aria-label="Oculto" />}</td><td data-label="Acciones"><div className="flex justify-end gap-1 sm:justify-start"><IconButton label="Editar" onClick={() => setEditing({ ...product })} icon={Pencil} /><IconButton label="Eliminar" onClick={() => { if (confirm(`¿Eliminar ${product.nombre}?`)) removeProduct(product.id); }} icon={Trash2} danger /></div></td></tr>)}</tbody></table>
+      <table className="admin-table"><thead><tr><th className="w-10"><input type="checkbox" aria-label="Seleccionar todos los de esta página" checked={paged.length > 0 && paged.every((product) => selected.has(product.id))} onChange={toggleSelectPage} /></th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Web</th><th>Acciones</th></tr></thead><tbody>{paged.map((product) => <tr key={product.id}><td data-label="Sel."><input type="checkbox" aria-label={`Seleccionar ${product.nombre}`} checked={selected.has(product.id)} onChange={() => toggleSelected(product.id)} /></td><td data-label="Producto"><strong>{product.nombre}</strong><small>{product.banco} · {product.presentacion}</small></td><td data-label="Categoría">{categoryName(product.categoria)}</td><td data-label="Precio">{precioARS(product.precio)}</td><td data-label="Stock"><StatusBadge tone={product.stock === 0 ? "bad" : product.stock <= LOW_STOCK_THRESHOLD ? "warn" : "good"}>{product.stock} u.</StatusBadge></td><td data-label="Web">{product.visible_web !== false ? <Eye className="h-4 w-4 text-cls-primary" aria-label="Publicado" /> : <EyeOff className="h-4 w-4 text-cls-ink/35" aria-label="Oculto" />}</td><td data-label="Acciones"><div className="flex justify-end gap-1 sm:justify-start"><IconButton label="Editar" onClick={() => setEditing({ ...product })} icon={Pencil} /><IconButton label="Eliminar" onClick={() => { if (confirm(`¿Eliminar ${product.nombre}?`)) removeProduct(product.id); }} icon={Trash2} danger /></div></td></tr>)}</tbody></table>
       </> : <EmptyState title="No hay productos con esos filtros" text={products.length ? "Probá otra búsqueda o limpiá los filtros." : "Todavía no hay productos cargados."} />}
       <Pagination page={currentPage} pageCount={pageCount} onChange={setPage} />
     </Panel>

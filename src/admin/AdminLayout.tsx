@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Bell, ChevronsLeft, ChevronsRight, Menu, Search, Store, X } from "lucide-react";
+import { AlertTriangle, Bell, ChevronsLeft, ChevronsRight, Menu, Search, Store, X } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useCommerceData } from "../context/CommerceDataContext";
+import { LOW_STOCK_THRESHOLD } from "../data/catalogo";
 import { commerceDataMode } from "../lib/supabase";
 import { useAdminModules } from "./AdminModuleContext";
 import { ADMIN_MODULES } from "./moduleRegistry";
@@ -18,12 +19,12 @@ export default function AdminLayout() {
   const [query, setQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { isEnabled } = useAdminModules();
-  const { products, orders, abandonedCarts, automationRuns } = useCommerceData();
+  const { products, orders, abandonedCarts, automationRuns, persistenceError } = useCommerceData();
   const visible = ADMIN_MODULES.filter((module) => isEnabled(module.id));
   const groups = Array.from(new Set(visible.map((module) => module.group)));
   const searchResults = query.trim() ? visible.filter((module) => `${module.label} ${module.description} ${module.group}`.toLowerCase().includes(query.toLowerCase())).slice(0, 7) : [];
   const notifications = [
-    { label: "Productos con stock bajo", count: products.filter((product) => product.visible_web !== false && product.stock <= 3).length, to: "/admin/inventario" },
+    { label: "Productos con stock bajo", count: products.filter((product) => product.visible_web !== false && product.stock <= LOW_STOCK_THRESHOLD).length, to: "/admin/inventario" },
     { label: "Pagos pendientes", count: orders.filter((order) => order.paymentStatus === "pendiente").length, to: "/admin/ventas" },
     { label: "Carritos por recuperar", count: abandonedCarts.filter((cart) => ["open", "contacted"].includes(cart.status)).length, to: "/admin/carritos-abandonados" },
     { label: "Automatizaciones fallidas", count: automationRuns.filter((run) => run.status === "failed").length, to: "/admin/automatizaciones" },
@@ -74,6 +75,7 @@ export default function AdminLayout() {
           <div className="relative"><button type="button" onClick={() => setNotificationsOpen((current) => !current)} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary" aria-label="Notificaciones" aria-expanded={notificationsOpen}><Bell className="h-4 w-4" />{notifications.length > 0 && <span className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-cls-orange px-1 text-[9px] font-black text-white">{notifications.length}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-12 z-50 w-[min(320px,calc(100vw-24px))] rounded-2xl border border-cls-line bg-cls-paper p-3 shadow-xl"><div className="mb-2 flex items-center justify-between"><strong className="text-xs">Atención requerida</strong><button type="button" onClick={() => setNotificationsOpen(false)} className="text-[10px] font-black text-cls-primary">Cerrar</button></div>{notifications.length ? <div className="space-y-1">{notifications.map((item) => <Link key={item.to} to={item.to} onClick={() => setNotificationsOpen(false)} className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-cls-cream px-3 text-xs"><span>{item.label}</span><strong className="rounded-full bg-cls-honey px-2 py-1">{item.count}</strong></Link>)}</div> : <p className="rounded-xl bg-cls-sage/40 p-3 text-xs">No hay alertas activas.</p>}</div>}</div>
           <Link to="/" className="hidden min-h-11 items-center gap-2 rounded-full bg-cls-primary px-4 text-xs font-bold text-cls-paper sm:flex"><Store className="h-4 w-4" /> Tienda</Link>
         </header>
+        {persistenceError && <div role="alert" className="flex items-center gap-2 border-b border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-800 sm:px-5"><AlertTriangle className="h-4 w-4 shrink-0" /> No pudimos guardar el último cambio en este navegador (almacenamiento lleno o modo privado). Seguís viendo el cambio ahora, pero se puede perder si recargás la página.</div>}
         <main className="min-w-0 p-3 sm:p-5 lg:p-7"><Outlet /></main>
       </div>
     </div>

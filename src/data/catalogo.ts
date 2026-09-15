@@ -14,6 +14,9 @@
 
 import { PRODUCT_STUDIO_IMAGES } from "./productPhotography";
 
+/** Umbral único de "stock bajo" — usado por el dashboard, notificaciones, filtros e inventario. */
+export const LOW_STOCK_THRESHOLD = 3;
+
 export type Origen = "nacional" | "importada";
 export type TipoSemilla = "feminizada" | "automatica" | "cbd";
 export type Genetica = "indica" | "sativa" | "hibrida";

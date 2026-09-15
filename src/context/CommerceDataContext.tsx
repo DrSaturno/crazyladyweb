@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { BOT_LIMITS, DEFAULT_BOT_PROMPT } from "../data/botDefaults";
-import { PRODUCTOS, type Producto } from "../data/catalogo";
+import { LOW_STOCK_THRESHOLD, PRODUCTOS, type Producto } from "../data/catalogo";
 import { NOTAS_INICIALES, type Nota } from "../data/notas";
 import { resolveCatalogImage } from "../data/productPhotography";
 import type {
@@ -143,6 +143,8 @@ export interface DiscountQuote {
 type OrderPatch = Partial<Pick<AdminOrder, "status" | "paymentStatus" | "fulfillmentStatus" | "carrier" | "trackingCode" | "internalNotes">>;
 
 interface CommerceValue extends CommerceState {
+  /** true si el último intento de guardar en localStorage falló (cuota llena, modo privado, etc.) — el cambio quedó solo en memoria. */
+  persistenceError: boolean;
   saveProduct: (product: Producto) => void;
   removeProduct: (id: string) => boolean;
   bulkUpdateProducts: (ids: string[], patch: Partial<Pick<Producto, "visible_web" | "destacado" | "categoria">>) => void;
@@ -195,11 +197,18 @@ function parseDiscountDate(value: string, endOfDay: boolean) {
 
 export function CommerceDataProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<CommerceState>(readState);
+  const [persistenceError, setPersistenceError] = useState(false);
 
   function commit(recipe: (current: CommerceState) => CommerceState) {
     setState((current) => {
       const next = recipe(current);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* El estado en memoria sigue operativo si el navegador bloquea almacenamiento. */ }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        if (persistenceError) setPersistenceError(false);
+      } catch {
+        // El estado en memoria sigue operativo, pero el cambio se perdería en el próximo refresh: avisamos en vez de fallar en silencio.
+        setPersistenceError(true);
+      }
       return next;
     });
   }
@@ -307,7 +316,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
       return { ...current, orders: [order, ...current.orders], customers: existing ? current.customers.map((item) => item.id === existing.id ? customer : item) : [customer, ...current.customers], products: current.products.map((product) => { const line = input.items.find((item) => item.producto.id === product.id); return line ? { ...product, stock: Math.max(0, product.stock - line.cantidad) } : product; }), discounts: promotion?.ruleId ? current.discounts.map((discount) => discount.id === promotion.ruleId ? { ...discount, usageCount: discount.usageCount + 1, updatedAt: createdAt } : discount) : current.discounts, inventory: [...movements, ...current.inventory], audit: [audit("order", order.id, "created", `${order.publicNumber}${promotion ? ` · cupón ${promotion.code}` : ""}`), ...current.audit] };
     });
     void dispatchEvent("order.created", { orderId: order.id, publicNumber: order.publicNumber, total: order.total });
-    input.items.forEach(({ producto, cantidad }) => { if (producto.stock - cantidad <= 3) void dispatchEvent("inventory.low", { productId: producto.id, productName: producto.nombre, stock: Math.max(0, producto.stock - cantidad) }); });
+    input.items.forEach(({ producto, cantidad }) => { if (producto.stock - cantidad <= LOW_STOCK_THRESHOLD) void dispatchEvent("inventory.low", { productId: producto.id, productName: producto.nombre, stock: Math.max(0, producto.stock - cantidad) }); });
     return order;
   }
 
@@ -333,7 +342,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
     const nextStock = Math.max(0, product.stock + delta);
     const movement = { id: uid("movement"), productId, productName: product.nombre, delta, reason, createdAt: now() };
     commit((current) => ({ ...current, products: current.products.map((item) => item.id === productId ? { ...item, stock: nextStock } : item), inventory: [movement, ...current.inventory], audit: [audit("inventory", productId, "adjusted", `${delta > 0 ? "+" : ""}${delta}: ${reason}`), ...current.audit] }));
-    if (nextStock <= 3) void dispatchEvent("inventory.low", { productId, productName: product.nombre, stock: nextStock });
+    if (nextStock <= LOW_STOCK_THRESHOLD) void dispatchEvent("inventory.low", { productId, productName: product.nombre, stock: nextStock });
   }
 
   function saveContent(entry: ContentEntry) { commit((current) => ({ ...current, content: current.content.some((item) => item.id === entry.id) ? current.content.map((item) => item.id === entry.id ? { ...entry, updatedAt: now() } : item) : [entry, ...current.content], audit: [audit("content", entry.id, "saved", entry.titulo), ...current.audit] })); }
@@ -405,9 +414,9 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
     });
   }
 
-  function resetDemoData() { const fresh = initialState(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); localStorage.removeItem(LEGACY_STORAGE_KEY); } catch { /* Conservamos el reinicio en memoria. */ } setState(fresh); }
+  function resetDemoData() { const fresh = initialState(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); localStorage.removeItem(LEGACY_STORAGE_KEY); setPersistenceError(false); } catch { setPersistenceError(true); } setState(fresh); }
 
-  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, bulkUpdateProducts, bulkDeleteProducts, importProducts, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, triggerAutomation: dispatchEvent, saveStaff, updateStaffStatus, saveBotSettings, savePost, removePost, resetDemoData }), [state]);
+  const value = useMemo<CommerceValue>(() => ({ ...state, persistenceError, saveProduct, removeProduct, bulkUpdateProducts, bulkDeleteProducts, importProducts, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, triggerAutomation: dispatchEvent, saveStaff, updateStaffStatus, saveBotSettings, savePost, removePost, resetDemoData }), [state, persistenceError]);
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }
 

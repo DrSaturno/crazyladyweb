@@ -39,9 +39,12 @@ Auditoría técnica completa (arquitectura, UX/UI, seguridad, base de datos) del
   - **Finanzas**: búsqueda por pedido/cliente + filtro por estado + paginación (12 por página) en la tabla de movimientos, que antes renderizaba todos los pedidos sin límite.
   - **Automatizaciones**: el historial de ejecuciones estaba fijo en las últimas 20 aunque el store conserva hasta 100 — sin forma de ver el resto. Ahora tiene paginación real sobre las 100.
 
+## 🟠 Alto — implementado en esta sesión (continuación 3)
+
+- **Umbral de "stock bajo" unificado**: era `≤3` hardcodeado en 3 archivos distintos (`AdminLayout.tsx`, `AdminModules.tsx` ×3, `CommerceDataContext.tsx` ×2). Ahora es una sola constante `LOW_STOCK_THRESHOLD` en `src/data/catalogo.ts`, usada en los 6 lugares — incluido el texto del filtro ("Stock bajo (≤3)"), que antes podía quedar desactualizado si alguien cambiaba el número en un solo lugar.
+- **Feedback visible cuando falla la persistencia local**: antes, si `localStorage.setItem` fallaba (cuota llena, modo privado), el cambio quedaba solo en memoria sin ningún aviso — se perdía en el próximo refresh en silencio. Ahora `CommerceDataContext` expone `persistenceError` y `AdminLayout` muestra un banner rojo persistente en todas las páginas del admin mientras el último guardado no se pudo escribir, y desaparece solo en el próximo guardado exitoso. Probado simulando un `QuotaExceededError` real en `localStorage.setItem`.
+
 ## 🟡 Medio
-- Catches silenciosos en `CommerceDataContext.tsx:199,377` — si `localStorage.setItem` falla (cuota llena, modo incógnito), el cambio queda solo en memoria sin avisar al usuario; se pierde en el próximo refresh sin ningún mensaje.
-- Umbral de "stock bajo" (`≤3`) hardcodeado en 3 lugares distintos sin constante compartida (`AdminLayout.tsx`, `AdminModules.tsx`, `CommerceDataContext.tsx`).
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 
 ## 🟢 Confirmado sin código muerto
@@ -54,6 +57,8 @@ Auditoría técnica completa (arquitectura, UX/UI, seguridad, base de datos) del
 1. ~~Sidebar (logo, colapso, layout)~~ — hecho 15/09/2026.
 2. ~~Productos: filtros, bulk actions, importación/exportación Excel/CSV con preview y reporte de errores~~ — hecho 15/09/2026.
 3. ~~Paginación + búsqueda + validaciones reales en los módulos de `AdminOperations.tsx` (Preparación y envíos, Descuentos, Marketing, Carritos abandonados, Devoluciones, Finanzas, Automatizaciones)~~ — hecho 15/09/2026.
-4. Constante compartida para umbral de stock bajo — siguiente paso.
-5. Feedback visible cuando falla la persistencia local (toast, no silencioso).
+4. ~~Constante compartida para umbral de stock bajo~~ — hecho 15/09/2026.
+5. ~~Feedback visible cuando falla la persistencia local~~ — hecho 15/09/2026.
 6. Autenticación real — solo cuando exista el Supabase del cliente (bloqueado por decisión de negocio, ver sección crítica).
+7. Doble enlace a la tienda pública con distinto label — cosmético, baja prioridad.
+8. Desalineación de esquema `products.images` (array) vs `Producto.imagen` (string) — a resolver cuando se conecte Supabase.
