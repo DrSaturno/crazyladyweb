@@ -100,6 +100,15 @@ El propio `docs/WEB_SPEC.md` (§9) exige contraste mínimo 4.5:1 para texto norm
 - Dos usos dentro de `@apply` en `index.css` no podían llevar el valor arbitrario resultante (Tailwind solo resuelve opacidades múltiplo de 5 dentro de `@apply`, a diferencia de las clases en JSX que sí aceptan cualquier valor); se ajustaron a 85/95, los múltiplos de 5 más cercanos que siguen pasando 4.5:1.
 - Verificado con una medición real en el DOM renderizado (no solo el cálculo teórico): de 39 elementos de texto revisados en el Resumen del admin, solo 1 seguía fallando — la insignia numérica de notificaciones (blanco sobre `bg-cls-orange`, 2.98:1; ningún color oscuro de la marca llegaba a 4.5:1 contra ese naranja específico). **Corregido (15/09/2026)**: se cambió el fondo de esa insignia puntual a `bg-cls-primary-dark` (ya existente en la paleta, no es un color nuevo) → 12.98:1. Verificado con la misma medición real en el DOM.
 
+## 🟢 Verificado sin cambios — continuación 10: stock y devoluciones
+
+La misión original nombraba explícitamente "stock negativo" y "devoluciones" como clases de bug a cazar. Verificado con pruebas reales en el navegador (no solo lectura de código), sin encontrar problemas:
+
+- **Inventario nunca queda negativo**: un ajuste de `-999999` sobre un producto con stock real lo clampea a `0`, nunca por debajo. `adjustStock` usa `Math.max(0, product.stock + delta)`.
+- **Devoluciones solo marcan el pedido como reintegrado cuando corresponde**: una devolución con resolución "Cambio" resuelta **no** toca el estado de pago del pedido (queda "pagado"); una devolución con resolución "Reintegro" resuelta sí lo marca "reintegrado" y deja el evento correspondiente en la línea de tiempo del pedido. Probados ambos casos de punta a punta.
+
+No se extrajo esta lógica a funciones puras con tests (a diferencia del motor de descuentos y de pedidos): son casos triviales (un `Math.max`, un booleano de dos condiciones) sin la complejidad de negocio que justificó la extracción anterior — se dejó la verificación en pruebas de navegador, que ya demostraron que el comportamiento es correcto.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 
