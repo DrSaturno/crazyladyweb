@@ -1,16 +1,35 @@
 import { useState } from "react";
-import { AlertTriangle, Bell, ChevronsLeft, ChevronsRight, Menu, Search, Store, X } from "lucide-react";
+import { AlertTriangle, Bell, ChevronsLeft, ChevronsRight, ClipboardList, Menu, PackageSearch, Search, Store, UsersRound, X, type LucideIcon } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useCommerceData } from "../context/CommerceDataContext";
-import { LOW_STOCK_THRESHOLD } from "../data/catalogo";
+import { LOW_STOCK_THRESHOLD, precioARS } from "../data/catalogo";
 import { commerceDataMode } from "../lib/supabase";
 import { useAdminModules } from "./AdminModuleContext";
 import { ADMIN_MODULES } from "./moduleRegistry";
+
+interface SearchHit {
+  key: string;
+  icon: LucideIcon;
+  label: string;
+  description: string;
+  to: string;
+  group: string;
+}
 
 const SIDEBAR_COLLAPSED_KEY = "cls_admin_sidebar_collapsed";
 
 function readCollapsed() {
   try { return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1"; } catch { return false; }
+}
+
+function groupHits(hits: SearchHit[]) {
+  const groups: { group: string; hits: SearchHit[] }[] = [];
+  for (const hit of hits) {
+    const bucket = groups.find((item) => item.group === hit.group);
+    if (bucket) bucket.hits.push(hit);
+    else groups.push({ group: hit.group, hits: [hit] });
+  }
+  return groups;
 }
 
 export default function AdminLayout() {
@@ -19,10 +38,19 @@ export default function AdminLayout() {
   const [query, setQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { isEnabled } = useAdminModules();
-  const { products, orders, abandonedCarts, automationRuns, persistenceError } = useCommerceData();
+  const { products, orders, customers, abandonedCarts, automationRuns, persistenceError } = useCommerceData();
   const visible = ADMIN_MODULES.filter((module) => isEnabled(module.id));
   const groups = Array.from(new Set(visible.map((module) => module.group)));
-  const searchResults = query.trim() ? visible.filter((module) => `${module.label} ${module.description} ${module.group}`.toLowerCase().includes(query.toLowerCase())).slice(0, 7) : [];
+
+  const trimmedQuery = query.trim();
+  const searchResults: SearchHit[] = trimmedQuery ? (() => {
+    const needle = trimmedQuery.toLowerCase();
+    const moduleHits: SearchHit[] = visible.filter((module) => `${module.label} ${module.description} ${module.group}`.toLowerCase().includes(needle)).slice(0, 4).map((module) => ({ key: `module-${module.id}`, icon: module.icon, label: module.label, description: module.description, to: module.path, group: "Módulos" }));
+    const productHits: SearchHit[] = products.filter((product) => `${product.nombre} ${product.banco} ${product.id}`.toLowerCase().includes(needle)).slice(0, 4).map((product) => ({ key: `product-${product.id}`, icon: PackageSearch, label: product.nombre, description: `${product.banco} · ${product.stock} u. · ${precioARS(product.precio)}`, to: `/admin/productos?q=${encodeURIComponent(product.nombre)}`, group: "Productos" }));
+    const orderHits: SearchHit[] = orders.filter((order) => `${order.publicNumber} ${order.customer.nombre} ${order.customer.email}`.toLowerCase().includes(needle)).slice(0, 4).map((order) => ({ key: `order-${order.id}`, icon: ClipboardList, label: order.publicNumber, description: `${order.customer.nombre} · ${precioARS(order.total)}`, to: `/admin/ventas?q=${encodeURIComponent(order.publicNumber)}`, group: "Ventas" }));
+    const customerHits: SearchHit[] = customers.filter((customer) => `${customer.nombre} ${customer.email} ${customer.telefono}`.toLowerCase().includes(needle)).slice(0, 4).map((customer) => ({ key: `customer-${customer.id}`, icon: UsersRound, label: customer.nombre, description: customer.email, to: `/admin/clientes?q=${encodeURIComponent(customer.nombre)}`, group: "Clientes" }));
+    return [...moduleHits, ...productHits, ...orderHits, ...customerHits];
+  })() : [];
   const notifications = [
     { label: "Productos con stock bajo", count: products.filter((product) => product.visible_web !== false && product.stock <= LOW_STOCK_THRESHOLD).length, to: "/admin/inventario" },
     { label: "Pagos pendientes", count: orders.filter((order) => order.paymentStatus === "pendiente").length, to: "/admin/ventas" },
@@ -70,7 +98,7 @@ export default function AdminLayout() {
       <div className="min-w-0">
         <header className="sticky top-0 z-30 flex min-h-16 items-center gap-2 border-b border-cls-line bg-cls-paper/95 px-3 backdrop-blur sm:px-5">
           <button type="button" onClick={() => setOpen(true)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary lg:hidden" aria-label="Abrir menú"><Menu className="h-5 w-5" /></button>
-          <div className="relative hidden max-w-md flex-1 sm:block"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/40" /><input className="h-10 w-full rounded-full border border-cls-line bg-cls-cream pl-9 pr-3 text-xs outline-none focus:border-cls-primary" placeholder="Buscar un módulo o tarea…" aria-label="Buscar en el panel" value={query} onChange={(event) => setQuery(event.target.value)} />{query && <div className="absolute inset-x-0 top-12 z-50 overflow-hidden rounded-2xl border border-cls-line bg-cls-paper p-2 shadow-xl">{searchResults.length ? searchResults.map(({ id, label, description, path, icon: Icon }) => <Link key={id} to={path} onClick={() => setQuery("")} className="flex min-h-12 items-center gap-3 rounded-xl px-3 hover:bg-cls-cream"><Icon className="h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0"><strong className="block text-xs">{label}</strong><small className="block truncate text-[10px] text-cls-ink/50">{description}</small></span></Link>) : <p className="px-3 py-4 text-xs text-cls-ink/55">No encontramos un módulo con ese nombre.</p>}</div>}</div>
+          <div className="relative hidden max-w-md flex-1 sm:block"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cls-ink/40" /><input className="h-10 w-full rounded-full border border-cls-line bg-cls-cream pl-9 pr-3 text-xs outline-none focus:border-cls-primary" placeholder="Buscar productos, pedidos, clientes o módulos…" aria-label="Buscar en el panel" value={query} onChange={(event) => setQuery(event.target.value)} />{query && <div className="absolute inset-x-0 top-12 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-cls-line bg-cls-paper p-2 shadow-xl">{searchResults.length ? groupHits(searchResults).map(({ group, hits }) => <div key={group} className="mb-1 last:mb-0"><p className="px-3 pb-1 pt-2 text-[9px] font-black uppercase tracking-[0.14em] text-cls-ink/40">{group}</p>{hits.map((hit) => <Link key={hit.key} to={hit.to} onClick={() => setQuery("")} className="flex min-h-12 items-center gap-3 rounded-xl px-3 hover:bg-cls-cream"><hit.icon className="h-4 w-4 shrink-0 text-cls-primary" /><span className="min-w-0"><strong className="block truncate text-xs">{hit.label}</strong><small className="block truncate text-[10px] text-cls-ink/50">{hit.description}</small></span></Link>)}</div>) : <p className="px-3 py-4 text-xs text-cls-ink/55">Sin resultados para "{trimmedQuery}".</p>}</div>}</div>
           <span className={`ml-auto inline-flex min-h-8 items-center gap-1.5 rounded-full px-3 text-[10px] font-black ${commerceDataMode === "supabase" ? "bg-cls-sage text-cls-primary-dark" : "bg-cls-honey/50 text-cls-primary-dark"}`}><span className="h-2 w-2 rounded-full bg-current" />{commerceDataMode === "supabase" ? "Supabase conectado" : "Modo local"}</span>
           <div className="relative"><button type="button" onClick={() => setNotificationsOpen((current) => !current)} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cls-line text-cls-primary" aria-label="Notificaciones" aria-expanded={notificationsOpen}><Bell className="h-4 w-4" />{notifications.length > 0 && <span className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-cls-orange px-1 text-[9px] font-black text-white">{notifications.length}</span>}</button>{notificationsOpen && <div className="absolute right-0 top-12 z-50 w-[min(320px,calc(100vw-24px))] rounded-2xl border border-cls-line bg-cls-paper p-3 shadow-xl"><div className="mb-2 flex items-center justify-between"><strong className="text-xs">Atención requerida</strong><button type="button" onClick={() => setNotificationsOpen(false)} className="text-[10px] font-black text-cls-primary">Cerrar</button></div>{notifications.length ? <div className="space-y-1">{notifications.map((item) => <Link key={item.to} to={item.to} onClick={() => setNotificationsOpen(false)} className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-cls-cream px-3 text-xs"><span>{item.label}</span><strong className="rounded-full bg-cls-honey px-2 py-1">{item.count}</strong></Link>)}</div> : <p className="rounded-xl bg-cls-sage/40 p-3 text-xs">No hay alertas activas.</p>}</div>}</div>
           <Link to="/" className="hidden min-h-11 items-center gap-2 rounded-full bg-cls-primary px-4 text-xs font-bold text-cls-paper sm:flex"><Store className="h-4 w-4" /> Tienda</Link>

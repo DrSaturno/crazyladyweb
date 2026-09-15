@@ -58,6 +58,17 @@ Auditoría de consistencia sobre `cards, tablas, inputs, selects, checkboxes, ba
 - **Checkboxes y radios sin color de marca**: nunca se definió `accent-color`, así que cada checkbox/radio (selección masiva de Productos, checkboxes de publicar/destacar, permisos de Equipo, checkout público) renderizaba con el azul por defecto del navegador/SO, chocando contra la paleta verde/crema/miel de la marca. Se agregó `accent-color: var(--cls-forest)` en `html` (hereda a todos los controles, admin y tienda pública) en [src/index.css](../src/index.css). Verificado en `/admin/productos` (checkbox verde al tildar) y en el checkout público (sin romper nada).
 - **Botón de cerrar con el carácter "×" en vez del ícono `X`**: en el banner de resultado de `AdminAutomations`, único lugar de todo el admin que no usaba el ícono `X` de lucide para "cerrar" (la barra lateral y el panel de notificaciones sí lo usan). Corregido para usar el mismo ícono.
 
+## 🟠 Alto — implementado en esta sesión (continuación 6: búsqueda global)
+
+El buscador del header (`AdminLayout.tsx`) solo buscaba dentro de los 20 módulos del menú — no encontraba nada de negocio real, contradiciendo el propio texto del placeholder ("Buscar un módulo o tarea…"). Ahora busca de verdad:
+
+- **Productos** (nombre, banco, id) → resultado con banco, stock y precio, lleva a `/admin/productos?q=…` con el filtro de texto ya aplicado.
+- **Ventas** (número de pedido, cliente, email) → resultado con cliente y total, lleva a `/admin/ventas?q=…`.
+- **Clientes** (nombre, email, teléfono) → resultado con email, lleva a `/admin/clientes?q=…`. Se sumó un campo de búsqueda + filtro por etapa a `AdminCustomers`, que **no tenía ninguno** (no existía forma de encontrar un cliente puntual en el CRM salvo scrolleando).
+- Los módulos siguen apareciendo, agrupados junto con las categorías nuevas.
+
+`AdminProducts`, `AdminOrders` y `AdminCustomers` ahora leen `?q=` de la URL al montar para prellenar su buscador local, así el resultado de la búsqueda global aterriza con el filtro ya aplicado en vez de en una lista completa. Probado de punta a punta: buscar "amnesia" devuelve 4 productos reales; buscar un cliente de prueba lo encuentra en Ventas y en Clientes y navega a cada uno filtrado a 1 resultado; una búsqueda sin coincidencias muestra "Sin resultados" en vez de quedar en blanco.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 
