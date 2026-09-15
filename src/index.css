@@ -172,55 +172,109 @@
     @apply h-[52px] w-[80px] sm:h-[62px] sm:w-[96px] md:h-[78px] md:w-[122px];
   }
 
-  .banco-logo-stage {
-    @apply relative flex h-14 w-full max-w-[132px] items-center justify-center overflow-hidden transition-transform duration-200 group-hover:scale-[1.035];
+  .bancos-carousel {
+    @apply relative overflow-hidden rounded-2xl border border-cls-line bg-cls-paper shadow-[0_3px_12px_rgba(23,53,44,0.04)];
   }
 
-  .banco-logo {
+  .bancos-carousel__viewport {
+    @apply overflow-hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 2.5%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 2.5%, #000 94%, transparent);
+  }
+
+  .bancos-carousel__track {
+    display: flex;
+    width: max-content;
+    animation: bancos-carousel-loop 42s linear infinite;
+    will-change: transform;
+  }
+
+  .bancos-carousel__track.is-paused,
+  .bancos-carousel__viewport:hover .bancos-carousel__track,
+  .bancos-carousel__viewport:focus-within .bancos-carousel__track {
+    animation-play-state: paused;
+  }
+
+  .bancos-carousel__group {
+    @apply flex shrink-0 items-stretch;
+  }
+
+  .bancos-carousel__item {
+    @apply relative flex min-h-[84px] w-[146px] shrink-0 items-center justify-center border-r border-cls-line px-3 py-2 text-cls-primary-dark transition-colors duration-200 hover:bg-white focus-visible:z-10 sm:w-[158px] lg:w-[166px];
+  }
+
+  .bancos-carousel__stage {
+    @apply relative flex h-14 w-full max-w-[132px] items-center justify-center overflow-hidden transition-transform duration-200;
+  }
+
+  .bancos-carousel__item:hover .bancos-carousel__stage,
+  .bancos-carousel__item:focus-visible .bancos-carousel__stage {
+    transform: scale(1.04);
+  }
+
+  .bancos-carousel__image {
     @apply block max-h-full max-w-full select-none object-contain;
   }
 
-  .banco-logo[data-logo="crazy-lady-seeds"],
-  .banco-logo[data-logo="silver-river-seeds"],
-  .banco-logo[data-logo="cannabis-conicet"],
-  .banco-logo[data-logo="buddha-seeds"] {
+  .bancos-carousel__image[data-treatment="mezclar"] {
+    mix-blend-mode: multiply;
+  }
+
+  .bancos-carousel__image[data-logo="1439"] {
+    @apply h-[58px] w-[58px];
+  }
+
+  .bancos-carousel__image[data-logo="royal-queen-seeds"] {
+    @apply max-h-[50px] w-[126px];
+  }
+
+  .bancos-carousel__image[data-logo="delicious-seeds"] {
+    @apply max-h-[44px] w-[128px];
+  }
+
+  .bancos-carousel__image[data-logo="inase"] {
+    @apply max-h-[38px] w-[132px];
+  }
+
+  .bancos-carousel__image[data-logo="chita-seeds"] {
+    @apply h-[54px] w-[54px];
+  }
+
+  .bancos-carousel__image[data-logo="la-maga"] {
+    @apply h-[56px] w-[62px];
+  }
+
+  .bancos-carousel__image[data-logo="sensi-seeds"] {
+    @apply h-[54px] w-[58px];
+  }
+
+  .bancos-carousel__image[data-logo="sweed-labs"] {
+    @apply h-[58px] w-[58px];
+  }
+
+  .bancos-carousel__image[data-logo="silver-river-seeds"],
+  .bancos-carousel__image[data-logo="cannabis-conicet"],
+  .bancos-carousel__image[data-logo="buddha-seeds"] {
     @apply absolute left-1/2 top-1/2 max-h-none max-w-none;
   }
 
-  .banco-logo[data-logo="crazy-lady-seeds"] {
-    width: 108px;
-    transform: translate(-52%, -46%);
-  }
-
-  .banco-logo[data-logo="silver-river-seeds"] {
+  .bancos-carousel__image[data-logo="silver-river-seeds"] {
     width: 124px;
     transform: translate(-50%, -49%);
   }
 
-  .banco-logo[data-logo="cannabis-conicet"] {
+  .bancos-carousel__image[data-logo="cannabis-conicet"] {
     width: 136px;
     transform: translate(-50%, -47%);
   }
 
-  .banco-logo[data-logo="chita-seeds"] {
-    @apply h-[54px] w-[54px];
-  }
-
-  .banco-logo[data-logo="sensi-seeds"] {
-    @apply h-[54px] w-[58px];
-  }
-
-  .banco-logo[data-logo="buddha-seeds"] {
+  .bancos-carousel__image[data-logo="buddha-seeds"] {
     width: 138px;
     transform: translate(-50%, -52%);
   }
 
-  .banco-logo[data-logo="royal-queen-seeds"] {
-    @apply max-h-[50px] w-[126px];
-  }
-
-  .banco-logo[data-logo="delicious-seeds"] {
-    @apply max-h-[44px] w-[128px];
+  .bancos-carousel__control {
+    @apply absolute right-2 top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-cls-primary/20 bg-cls-paper/95 text-cls-primary shadow-sm backdrop-blur transition hover:border-cls-primary hover:bg-white;
   }
 
   .admin-table {
@@ -246,6 +300,16 @@
 
   .admin-table td small {
     @apply mt-0.5 text-[10px] text-cls-ink/85;
+  }
+}
+
+@keyframes bancos-carousel-loop {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
   }
 }
 
@@ -340,5 +404,21 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .bancos-carousel__viewport {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .bancos-carousel__track {
+    animation: none !important;
+    will-change: auto;
+  }
+
+  .bancos-carousel__group--copy,
+  .bancos-carousel__control {
+    display: none;
   }
 }

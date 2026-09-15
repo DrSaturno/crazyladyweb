@@ -1,55 +1,95 @@
-import { ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { Pause, Play } from "lucide-react";
 import { Link } from "react-router-dom";
-import { BANCOS } from "../data/catalogo";
 
-const BANCO_LOGOS: Record<string, { src: string; width: number; height: number }> = {
-  "crazy-lady-seeds": { src: "/logo-cls-01.png", width: 4500, height: 5625 },
-  "silver-river-seeds": { src: "/brand-logos/silver-river-seeds.png", width: 640, height: 640 },
-  "cannabis-conicet": { src: "/brand-logos/cannabis-conicet.webp", width: 793, height: 815 },
-  "chita-seeds": { src: "/brand-logos/chita-seeds.png", width: 376, height: 375 },
-  "sensi-seeds": { src: "/brand-logos/sensi-seeds.jpg", width: 3500, height: 3254 },
-  "buddha-seeds": { src: "/brand-logos/buddha-seeds.webp", width: 800, height: 800 },
-  "royal-queen-seeds": { src: "/brand-logos/royal-queen-seeds.png", width: 567, height: 228 },
-  "delicious-seeds": { src: "/brand-logos/delicious-seeds.png", width: 520, height: 174 },
-};
+interface LogoBanco {
+  slug: string;
+  nombre: string;
+  src: string;
+  width: number;
+  height: number;
+  tratamiento?: "mezclar" | "oscuro";
+  href?: string;
+}
 
-export default function BancosRow() {
+const LOGOS_BANCOS: LogoBanco[] = [
+  { slug: "1439", nombre: "1439 Criadores", src: "/brand-logos/1439.png", width: 1080, height: 1080 },
+  { slug: "royal-queen-seeds", nombre: "Royal Queen Seeds", src: "/brand-logos/royal-queen-seeds.png", width: 567, height: 228, href: "/semillas?banco=royal-queen-seeds" },
+  { slug: "delicious-seeds", nombre: "Delicious Seeds", src: "/brand-logos/delicious-seeds.png", width: 520, height: 174, href: "/semillas?banco=delicious-seeds" },
+  { slug: "inase", nombre: "Instituto Nacional de Semillas", src: "/brand-logos/inase.png", width: 661, height: 175, href: "/semillas?origen=nacional" },
+  { slug: "chita-seeds", nombre: "Chita Seeds", src: "/brand-logos/chita-seeds.png", width: 376, height: 375, href: "/semillas?banco=chita-seeds" },
+  { slug: "la-maga", nombre: "La Maga", src: "/brand-logos/la-maga.png", width: 219, height: 200, tratamiento: "mezclar" },
+  { slug: "buddha-seeds", nombre: "Buddha Seeds", src: "/brand-logos/buddha-seeds.webp", width: 800, height: 800, tratamiento: "mezclar", href: "/semillas?banco=buddha-seeds" },
+  { slug: "sensi-seeds", nombre: "Sensi Seeds", src: "/brand-logos/sensi-seeds.jpg", width: 3500, height: 3254, tratamiento: "mezclar", href: "/semillas?banco=sensi-seeds" },
+  { slug: "silver-river-seeds", nombre: "Silver River Seeds", src: "/brand-logos/silver-river-seeds.png", width: 640, height: 640, tratamiento: "oscuro", href: "/semillas?banco=silver-river-seeds" },
+  { slug: "cannabis-conicet", nombre: "Cannabis Conicet", src: "/brand-logos/cannabis-conicet.webp", width: 793, height: 815, tratamiento: "mezclar", href: "/semillas?banco=cannabis-conicet" },
+  { slug: "sweed-labs", nombre: "Sweed Labs", src: "/brand-logos/sweed-labs.webp", width: 225, height: 225, tratamiento: "mezclar" },
+];
+
+function LogoImagen({ logo }: { logo: LogoBanco }) {
   return (
-    <section aria-labelledby="bancos-title" className="site-container mt-3">
-      <h2 id="bancos-title" className="sr-only">Bancos obtentores</h2>
-      <div className="grid grid-cols-2 items-stretch overflow-hidden rounded-2xl border border-cls-line bg-cls-paper shadow-[0_3px_12px_rgba(23,53,44,0.04)] sm:grid-cols-4 md:grid-cols-8">
-        {BANCOS.map((banco) => {
-          const logo = BANCO_LOGOS[banco.slug];
+    <span className="bancos-carousel__stage" aria-hidden="true">
+      <img
+        src={logo.src}
+        alt=""
+        width={logo.width}
+        height={logo.height}
+        loading="lazy"
+        decoding="async"
+        draggable="false"
+        className="bancos-carousel__image"
+        data-logo={logo.slug}
+        data-treatment={logo.tratamiento}
+      />
+    </span>
+  );
+}
 
+function LogosGrupo({ copia = false }: { copia?: boolean }) {
+  return (
+    <div className={`bancos-carousel__group${copia ? " bancos-carousel__group--copy" : ""}`} aria-hidden={copia || undefined}>
+      {LOGOS_BANCOS.map((logo) => {
+        if (logo.href && !copia) {
           return (
-            <Link
-              key={banco.slug}
-              to={`/semillas?banco=${banco.slug}`}
-              className="group relative flex min-h-20 min-w-0 items-center justify-center overflow-hidden border-b border-r border-cls-line bg-cls-paper px-3 py-2.5 text-center transition-colors duration-200 hover:bg-white focus-visible:z-10 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 sm:even:border-r sm:[&:nth-child(4n)]:border-r-0 sm:[&:nth-last-child(-n+4)]:border-b-0 md:border-b-0 md:[&:nth-child(4n)]:border-r md:last:border-r-0"
-              title={`Ver genéticas de ${banco.nombre}`}
-              aria-label={`Ver genéticas de ${banco.nombre}${banco.inase ? ", banco registrado en INASE" : ""}`}
-            >
-              <span className="banco-logo-stage" aria-hidden="true">
-                <img
-                  src={logo.src}
-                  alt=""
-                  width={logo.width}
-                  height={logo.height}
-                  loading="lazy"
-                  decoding="async"
-                  draggable="false"
-                  className="banco-logo"
-                  data-logo={banco.slug}
-                />
-              </span>
-              {banco.inase && (
-                <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-cls-primary/20 bg-cls-paper text-cls-primary shadow-sm" title="Banco registrado en INASE">
-                  <ShieldCheck className="h-3 w-3" aria-hidden="true" />
-                </span>
-              )}
+            <Link key={logo.slug} to={logo.href} className="bancos-carousel__item" aria-label={`Ver genéticas de ${logo.nombre}`} title={logo.nombre}>
+              <LogoImagen logo={logo} />
             </Link>
           );
-        })}
+        }
+
+        return (
+          <span key={logo.slug} className="bancos-carousel__item" role={copia ? undefined : "img"} aria-label={copia ? undefined : logo.nombre} title={copia ? undefined : logo.nombre}>
+            <LogoImagen logo={logo} />
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function BancosRow() {
+  const [pausado, setPausado] = useState(false);
+
+  return (
+    <section aria-labelledby="bancos-title" className="site-container mt-3">
+      <h2 id="bancos-title" className="sr-only">Bancos obtentores e instituciones</h2>
+      <div className="bancos-carousel">
+        <div className="bancos-carousel__viewport">
+          <div className={`bancos-carousel__track${pausado ? " is-paused" : ""}`}>
+            <LogosGrupo />
+            <LogosGrupo copia />
+          </div>
+        </div>
+        <button
+          type="button"
+          className="bancos-carousel__control"
+          onClick={() => setPausado((actual) => !actual)}
+          aria-label={pausado ? "Reanudar carrusel de logos" : "Pausar carrusel de logos"}
+          aria-pressed={pausado}
+          title={pausado ? "Reanudar" : "Pausar"}
+        >
+          {pausado ? <Play className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true" /> : <Pause className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true" />}
+        </button>
       </div>
     </section>
   );
