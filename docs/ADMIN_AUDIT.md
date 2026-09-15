@@ -151,6 +151,15 @@ Trabajo paralelo de otra sesión (Codex/GPT) hizo un pase de auditoría visual r
 - `public/images/home/` pasó de ~31 MB a 5.7 MB. Verificado con `tsc`, `npm run build`, `npm test` (31/31) y una comprobación en el DOM real (`img.complete` + `naturalWidth`/`naturalHeight` de las 16 imágenes) de que cada una carga con la resolución correcta tras el cambio de extensión `.png` → `.jpg`.
 - Nota: `comunidad-horizontal.jpg`/`comunidad-vertical.jpg` (~256 KB) existen en el mismo directorio y tampoco están referenciados en ningún componente — a diferencia de los 4 PNG borrados, estos ya existían antes de esta sesión y no se tocaron; quedan para una limpieza de assets separada si se confirma que son huérfanos.
 
+## 🟢 Implementado — continuación 13: logo del sidebar admin + entregables de n8n
+
+- **Logo del sidebar admin** ([AdminLayout.tsx](../src/admin/AdminLayout.tsx)): a pedido del cliente, se veía chico. Subido de 44px → 56px → 64px en dos iteraciones, y se sacó el marco cuadrado `bg-cls-paper` que lo encuadraba (quitar el marco lo hace leer más grande sin agrandar el contenedor). Verificado en los tres estados del sidebar (drawer móvil, escritorio expandido, escritorio colapsado).
+- **Entregables para conectar n8n**: el código del lado del panel ya estaba completo desde antes (7 eventos reales disparados desde la lógica de negocio, `fetch` real con contrato `cls.automation.v1`, historial de ejecuciones) — lo que faltaba era la parte que vive en n8n. Se agregó:
+  - [`docs/N8N_INTEGRATION.md`](N8N_INTEGRATION.md): contrato completo del payload por evento, mapeo evento → archivo que lo dispara, y los pasos de puesta en marcha.
+  - [`n8n-workflows/`](../n8n-workflows/): los 7 workflows en JSON, listos para `Import from File` en n8n. Cada uno trae el nodo Webhook con el `path` correcto (coincide exactamente con el sufijo que el panel ya arma vía `VITE_N8N_WEBHOOK_BASE_URL`), un nodo `TODO: acción real` de placeholder, y un nodo de respuesta 200 OK.
+  - **Sin acceso a n8n real** en esta sesión (no hay conector configurado) — no se pudo importar ni probar contra una instancia viva. Lo que sí queda verificado: los 7 JSON parsean válidos, los paths coinciden con lo que el código ya espera, y la estructura de nodos sigue el formato de export estándar de n8n.
+  - Qué acción hace cada `TODO` (mandar WhatsApp, email, Slack, etc.) es una decisión de negocio pendiente del cliente, no algo inferible del código — documentado explícitamente en `N8N_INTEGRATION.md §5`.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 - `comunidad-horizontal.jpg`/`comunidad-vertical.jpg` en `public/images/home/` sin referencias en el código — candidatos a borrar, no confirmado.

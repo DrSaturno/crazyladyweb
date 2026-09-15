@@ -1,0 +1,90 @@
+{
+  "name": "CLS · Devolución solicitada",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "return-requested",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "35970a70-3b19-4b83-b0b9-f1a4168c3b65",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "01e1f6aa-2416-40a2-84c0-a1f1ef88a0ce"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "57bee17b-a908-4a28-8453-71f9de7343b9",
+              "name": "nota",
+              "value": "Reemplazá este nodo por la accion real (WhatsApp, email, Slack, planilla, etc). Los datos del evento llegan en {{ $json.body.data }}.",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "7565db07-bf8d-4c9f-a1f3-d7994371eec1",
+      "name": "TODO: acción real",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"received\": true } }}",
+        "options": {}
+      },
+      "id": "0af5ea9d-de44-460c-a6f1-7ae0b3d0aef7",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "TODO: acción real",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TODO: acción real": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
