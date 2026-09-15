@@ -27,6 +27,7 @@
   html {
     scroll-behavior: smooth;
     background: var(--cls-cream);
+    accent-color: var(--cls-forest);
   }
 
   body {

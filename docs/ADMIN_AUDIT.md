@@ -51,6 +51,13 @@ Auditoría técnica completa (arquitectura, UX/UI, seguridad, base de datos) del
 - **Motor de descuentos del checkout extraído y probado — 12 tests.** `quoteDiscount` vivía como función interna de `CommerceDataContext` (no se podía probar sin renderizar React); se extrajo tal cual a `src/context/discountEngine.ts` como función pura (mismo comportamiento, ahora con un parámetro `now` opcional para fechas determinísticas en tests). Cubre: código vacío, mayúsculas/espacios, código inexistente, borrador/pausado, antes de vigencia, vencido (incluyendo que el día de vencimiento cuenta completo), límite de usos, compra mínima, redondeo de porcentaje, tope de descuento fijo al subtotal, envío gratis, y que devuelve el `ruleId` correcto.
 - Verificado que el refactor no cambió el comportamiento real: se creó un cupón 10% desde el admin y se aplicó en el checkout público real — descuento de $2.100 sobre $21.000, correcto.
 
+## 🟠 Alto — implementado en esta sesión (continuación 5: consistencia visual)
+
+Auditoría de consistencia sobre `cards, tablas, inputs, selects, checkboxes, badges, botones, iconos, modales, empty states` — el proyecto ya usaba bastante bien primitivas compartidas (`Panel`, `StatusBadge`, `fieldClass`, clases `.admin-table`/`.btn-*`), así que no había mucho roto. Se encontraron y corrigieron 2 inconsistencias reales:
+
+- **Checkboxes y radios sin color de marca**: nunca se definió `accent-color`, así que cada checkbox/radio (selección masiva de Productos, checkboxes de publicar/destacar, permisos de Equipo, checkout público) renderizaba con el azul por defecto del navegador/SO, chocando contra la paleta verde/crema/miel de la marca. Se agregó `accent-color: var(--cls-forest)` en `html` (hereda a todos los controles, admin y tienda pública) en [src/index.css](../src/index.css). Verificado en `/admin/productos` (checkbox verde al tildar) y en el checkout público (sin romper nada).
+- **Botón de cerrar con el carácter "×" en vez del ícono `X`**: en el banner de resultado de `AdminAutomations`, único lugar de todo el admin que no usaba el ícono `X` de lucide para "cerrar" (la barra lateral y el panel de notificaciones sí lo usan). Corregido para usar el mismo ícono.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 
