@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Inbox } from "lucide-react";
+import { ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 
 export function AdminPage({ title, eyebrow, description, action, children }: { title: string; eyebrow: string; description: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -32,4 +32,28 @@ export const labelClass = "mb-1.5 block text-xs font-bold text-cls-primary-dark"
 export function StatusBadge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: "good" | "warn" | "bad" | "neutral" }) {
   const styles = { good: "bg-cls-sage text-cls-primary-dark", warn: "bg-cls-honey/50 text-cls-primary-dark", bad: "bg-red-100 text-red-800", neutral: "bg-cls-cream text-cls-ink/70" };
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${styles[tone]}`}>{children}</span>;
+}
+
+export function Pagination({ page, pageCount, onChange }: { page: number; pageCount: number; onChange: (page: number) => void }) {
+  if (pageCount <= 1) return null;
+  return (
+    <div className="mt-4 flex items-center justify-between gap-3 border-t border-cls-line pt-3">
+      <button type="button" className="btn-outline min-h-10 px-3 py-1 text-xs" disabled={page <= 1} onClick={() => onChange(page - 1)}><ChevronLeft className="h-3.5 w-3.5" /> Anterior</button>
+      <span className="text-[11px] font-bold text-cls-ink/55">Página {page} de {pageCount}</span>
+      <button type="button" className="btn-outline min-h-10 px-3 py-1 text-xs" disabled={page >= pageCount} onClick={() => onChange(page + 1)}>Siguiente <ChevronRight className="h-3.5 w-3.5" /></button>
+    </div>
+  );
+}
+
+export function BulkActionsBar({ count, onClear, children }: { count: number; onClear: () => void; children: React.ReactNode }) {
+  if (!count) return null;
+  return (
+    <div className="mb-4 flex flex-col gap-3 rounded-xl border border-cls-primary/30 bg-cls-sage/40 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs font-black text-cls-primary-dark">{count} seleccionado(s)</p>
+      <div className="flex flex-wrap items-center gap-2">
+        {children}
+        <button type="button" className="text-xs font-bold text-cls-ink/55 hover:text-cls-primary" onClick={onClear}>Limpiar selección</button>
+      </div>
+    </div>
+  );
 }

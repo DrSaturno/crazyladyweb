@@ -145,6 +145,9 @@ type OrderPatch = Partial<Pick<AdminOrder, "status" | "paymentStatus" | "fulfill
 interface CommerceValue extends CommerceState {
   saveProduct: (product: Producto) => void;
   removeProduct: (id: string) => boolean;
+  bulkUpdateProducts: (ids: string[], patch: Partial<Pick<Producto, "visible_web" | "destacado" | "categoria">>) => void;
+  bulkDeleteProducts: (ids: string[]) => void;
+  importProducts: (rows: { producto: Producto; action: "create" | "update" }[]) => { created: number; updated: number };
   saveCategory: (category: AdminCategory) => void;
   removeCategory: (id: string) => boolean;
   createOrder: (input: NewOrderInput) => AdminOrder;
@@ -213,6 +216,34 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
     if (!product) return false;
     commit((current) => ({ ...current, products: current.products.filter((item) => item.id !== id), audit: [audit("product", id, "deleted", product.nombre), ...current.audit] }));
     return true;
+  }
+
+  function bulkUpdateProducts(ids: string[], patch: Partial<Pick<Producto, "visible_web" | "destacado" | "categoria">>) {
+    if (!ids.length) return;
+    const idSet = new Set(ids);
+    commit((current) => ({ ...current, products: current.products.map((item) => idSet.has(item.id) ? { ...item, ...patch } : item), audit: [audit("product", "bulk", "bulk_updated", `${ids.length} producto(s) · ${Object.entries(patch).map(([key, value]) => `${key}=${value}`).join(", ")}`), ...current.audit] }));
+  }
+
+  function bulkDeleteProducts(ids: string[]) {
+    if (!ids.length) return;
+    const idSet = new Set(ids);
+    commit((current) => ({ ...current, products: current.products.filter((item) => !idSet.has(item.id)), audit: [audit("product", "bulk", "bulk_deleted", `${ids.length} producto(s) eliminados`), ...current.audit] }));
+  }
+
+  function importProducts(rows: { producto: Producto; action: "create" | "update" }[]) {
+    if (!rows.length) return { created: 0, updated: 0 };
+    const existingIds = new Set(state.products.map((item) => item.id));
+    const created = rows.filter((row) => !existingIds.has(row.producto.id)).length;
+    const updated = rows.length - created;
+    commit((current) => {
+      let products = current.products;
+      for (const row of rows) {
+        const exists = products.some((item) => item.id === row.producto.id);
+        products = exists ? products.map((item) => item.id === row.producto.id ? row.producto : item) : [row.producto, ...products];
+      }
+      return { ...current, products, audit: [audit("product", "import", "imported", `Importación: ${created} creado(s), ${updated} actualizado(s)`), ...current.audit] };
+    });
+    return { created, updated };
   }
 
   function saveCategory(category: AdminCategory) {
@@ -376,7 +407,7 @@ export function CommerceDataProvider({ children }: { children: React.ReactNode }
 
   function resetDemoData() { const fresh = initialState(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); localStorage.removeItem(LEGACY_STORAGE_KEY); } catch { /* Conservamos el reinicio en memoria. */ } setState(fresh); }
 
-  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, triggerAutomation: dispatchEvent, saveStaff, updateStaffStatus, saveBotSettings, savePost, removePost, resetDemoData }), [state]);
+  const value = useMemo<CommerceValue>(() => ({ ...state, saveProduct, removeProduct, bulkUpdateProducts, bulkDeleteProducts, importProducts, saveCategory, removeCategory, createOrder, quoteDiscount, updateOrder, saveCustomer, updateCustomer, adjustStock, saveContent, updateSettings, saveDiscount, removeDiscount, saveCampaign, updateCampaignStatus, saveAbandonedCart, updateAbandonedCart, createReturn, updateReturn, saveAutomation, runAutomation, triggerAutomation: dispatchEvent, saveStaff, updateStaffStatus, saveBotSettings, savePost, removePost, resetDemoData }), [state]);
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }
 
