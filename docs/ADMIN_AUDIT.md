@@ -79,6 +79,15 @@ Pase de bugs sobre módulos todavía no revisados (Categorías, Inventario, Mét
 
 Un tercer bug del mismo tipo, encontrado al arrancar este pase: **Configuración** copiaba `settings` a un `useState` local una sola vez; si el store cambiaba por otra vía en la misma pantalla (el botón "Restablecer datos locales" de ese mismo panel), el formulario seguía mostrando los valores viejos sin ningún aviso, y un guardado posterior los volvía a pisar sobre el reset recién hecho. Corregido con un efecto que resincroniza el formulario cuando cambia `settings`.
 
+## 🟠 Alto — continuación 8: barrido módulo por módulo (pedido explícito del cliente)
+
+Repaso sistemático de todo lo que no se había revisado con la misma lupa que encontró los 3 bugs anteriores (copias locales de datos que no se resincronizan, fixtures estáticas usadas donde debería usarse el catálogo vivo). Revisados sin hallazgos: `AdminCategories`, `AdminInventory`, `AdminMetrics`, `AdminContent`, `AdminAudit`, `AdminModuleManager`, la pestaña `Personalización` del bot (el `dirty` se recalcula fresco cada render, así que un cambio externo se nota enseguida — no tiene el bug de Configuración), `Header.tsx`, `Favoritos.tsx`, `ProductoDetalle.tsx`, `Cuenta.tsx`, `Gracias.tsx`.
+
+Dos hallazgos reales, ambos corregidos:
+
+1. **El widget del bot mostraba el nombre/banco viejo del producto en pantalla.** El mensaje "Veo que estás mirando…" resolvía el producto con `getProducto()` de `src/data/catalogo.ts` (la fixture estática de desarrollo), no contra `useCommerceData().products` (el catálogo vivo). Si se renombraba un producto desde el admin, el bot seguía usando el nombre viejo — y para cualquier producto dado de alta desde el admin (no en la fixture original), la función devolvía `undefined` y el mensaje ni aparecía. Probado: renombrado "Amnesia x4" a "Amnesia RENOMBRADA" desde el admin, el widget mostró el nombre nuevo correctamente tras el fix.
+2. **Favoritos "parpadeaba" a 0 en cada carga de página.** `WishlistProvider` leía `localStorage` dentro de un `useEffect` (después del primer render) en vez de en el inicializador de `useState`, a diferencia de `CartContext` que sí lo hace bien. Se corrigió para que sea consistente: lectura síncrona, sin parpadeo.
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 

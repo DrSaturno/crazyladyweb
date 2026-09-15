@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, Sprout, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useCommerceData } from "../context/CommerceDataContext";
-import { getProducto } from "../data/catalogo";
 import { getBotResponse } from "../data/clsKnowledge";
 
 interface Message {
@@ -16,7 +15,7 @@ function now() {
 }
 
 export default function BotWidget() {
-  const { bot } = useCommerceData();
+  const { bot, products } = useCommerceData();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([{ from: "bot", text: bot.saludo, time: now() }]);
   const [input, setInput] = useState("");
@@ -24,7 +23,7 @@ export default function BotWidget() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const productSlug = location.pathname.startsWith("/producto/") ? location.pathname.replace("/producto/", "") : null;
-  const viewedProduct = productSlug ? getProducto(productSlug) : undefined;
+  const viewedProduct = productSlug ? products.find((product) => product.slug === productSlug) : undefined;
 
   function openWidget() {
     setOpen(true);

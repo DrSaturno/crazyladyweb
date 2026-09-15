@@ -11,18 +11,16 @@ const STORAGE_KEY = "cls_wishlist_ids";
 const WishlistContext = createContext<WishlistValue | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
-  const [ids, setIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return;
+  // Lectura síncrona en el inicializador (igual que CartContext): si se leyera en un useEffect,
+  // el primer render mostraría 0 favoritos y recién después "saltaría" a la lista real.
+  const [ids, setIds] = useState<string[]>(() => {
     try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) setIds(parsed.filter((id) => typeof id === "string"));
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+      return Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : [];
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      return [];
     }
-  }, []);
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
