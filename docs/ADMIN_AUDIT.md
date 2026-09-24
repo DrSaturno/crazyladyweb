@@ -160,6 +160,19 @@ Trabajo paralelo de otra sesión (Codex/GPT) hizo un pase de auditoría visual r
   - **Sin acceso a n8n real** en esta sesión (no hay conector configurado) — no se pudo importar ni probar contra una instancia viva. Lo que sí queda verificado: los 7 JSON parsean válidos, los paths coinciden con lo que el código ya espera, y la estructura de nodos sigue el formato de export estándar de n8n.
   - Qué acción hace cada `TODO` (mandar WhatsApp, email, Slack, etc.) es una decisión de negocio pendiente del cliente, no algo inferible del código — documentado explícitamente en `N8N_INTEGRATION.md §5`.
 
+## 🔴 Crítico — continuación 14: auditoría de producción de n8n y plan (24/09/2026)
+
+Revisión del código y de la instancia n8n conectada por MCP para dejar las automatizaciones en producción. Sin cambios de código; el resultado es el spec [`N8N_PRODUCTION_PLAN.md`](N8N_PRODUCTION_PLAN.md) (SPEC-N8N-01).
+
+- **Hallazgo 1 (bloqueante):** `dispatchEvent` (`CommerceDataContext.tsx:263`) corre en el navegador y lee las automatizaciones de `localStorage`. Un pedido hecho por un visitante en su propio navegador no dispara nada ni llega al admin. En producción real solo funcionan las acciones del equipo en el admin de esa misma PC. Solución: despacho desde servidor (P-4), que depende del Supabase del cliente.
+- **Hallazgo 2:** el payload v1 no lleva email/teléfono del cliente, aunque `order.customer` y `AbandonedCart` los tienen. Las acciones elegidas por el cliente (email de pago, WhatsApp/email de despacho, email de carrito) lo necesitan → contrato v1.1 aditivo (T-1).
+- **Hallazgo 3:** los carritos abandonados solo se crean a mano en `/admin/carritos`; `recoveryCode` no lo consume ninguna ruta.
+- **Hallazgo 4:** los webhooks no pueden autenticarse desde el navegador; con la URL se pueden disparar mensajes. Defensa: header secreto puesto por el servidor.
+- **Hallazgo 5:** WhatsApp Meta Cloud API requiere plantillas aprobadas; es el plazo externo más largo. Textos propuestos en el plan §8.
+- **Estado de n8n verificado:** instancia sana (API OK), 23 workflows de otros proyectos, 34 credenciales genéricas de otros proyectos; ningún workflow de Crazy Lady Seeds creado todavía. Regla fijada: prefijo `CLS ·`, tag `crazy-lady-seeds`, credenciales dedicadas.
+- **Decisiones de negocio del 16/09** (acción por evento) registradas en el plan §3; quedan 9 decisiones abiertas en §4.
+- Pendiente de seguridad: regenerar la API key de n8n que se pegó en un chat (C-5).
+
 ## 🟡 Medio
 - Doble enlace a la tienda pública con distinto label ("Ver tienda pública" vs "Tienda") — menor, cosmético.
 - `comunidad-horizontal.jpg`/`comunidad-vertical.jpg` en `public/images/home/` sin referencias en el código — candidatos a borrar, no confirmado.

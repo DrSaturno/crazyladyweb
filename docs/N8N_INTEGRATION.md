@@ -92,12 +92,8 @@ Si preferís no usar la variable de entorno, cada webhook se puede pegar a mano 
 5. **Probar desde el panel:** botón "Probar" en cada tarjeta — manda un payload con `test: true` y muestra el resultado (éxito / HTTP status / error) al instante, y queda en el historial de ejecuciones de abajo.
 6. **Activar la automatización en el panel:** el switch "Activo"/"Inactivo" de cada tarjeta — sin esto, aunque el webhook esté bien configurado, los eventos reales del negocio no lo van a llamar (solo el botón "Probar" funciona con automatizaciones inactivas).
 
-## 5. Qué falta decidir (no es técnico, es de negocio)
+## 5. Qué hace cada evento (decidido el 16/09/2026)
 
-Los 7 workflows importables son solo el esqueleto — el nodo `TODO: acción real` de cada uno queda vacío porque **qué debe pasar en cada evento es una decisión del negocio**, no algo que se pueda inferir del código:
+Los 7 workflows de `n8n-workflows/` son solo el esqueleto. Las acciones reales ya están decididas y documentadas, junto con las decisiones que siguen abiertas, el plan de trabajo por fases y el camino a producción, en [`N8N_PRODUCTION_PLAN.md`](N8N_PRODUCTION_PLAN.md) (§3 acciones por evento, §4 decisiones abiertas, §6 tareas).
 
-- ¿`order.created` manda un WhatsApp al equipo, una notificación a Slack, ambas?
-- ¿`conversation.handoff` crea una tarea en qué sistema (Trello, un chat interno, un email)?
-- ¿`inventory.low` avisa a quién, con qué frecuencia (para no spamear si el stock se queda bajo varios días)?
-
-Decíme qué querés que haga cada uno y con qué herramienta (WhatsApp Business API, email, Slack, una planilla, etc.) y armo el contenido real de cada nodo.
+**Limitación conocida del contrato v1:** el payload de §2 no incluye datos de contacto del cliente, así que las acciones que le escriben al cliente (email de pago, WhatsApp/email de despacho, email de carrito) no se pueden construir hasta el contrato v1.1 (tarea T-1 del plan). Además, hoy los eventos se disparan desde el navegador: solo funcionan las acciones hechas por el equipo en el admin de esa misma computadora, hasta que el despacho pase al servidor (tarea P-4).

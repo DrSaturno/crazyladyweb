@@ -136,5 +136,7 @@ La migración `commerce_core` modela productos, categorías, clientes, órdenes,
 - Edge Function de checkout y webhook de pago una vez definido el proveedor autorizado.
 - Tarifario y credenciales de logística.
 - Webhooks y credenciales de WhatsApp, Instagram y Telegram cuando se retome el bot.
-- URL pública de webhooks n8n, política de firma, reintentos e idempotencia.
+- URL pública de webhooks n8n, política de firma, reintentos e idempotencia. Plan detallado por fases, decisiones abiertas y criterios de aceptación en [`N8N_PRODUCTION_PLAN.md`](N8N_PRODUCTION_PLAN.md) (SPEC-N8N-01).
+- Despacho de eventos desde servidor: hoy `dispatchEvent` corre en el navegador con automatizaciones en `localStorage`, por lo que los eventos originados en el checkout público no llegan a n8n (ver plan, hallazgo 1 y tarea P-4).
+- Captura real de carritos abandonados en la tienda y consumo de `recoveryCode` (hoy solo se cargan a mano desde el admin).
 - Reglas comerciales, legales y de publicación finales aprobadas por Crazy Lady Seeds.
