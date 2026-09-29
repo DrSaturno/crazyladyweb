@@ -86,6 +86,8 @@ Convención de dueño: **N** = Nico/cliente (no delegable), **AI** = Claude o Co
 |---|---|---|---|
 | C-1 | Crear app de Meta + número WhatsApp Business de CLS + token permanente (usuario de sistema) | N | Enviar un mensaje de prueba desde Graph API Explorer al número de Nico |
 | C-2 | Enviar a aprobación las 6 plantillas *Utility* (textos en §8) | N (AI redacta) | Las 6 en estado `APPROVED` |
+
+Paso a paso detallado de C-1 y C-2 (Business Manager, app, número, token, plantillas, riesgo de política del rubro): [`META_WHATSAPP_SETUP.md`](META_WHATSAPP_SETUP.md).
 | C-3 | Responder D-1…D-9 | N | Sección 4 sin filas abiertas (mover a §3) |
 | C-4 | Crear en n8n las credenciales dedicadas de CLS (WhatsApp, email, Slack si D-3, Sheets) **desde la UI de n8n, sin pegar secretos en el chat** | N | 4 credenciales `CLS · …` visibles en n8n |
 | C-5 | Regenerar la API key de n8n y actualizar `claude mcp` | N | La key vieja devuelve 401 |
